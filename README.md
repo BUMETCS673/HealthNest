@@ -10,14 +10,77 @@ The planned technology stack currently includes a React frontend, a FastAPI back
 
 ## CI/CD / Commit Procedure
 
-Jira: A ticket will be assigned to a developer and that task will have a ticket number
+Our team will use a simplified GitFlow workflow to organize development, track Jira work items, manage code reviews, reduce merge conflicts, and support CI/CD deployment practices throughout the project lifecycle.
 
-Feature: The first step is the feature branch. When a developer has to add a new feature or fix a bug they must create a feature branch first and title it with the name 
-of the jira ticket first. Ex. “feature/Jira-XXXX-[name of the branch]”. Once the developer creates that branch they can pull from the main branch to get the most updated code. 
-The developer will make their changes and will commit and push the feature branch.
-Main: The developer will raise a PR to merge the feature branch to the main branch and the PR must be reviewed by at least one other developer before the author can merge the branch.
+Each feature, bug fix, documentation update, or enhancement should be associated with a Jira ticket before development begins. Developers will work on isolated branches and merge changes into the `main` branch only through reviewed pull requests.
 
-Release: We will then create a release branch to push the new feature or bug fix to the production code which will be deployed on vercel/AWS/Google Cloud. 
-The naming convention for the release branch will be “release/release-X.XX”. The developer will then merge the main branch to the release branch.
+---
 
-Production: Once we are ready to push the release to production, we will approve and ship the release branch and host it.
+# Branch Structure
+
+## Main Branch
+
+### `main`
+
+The `main` branch represents the stable integration branch for the project. This branch should always contain the most stable and up-to-date version of the application.
+
+Direct commits to `main` are discouraged. All updates should be merged through pull requests after review and testing.
+
+Responsibilities of the `main` branch:
+- Store stable project code
+- Serve as the integration branch for completed work
+- Act as the source for release branches
+- Maintain clean project history
+
+---
+
+## Feature Branches
+
+### `feature/JIRA-XXXX-short-description`
+
+Feature branches are used to develop new functionality or user-facing features.
+
+Examples:
+
+```bash
+feature/JIRA-101-patient-dashboard
+feature/JIRA-102-ai-chatbot
+feature/JIRA-103-appointment-scheduler
+```
+
+## Bug Fix Branches
+
+### bugfix/JIRA-XXXX-short-description
+
+Bugfix branches are used to fix defects discovered during development, testing, or review.
+
+Examples:
+
+```bash
+bugfix/JIRA-120-login-validation
+bugfix/JIRA-121-dashboard-render-error
+```
+
+Bugfix branches should:
+
+- Be created from the latest version of main
+- Focus only on resolving the specific issue
+
+## Release Branches
+
+### release/release-X.XX
+
+Release branches are created near the end of an iteration to prepare a stable version for deployment, demo, or submission.
+
+Examples:
+
+```bash
+release/release-1.00
+release/release-1.10
+```
+
+Release branches:
+
+- Are created from main
+- Contain only reviewed and approved code
+- Are used for final testing and deployment preparation
