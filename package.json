@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "docke": "^1.3.0",
+    "docker": "^1.0.0"
+  }
+}
