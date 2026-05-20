@@ -8,9 +8,10 @@ import {
   Stethoscope,
   Check,
 } from "lucide-react";
+import { supabase } from "./lib/supabase";
 import "./Login.css";
 
-export default function Login() {
+export default function Login({ onSwitchToSignup, onSignedIn }) {
   const [role, setRole] = useState("patient");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,26 +24,19 @@ export default function Login() {
     setLoading(true);
     setError("");
 
-    try {
-      const res = await fetch("http://localhost:8000/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, role }),
-      });
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-      const data = await res.json();
+    setLoading(false);
 
-      if (!res.ok) {
-        setError(data.detail || "Invalid credentials. Please try again.");
-      } else {
-        // TODO: store token / redirect based on role
-        console.log("Login success:", data);
-      }
-    } catch (err) {
-      setError("Unable to reach the server. Please try again.");
-    } finally {
-      setLoading(false);
+    if (signInError) {
+      setError(signInError.message);
+      return;
     }
+
+    onSignedIn?.(data.session, role);
   };
 
   return (
@@ -196,7 +190,11 @@ export default function Login() {
             <span>Don't have an account?</span>
           </div>
 
-            <button type="button" className="login-register">
+            <button
+              type="button"
+              className="login-register"
+              onClick={onSwitchToSignup}
+            >
             Create an account as {role === "patient" ? "Patient" : "Provider"}
             </button>
         </div>
