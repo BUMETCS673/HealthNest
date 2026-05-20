@@ -1,0 +1,561 @@
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap");
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.p-dash {
+  min-height: 100vh;
+  background: #f9f9f7;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Navigation bar ── */
+.dash-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 80px;
+  height: 56px;
+  background: #fff;
+  border-bottom: 1px solid #f2f2f1;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.dash-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.dash-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dash-logo {
+  font-family: "Instrument Serif", Helvetica, serif;
+  font-style: italic;
+  font-size: 30px;
+  font-weight: 500;
+  color: #111110;
+  text-decoration: underline;
+  margin-right: 24px;
+  padding-right: 28px;
+  border-right: 1px solid #f2f2f1;
+}
+
+.dash-nav-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #71716e;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.dash-nav-link.active {
+  background: #111110;
+  color: #fff;
+  font-weight: 500;
+}
+
+.dash-nav-link:hover:not(.active) {
+  background: #f2f2f1;
+  color: #111110;
+}
+
+.dash-badge {
+  background: #111110;
+  color: #fff;
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+.dash-icon-btn {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  color: #71716e;
+}
+
+.dash-icon-btn:hover {
+  background: #f2f2f1;
+}
+
+.dash-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.dash-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f2f2f1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #71716e;
+}
+
+.dash-user-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #111110;
+  display: block;
+}
+
+.dash-user-role {
+  font-size: 11px;
+  color: #9c9c9b;
+  display: block;
+}
+
+/* ── Main content ── */
+.dash-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 36px 80px;
+}
+
+/* ── Header ── */
+.dash-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.dash-date {
+  font-size: 13px;
+  color: #9c9c9b;
+  margin-bottom: 6px;
+}
+
+.dash-greeting {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: 38px;
+  font-weight: 300;
+  color: #111110;
+  letter-spacing: -0.5px;
+}
+
+.dash-book-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #111110;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.dash-book-btn:hover {
+  background: #2a2a2a;
+}
+
+/* ── Top four cards ── */
+.dash-sumcard {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.summ-card {
+  background: #fff;
+  border: 1px solid #f2f2f1;
+  border-radius: 12px;
+  padding: 20px;
+  cursor: default;
+  transition: border-color 0.2s;
+}
+
+.summ-card:hover {
+  border-color: #9c9c9b;
+}
+
+.summ-icon {
+  color: #9c9c9b;
+  margin-bottom: 12px;
+}
+.summ-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9c9c9b;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.summ-value {
+  font-size: 28px;
+  font-weight: 600;
+  color: #111110;
+  margin-bottom: 4px;
+}
+
+.summ-detail {
+  font-size: 12px;
+  color: #9c9c9b;
+}
+
+/* ── Middle section── */
+.dash-middle {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 16px;
+}
+
+/* ── Cards ── */
+.dash-card {
+  background: #fff;
+  border: 1px solid #f2f2f1;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.dash-card:last-child {
+  margin-bottom: 0;
+}
+
+.dash-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.dash-card-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #111110;
+}
+
+.dash-view-all {
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: #9c9c9b;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.dash-view-all:hover {
+  color: #111110;
+}
+
+/* ── Appointments section ── */
+.dash-appt-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 8px;
+  border-top: 1px solid #f2f2f1;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-radius: 6px;
+  margin: 0 -8px;
+}
+
+.dash-appt-row:hover {
+  background: #f9f9f7;
+}
+.dash-appt-date {
+  text-align: center;
+  min-width: 36px;
+}
+
+.dash-appt-month {
+  display: block;
+  font-size: 11px;
+  color: #9c9c9b;
+  text-transform: uppercase;
+}
+
+.dash-appt-day {
+  display: block;
+  font-size: 22px;
+  font-weight: 600;
+  color: #111110;
+}
+
+.dash-appt-divider {
+  width: 1px;
+  height: 32px;
+  background: #f2f2f1;
+  flex-shrink: 0;
+}
+
+.dash-appt-info {
+  flex: 1;
+}
+.dash-appt-doctor {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111110;
+  margin-bottom: 3px;
+}
+
+.dash-appt-specialty {
+  font-size: 12px;
+  color: #9c9c9b;
+}
+
+.dash-appt-time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #71716e;
+  white-space: nowrap;
+}
+
+.dash-appt-arrow {
+  color: #f2f2f1;
+}
+
+.dash-appt-row:hover .dash-appt-arrow {
+  color: #9c9c9b;
+}
+
+/* ── Sidebar ── */
+.dash-sidebar {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Medications ── */
+.dash-med-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-top: 1px solid #f2f2f1;
+}
+
+.dash-med-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111110;
+  margin-bottom: 3px;
+}
+
+.dash-med-detail {
+  font-size: 12px;
+  color: #9c9c9b;
+}
+
+.dash-med-refill {
+  font-size: 12px;
+  color: #9c9c9b;
+  white-space: nowrap;
+}
+
+/* ── Labs ── */
+.dash-lab-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-top: 1px solid #f2f2f1;
+}
+
+.dash-lab-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dash-lab-dot {
+  width: 8px;
+  height: 8px;
+  background: #e74c3c;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dash-lab-name {
+  font-size: 14px;
+  color: #111110;
+}
+
+.dash-lab-name.flagged {
+  font-weight: 500;
+}
+
+.dash-lab-status {
+  font-size: 13px;
+  color: #9c9c9b;
+}
+
+.dash-lab-status.flagged {
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+/* ── AI Banner ── */
+.dash-ai-banner {
+  background: #fff;
+  border: 1px solid #f2f2f1;
+  border-radius: 12px;
+  padding: 24px 28px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.dash-ai-icon {
+  width: 44px;
+  height: 44px;
+  background: #111110;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.dash-ai-text {
+  flex: 1;
+}
+
+.dash-ai-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: #111110;
+  margin-bottom: 4px;
+}
+
+.dash-ai-detail {
+  font-size: 13px;
+  color: #71716e;
+}
+
+.dash-ai-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #111110;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.dash-ai-btn:hover {
+  background: #2a2a2a;
+}
+
+/* ── Footer ── */
+.dash-footer {
+  background: #fff;
+  border-top: 1px solid #f2f2f1;
+  padding: 40px 80px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.dash-footer-left {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dash-footer-tag {
+  font-size: 13px;
+  color: #9c9c9b;
+  line-height: 1.6;
+}
+
+.dash-footer-links {
+  display: flex;
+  gap: 60px;
+}
+
+.dash-footer-heading {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #111110;
+  margin-bottom: 12px;
+}
+
+.dash-footer-link {
+  font-size: 13px;
+  color: #9c9c9b;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.dash-footer-link:hover {
+  color: #111110;
+}
+
+.dash-copyright {
+  text-align: center;
+  font-size: 12px;
+  color: #9c9c9b;
+  padding: 16px;
+  background: #fff;
+  border-top: 1px solid #f2f2f1;
+}
+
+/* ── Floating AI Button ── */
+.dash-pulse-fab {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  width: 52px;
+  height: 52px;
+  background: #111110;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  transition:
+    background 0.2s,
+    transform 0.15s;
+  z-index: 200;
+}
+
+.dash-pulse-fab:hover {
+  background: #2a2a2a;
+  transform: scale(1.07);
+}
