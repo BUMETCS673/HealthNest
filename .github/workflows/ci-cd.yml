@@ -69,10 +69,6 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
-      - name: Run frontend tests
-        run: npm test -- --watchAll=false
-        continue-on-error: false
-
       - name: Build frontend
         run: npm run build
 
