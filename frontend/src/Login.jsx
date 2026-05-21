@@ -8,7 +8,7 @@ import {
   Stethoscope,
   Check,
 } from "lucide-react";
-import { supabase } from "./lib/supabase";
+import { authApi } from "./lib/authApi";
 import "./Login.css";
 
 export default function Login({ onSwitchToSignup, onSignedIn }) {
@@ -24,19 +24,14 @@ export default function Login({ onSwitchToSignup, onSignedIn }) {
     setLoading(true);
     setError("");
 
-    const { data, error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    setLoading(false);
-
-    if (signInError) {
+    try {
+      const data = await authApi.signIn({ email, password });
+      onSignedIn?.(data.session, role);
+    } catch (signInError) {
       setError(signInError.message);
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    onSignedIn?.(data.session, role);
   };
 
   return (

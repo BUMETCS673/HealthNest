@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { User, Stethoscope, Check } from "lucide-react";
-import { supabase } from "./lib/supabase";
+import { authApi } from "./lib/authApi";
 import "./Login.css";
 
 export default function Signup({ onSwitchToLogin, onSignedUp }) {
@@ -34,25 +34,20 @@ export default function Signup({ onSwitchToLogin, onSignedUp }) {
       metadata.mrn = mrn.trim();
     }
 
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: metadata },
-    });
-
-    setLoading(false);
-
-    if (signUpError) {
+    try {
+      const data = await authApi.signUp({ email, password, metadata });
+      if (data.session) {
+        onSignedUp?.(data.session);
+      } else {
+        setInfo(
+          data.message ||
+            "Account created. Check your email to confirm before signing in."
+        );
+      }
+    } catch (signUpError) {
       setError(signUpError.message);
-      return;
-    }
-
-    if (data.session) {
-      onSignedUp?.(data.session);
-    } else {
-      setInfo(
-        "Account created. Check your email to confirm before signing in."
-      );
+    } finally {
+      setLoading(false);
     }
   };
 
