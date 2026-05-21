@@ -109,8 +109,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Build production Docker image
-        run: docker build -t healthnest-ai-release .
+      # frontend release
+      - name: Build Frontend Release Image
+        run: |
+          docker build \
+            -t healthnest-ai-frontend-release \
+            ./frontend
 
-      - name: Validate release compose file
+      # backend release
+      - name: Build Backend Release Image
+        run: |
+          docker build \
+            -t healthnest-ai-backend-release \
+            ./backend
+
+      - name: Validate Release Compose File
         run: docker compose config
