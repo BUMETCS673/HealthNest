@@ -102,11 +102,58 @@
   background: #f2f2f1;
 }
 
+.dash-user-wrap {
+  position: relative;
+}
+
 .dash-user {
   display: flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  border-radius: 8px;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.dash-user:hover {
+  background: #f2f2f1;
+}
+
+.dash-user-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 160px;
+  background: #fff;
+  border: 1px solid #f2f2f1;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  padding: 6px;
+  z-index: 150;
+}
+
+.dash-user-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #111110;
+  cursor: pointer;
+  text-align: left;
+}
+
+.dash-user-menu-item:hover {
+  background: #f9f9f7;
 }
 
 .dash-avatar {

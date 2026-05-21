@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import "./PatientDashboard.css";
 import {
   Calendar,
@@ -11,14 +12,28 @@ import {
   Bell,
   User,
   ChevronDown,
+  LogOut,
 } from "lucide-react";
 
-// just for temporary user object
-const currentUser = {
-  firstName: "James",
-  fullName: "James Carter",
-  role: "Patient",
-};
+function formatRole(role) {
+  if (!role) return "Patient";
+  return role.charAt(0).toUpperCase() + role.slice(1);
+}
+
+function deriveCurrentUser(user) {
+  const metadata = user?.user_metadata ?? {};
+  const firstName = metadata.first_name?.trim() || "";
+  const lastName = metadata.last_name?.trim() || "";
+  const fullName =
+    [firstName, lastName].filter(Boolean).join(" ") ||
+    user?.email ||
+    "Patient";
+  return {
+    firstName: firstName || fullName.split(" ")[0] || "there",
+    fullName,
+    role: formatRole(metadata.role),
+  };
+}
 
 const upcomingAppoint = [
   {
@@ -92,7 +107,22 @@ function SummaryCard({ icon, label, value, detail }) {
   );
 }
 
-export default function PatientDashboard() {
+export default function PatientDashboard({ user, onSignOut }) {
+  const currentUser = deriveCurrentUser(user);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    const onDocClick = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [menuOpen]);
+
   const today = new Date();
   const dateFormat = today.toLocaleDateString("en-US", {
     weekday: "long",
@@ -152,16 +182,39 @@ export default function PatientDashboard() {
           <button className='dash-icon-btn'>
             <Bell size={20} />
           </button>
-          <div className='dash-user'>
-            <div className='dash-avatar'>
-              <User size={16} />
-            </div>
-            <div className='dash-user-info'>
-              {/*temp*/}
-              <span className='dash-user-name'>{currentUser.fullName}</span>
-              <span className='dash-user-role'>{currentUser.role}</span>
-            </div>
-            <ChevronDown size={16} />
+          <div className='dash-user-wrap' ref={menuRef}>
+            <button
+              type='button'
+              className='dash-user'
+              onClick={() => setMenuOpen((open) => !open)}
+              aria-haspopup='menu'
+              aria-expanded={menuOpen}
+            >
+              <div className='dash-avatar'>
+                <User size={16} />
+              </div>
+              <div className='dash-user-info'>
+                <span className='dash-user-name'>{currentUser.fullName}</span>
+                <span className='dash-user-role'>{currentUser.role}</span>
+              </div>
+              <ChevronDown size={16} />
+            </button>
+            {menuOpen && (
+              <div className='dash-user-menu' role='menu'>
+                <button
+                  type='button'
+                  className='dash-user-menu-item'
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onSignOut?.();
+                  }}
+                  role='menuitem'
+                >
+                  <LogOut size={14} />
+                  Sign out
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </nav>
