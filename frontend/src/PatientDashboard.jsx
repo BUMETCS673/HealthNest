@@ -13,12 +13,25 @@ import {
   ChevronDown,
 } from "lucide-react";
 
-// just for temporary user object
-const currentUser = {
-  firstName: "James",
-  fullName: "James Carter",
-  role: "Patient",
-};
+function formatRole(role) {
+  if (!role) return "Patient";
+  return role.charAt(0).toUpperCase() + role.slice(1);
+}
+
+function deriveCurrentUser(user) {
+  const metadata = user?.user_metadata ?? {};
+  const firstName = metadata.first_name?.trim() || "";
+  const lastName = metadata.last_name?.trim() || "";
+  const fullName =
+    [firstName, lastName].filter(Boolean).join(" ") ||
+    user?.email ||
+    "Patient";
+  return {
+    firstName: firstName || fullName.split(" ")[0] || "there",
+    fullName,
+    role: formatRole(metadata.role),
+  };
+}
 
 const upcomingAppoint = [
   {
@@ -92,7 +105,8 @@ function SummaryCard({ icon, label, value, detail }) {
   );
 }
 
-export default function PatientDashboard() {
+export default function PatientDashboard({ user }) {
+  const currentUser = deriveCurrentUser(user);
   const today = new Date();
   const dateFormat = today.toLocaleDateString("en-US", {
     weekday: "long",

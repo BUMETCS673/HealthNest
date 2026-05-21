@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Login from "./Login";
 import Signup from "./Signup";
+import PatientDashboard from "./PatientDashboard";
 import { authApi } from "./lib/authApi";
 
 export default function App() {
@@ -20,15 +21,20 @@ export default function App() {
   }, []);
 
   if (session) {
-    return (
-      <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-        <h2>Signed in as {session.user.email}</h2>
-        <pre style={{ fontSize: 12, background: "#f4f4f2", padding: "1rem" }}>
-          {JSON.stringify(session.user.user_metadata, null, 2)}
-        </pre>
-        <button onClick={() => authApi.signOut()}>Sign out</button>
-      </div>
-    );
+    const role = session.user?.user_metadata?.role ?? "patient";
+    const handleSignOut = () => authApi.signOut();
+
+    if (role === "provider") {
+      return (
+        <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
+          <h2>Provider dashboard coming soon</h2>
+          <p>Signed in as {session.user.email}</p>
+          <button onClick={handleSignOut}>Sign out</button>
+        </div>
+      );
+    }
+
+    return <PatientDashboard user={session.user} onSignOut={handleSignOut} />;
   }
 
   return view === "signup" ? (
