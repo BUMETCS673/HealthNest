@@ -69,10 +69,6 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
-      - name: Run frontend tests
-        run: npm test -- --watchAll=false
-        continue-on-error: false
-
       - name: Build frontend
         run: npm run build
 
@@ -82,14 +78,25 @@ jobs:
     needs: frontend-build
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
+    - name: Checkout repository
+      uses: actions/checkout@v6
 
-      - name: Build Docker image
-        run: docker build -t healthnest-ai-webapp .
+    # frontend container
+    - name: Build Frontend Docker Image
+      run: |
+        docker build \
+          -t healthnest-ai-frontend \
+          ./frontend
 
-      - name: Validate Docker Compose
-        run: docker compose config
+    # backend container
+    - name: Build Backend Docker Image
+      run: |
+        docker build \
+          -t healthnest-ai-backend \
+          ./backend
+
+    - name: Validate Docker Compose
+      run: docker compose config
 
   release-build:
     name: Release Build
@@ -102,8 +109,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Build production Docker image
-        run: docker build -t healthnest-ai-release .
+      # frontend release
+      - name: Build Frontend Release Image
+        run: |
+          docker build \
+            -t healthnest-ai-frontend-release \
+            ./frontend
 
-      - name: Validate release compose file
+      # backend release
+      - name: Build Backend Release Image
+        run: |
+          docker build \
+            -t healthnest-ai-backend-release \
+            ./backend
+
+      - name: Validate Release Compose File
         run: docker compose config

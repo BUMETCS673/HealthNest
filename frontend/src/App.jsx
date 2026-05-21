@@ -1,18 +1,22 @@
 import { useEffect, useState } from "react";
 import Login from "./Login";
 import Signup from "./Signup";
-import { supabase } from "./lib/supabase";
+import { authApi } from "./lib/authApi";
 
 export default function App() {
   const [view, setView] = useState("login");
-  const [session, setSession] = useState(null);
+  const [session, setSession] = useState(() => authApi.getSession());
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) =>
-      setSession(s)
-    );
-    return () => sub.subscription.unsubscribe();
+    authApi.fetchUser().then((user) => {
+      if (!user) {
+        setSession(null);
+        return;
+      }
+      const stored = authApi.getSession();
+      if (stored) setSession({ ...stored, user });
+    });
+    return authApi.onAuthStateChange((s) => setSession(s));
   }, []);
 
   if (session) {
@@ -22,14 +26,20 @@ export default function App() {
         <pre style={{ fontSize: 12, background: "#f4f4f2", padding: "1rem" }}>
           {JSON.stringify(session.user.user_metadata, null, 2)}
         </pre>
-        <button onClick={() => supabase.auth.signOut()}>Sign out</button>
+        <button onClick={() => authApi.signOut()}>Sign out</button>
       </div>
     );
   }
 
   return view === "signup" ? (
-    <Signup onSwitchToLogin={() => setView("login")} />
+    <Signup
+      onSwitchToLogin={() => setView("login")}
+      onSignedUp={(s) => setSession(s)}
+    />
   ) : (
-    <Login onSwitchToSignup={() => setView("signup")} />
+    <Login
+      onSwitchToSignup={() => setView("signup")}
+      onSignedIn={(s) => setSession(s)}
+    />
   );
 }
