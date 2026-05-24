@@ -145,15 +145,15 @@
 }
 
 .bp-user-name {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #1a1a1a;
+  font-size: 13px;
+  font-weight: 500;
+  color: #111110;
   display: block;
 }
 
 .bp-user-role {
-  font-size: 0.75rem;
-  color: #888;
+  font-size: 11px;
+  color: #9c9c9b;
   display: block;
 }
 
