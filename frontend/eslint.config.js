@@ -7,6 +7,15 @@ export default [
   {
     ignores: ['dist', 'node_modules'],
   },
+  // Node.js scripts — use node globals instead of browser globals
+  {
+    files: ['scripts/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: globals.node,
+    },
+  },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {

@@ -55,7 +55,6 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
     "Patient";
 
   const fetchAppointments = () => {
-    setLoading(true);
     appointmentsApi
       .getAppointments()
       .then((data) => setAppointments(data.map(apptToDisplayRow)))
@@ -63,7 +62,7 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
       .finally(() => setLoading(false));
   };
 
-  useEffect(fetchAppointments, []);
+  useEffect(() => { fetchAppointments(); }, []);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
