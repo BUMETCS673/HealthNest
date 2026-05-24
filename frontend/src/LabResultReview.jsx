@@ -56,9 +56,14 @@ export default function LabResultReview({ labResultId, onBack, onChanged }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(null); // "save" | "release" | "archive"
-  const [toast, setToast] = useState(null);
+  const [toast, setToastRaw] = useState(null);
   const [toastLeaving, setToastLeaving] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
+
+  function setToast(t) {
+    setToastLeaving(false);
+    setToastRaw(t);
+  }
 
   const [meta, setMeta] = useState({
     lab_name: "",
@@ -115,9 +120,8 @@ export default function LabResultReview({ labResultId, onBack, onChanged }) {
 
   useEffect(() => {
     if (!toast) return undefined;
-    setToastLeaving(false);
     const leave = setTimeout(() => setToastLeaving(true), 2400);
-    const remove = setTimeout(() => setToast(null), 2600);
+    const remove = setTimeout(() => setToastRaw(null), 2600);
     return () => {
       clearTimeout(leave);
       clearTimeout(remove);

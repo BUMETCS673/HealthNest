@@ -57,9 +57,14 @@ export default function LabResultsPage({ onBack, onOpenReview }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [toast, setToast] = useState(null);
+  const [toast, setToastRaw] = useState(null);
   const [toastLeaving, setToastLeaving] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
+
+  function setToast(t) {
+    setToastLeaving(false);
+    setToastRaw(t);
+  }
 
   useEffect(() => {
     let alive = true;
@@ -88,9 +93,8 @@ export default function LabResultsPage({ onBack, onOpenReview }) {
 
   useEffect(() => {
     if (!toast) return undefined;
-    setToastLeaving(false);
     const leave = setTimeout(() => setToastLeaving(true), 2400);
-    const remove = setTimeout(() => setToast(null), 2600);
+    const remove = setTimeout(() => setToastRaw(null), 2600);
     return () => {
       clearTimeout(leave);
       clearTimeout(remove);
