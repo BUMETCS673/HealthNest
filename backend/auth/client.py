@@ -21,7 +21,6 @@ def get_supabase() -> Client:
 
 
 def get_supabase_admin() -> Client:
-    """Service-role client. Bypasses RLS — only the backend should hold this key."""
     global _admin_client
     if _admin_client is None:
         url = os.environ.get("SUPABASE_URL")

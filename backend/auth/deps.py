@@ -18,7 +18,6 @@ def bearer_token(authorization: str | None = Header(default=None)) -> str:
 
 
 def current_user(token: str = Depends(bearer_token)) -> dict[str, Any]:
-    """Resolve the caller's auth.users row via Supabase GoTrue."""
     try:
         result = get_supabase().auth.get_user(token)
     except Exception as exc:  # gotrue.errors.AuthApiError + transport errors
@@ -35,7 +34,6 @@ def current_user(token: str = Depends(bearer_token)) -> dict[str, Any]:
 
 
 def current_provider(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
-    """Resolve the providers row for the caller, or 403 if they're not a provider."""
     admin = get_supabase_admin()
     resp = (
         admin.table("providers")
@@ -55,7 +53,6 @@ def current_provider(user: dict[str, Any] = Depends(current_user)) -> dict[str, 
 
 
 def current_patient(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
-    """Resolve the patients row for the caller, or 403 if they're not a patient."""
     admin = get_supabase_admin()
     resp = (
         admin.table("patients")
@@ -75,7 +72,6 @@ def current_patient(user: dict[str, Any] = Depends(current_user)) -> dict[str, A
 
 
 def provider_has_active_relationship(provider_id: str, patient_id: str) -> bool:
-    """Mirrors the RLS predicate on patient_provider_relationships."""
     now_iso = datetime.now(timezone.utc).isoformat()
     admin = get_supabase_admin()
     resp = (
