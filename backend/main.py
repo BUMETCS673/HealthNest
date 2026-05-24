@@ -4,6 +4,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from auth import router as auth_router
+from appointments import router as appointments_router
+from providers import router as providers_router
 
 app = FastAPI()
 
@@ -23,6 +25,8 @@ app.add_middleware(
 )
 
 app.include_router(auth_router)
+app.include_router(appointments_router)
+app.include_router(providers_router)
 
 
 @app.get("/")

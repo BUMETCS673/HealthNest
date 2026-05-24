@@ -1,0 +1,441 @@
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap");
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+.ap-page {
+  min-height: 100vh;
+  background: #f9f9f7;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Nav ─────────────────────────────────────────── */
+.ap-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 80px;
+  height: 56px;
+  background: #fff;
+  border-bottom: 1px solid #f2f2f1;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.ap-nav-left  { display: flex; align-items: center; gap: 20px; }
+.ap-nav-right { display: flex; align-items: center; gap: 12px; }
+
+.ap-logo {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-style: italic;
+  font-size: 30px;
+  font-weight: 500;
+  color: #111110;
+  text-decoration: underline;
+  margin-right: 24px;
+  padding-right: 28px;
+  border-right: 1px solid #f2f2f1;
+}
+
+.ap-nav-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #71716e;
+  font-family: inherit;
+  transition: background 0.15s, color 0.15s;
+}
+
+.ap-nav-link.active {
+  background: #111110;
+  color: #fff;
+  font-weight: 500;
+}
+
+.ap-nav-link:hover:not(.active) {
+  background: #f2f2f1;
+  color: #111110;
+}
+
+.ap-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  color: #71716e;
+}
+
+.ap-icon-btn:hover { background: #f2f2f1; }
+
+.ap-user-wrap {
+  position: relative;
+}
+
+.ap-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  border-radius: 8px;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.ap-user:hover { background: #f2f2f1; }
+
+.ap-user-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 140px;
+  background: #fff;
+  border: 1px solid #f2f2f1;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  padding: 6px;
+  z-index: 150;
+}
+
+.ap-user-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #111110;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.ap-user-menu-item:hover { background: #f9f9f7; }
+
+.ap-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f2f2f1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #71716e;
+}
+
+.ap-user-name { font-size: 13px; font-weight: 500; color: #111110; display: block; }
+.ap-user-role { font-size: 11px; color: #9c9c9b; display: block; }
+
+/* ── Main ────────────────────────────────────────── */
+.ap-main {
+  flex: 1;
+  padding: 36px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Page header ─────────────────────────────────── */
+.ap-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.ap-title {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: 34px;
+  font-weight: 300;
+  color: #111110;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+
+.ap-sub {
+  font-size: 13px;
+  color: #9c9c9b;
+}
+
+.ap-book-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #111110;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.ap-book-btn:hover { background: #2a2a2a; }
+
+/* ── Tabs ────────────────────────────────────────── */
+.ap-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid #f2f2f1;
+  padding-bottom: 0;
+}
+
+.ap-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #71716e;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+}
+
+.ap-tab:hover { color: #111110; }
+
+.ap-tab.active {
+  color: #111110;
+  font-weight: 500;
+  border-bottom-color: #111110;
+}
+
+.ap-tab-count {
+  background: #f2f2f1;
+  color: #71716e;
+  font-size: 11px;
+  padding: 1px 7px;
+  border-radius: 10px;
+}
+
+.ap-tab.active .ap-tab-count {
+  background: #111110;
+  color: #fff;
+}
+
+/* ── Loading / empty ─────────────────────────────── */
+.ap-loading {
+  text-align: center;
+  font-size: 14px;
+  color: #9c9c9b;
+  padding: 3rem 0;
+}
+
+.ap-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 4rem 0;
+  color: #9c9c9b;
+  font-size: 14px;
+}
+
+/* ── Appointment list ────────────────────────────── */
+.ap-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Appointment card ────────────────────────────── */
+.ap-card {
+  background: #fff;
+  border: 1px solid #f2f2f1;
+  border-radius: 12px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  transition: border-color 0.15s;
+}
+
+.ap-card:hover { border-color: #e4e4e2; }
+
+.ap-card-date {
+  text-align: center;
+  min-width: 40px;
+  flex-shrink: 0;
+}
+
+.ap-card-month {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #9c9c9b;
+}
+
+.ap-card-day {
+  display: block;
+  font-size: 26px;
+  font-weight: 600;
+  color: #111110;
+  line-height: 1.1;
+}
+
+.ap-card-divider {
+  width: 1px;
+  background: #f2f2f1;
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+.ap-card-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.ap-card-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ap-card-doctor {
+  font-size: 15px;
+  font-weight: 500;
+  color: #111110;
+}
+
+.ap-card-detail {
+  font-size: 13px;
+  color: #71716e;
+}
+
+.ap-card-time,
+.ap-card-loc {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: #9c9c9b;
+}
+
+/* ── Status badge ────────────────────────────────── */
+.ap-status {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.2px;
+}
+
+.ap-status--scheduled   { background: #e8f8ed; color: #1f7a3a; }
+.ap-status--cancelled   { background: #fdf0ef; color: #c0392b; }
+.ap-status--completed   { background: #f2f2f1; color: #71716e; }
+.ap-status--rescheduled { background: #e8f1fd; color: #1a56db; }
+
+/* ── Card actions ────────────────────────────────── */
+.ap-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.ap-action {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border: 1.5px solid #e4e4e2;
+  background: none;
+  border-radius: 7px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.ap-action--reschedule {
+  color: #111110;
+}
+
+.ap-action--reschedule:hover {
+  background: #f2f2f1;
+  border-color: #9c9c9b;
+}
+
+.ap-action--cancel {
+  color: #c0392b;
+  border-color: #f5c6c2;
+}
+
+.ap-action--cancel:hover {
+  background: #fdf0ef;
+  border-color: #e74c3c;
+}
+
+.ap-action--cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ap-cancel-prompt {
+  font-size: 0.8rem;
+  color: #555;
+  white-space: nowrap;
+}
+
+.ap-cancel-error {
+  font-size: 0.75rem;
+  color: #c0392b;
+  width: 100%;
+  margin-top: 0.25rem;
+}
+
+/* ── Footer ──────────────────────────────────────── */
+.ap-footer {
+  background: #fff;
+  border-top: 1px solid #f2f2f1;
+  padding: 28px 80px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.ap-footer-tag {
+  font-size: 13px;
+  color: #9c9c9b;
+}
+
+.ap-copyright {
+  text-align: center;
+  font-size: 12px;
+  color: #9c9c9b;
+  padding: 12px;
+  background: #fff;
+  border-top: 1px solid #f2f2f1;
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 768px) {
+  .ap-nav { padding: 0 1.5rem; }
+  .ap-main { padding: 24px 1.5rem; }
+  .ap-footer { padding: 20px 1.5rem; }
+
+  .ap-card { flex-wrap: wrap; }
+  .ap-card-actions { flex-direction: row; }
+}
