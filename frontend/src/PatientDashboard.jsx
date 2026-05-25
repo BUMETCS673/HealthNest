@@ -14,6 +14,9 @@ import {
   ChevronDown,
   LogOut,
 } from "lucide-react";
+import { labResultsApi } from "./lib/labResultsApi";
+import PatientLabResultsPage from "./PatientLabResultsPage";
+import LabResultDetail from "./LabResultDetail";
 
 function formatRole(role) {
   if (!role) return "Patient";
@@ -89,12 +92,15 @@ const activeMed = [
   },
 ];
 
-const labResult = [
-  { test: "CBC Panel", result: "Normal", flag: false },
-  { test: "HbA1c", result: "6.4%", flag: true }, // example of how a not normal lab result looks like
-  { test: "Lipid Panel", result: "Normal", flag: false },
-  { test: "TSH", result: "Normal", flag: false },
-];
+function summarizeForCard(rows) {
+  return (rows || []).slice(0, 4).map((r) => ({
+    id: r.id,
+    test: r.lab_name,
+    result: new Date(r.resulted_at || r.released_at || r.created_at)
+      .toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+    flag: false,
+  }));
+}
 
 function SummaryCard({ icon, label, value, detail }) {
   return (
@@ -112,6 +118,10 @@ export default function PatientDashboard({ user, onSignOut }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
+  const [view, setView] = useState("home");
+  const [activeLabId, setActiveLabId] = useState(null);
+  const [labRows, setLabRows] = useState([]);
+
   useEffect(() => {
     if (!menuOpen) return undefined;
     const onDocClick = (event) => {
@@ -122,6 +132,15 @@ export default function PatientDashboard({ user, onSignOut }) {
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [menuOpen]);
+
+  useEffect(() => {
+    labResultsApi
+      .list({ limit: 10 })
+      .then((rows) => setLabRows(rows || []))
+      .catch(() => setLabRows([]));
+  }, [view]);
+
+  const labResult = summarizeForCard(labRows);
 
   const today = new Date();
   const dateFormat = today.toLocaleDateString("en-US", {
@@ -159,14 +178,27 @@ export default function PatientDashboard({ user, onSignOut }) {
           </span>
 
           {navOption.map((option) => {
-            const buttonClass =
-              option === "Dashboard" ? "dash-nav-link active" : "dash-nav-link";
+            const isLabsView = view !== "home";
+            const isActive =
+              (option === "Records" && isLabsView) ||
+              (option === "Dashboard" && !isLabsView);
+            const buttonClass = isActive
+              ? "dash-nav-link active"
+              : "dash-nav-link";
 
             const showMessageBadge =
               option === "Messages" && unreadMessages > 0;
 
+            const onClick = () => {
+              if (option === "Dashboard") setView("home");
+              else if (option === "Records") setView("labs");
+            };
+
             return (
-              <button key={option} className={buttonClass}>
+              <button
+                key={option}
+                className={buttonClass}
+                onClick={onClick}>
                 {option}
 
                 {showMessageBadge && (
@@ -221,6 +253,23 @@ export default function PatientDashboard({ user, onSignOut }) {
 
       {/* ── Main content ── */}
       <main className='dash-main'>
+        {view === "labs" && (
+          <PatientLabResultsPage
+            onBack={() => setView("home")}
+            onOpenDetail={(id) => {
+              setActiveLabId(id);
+              setView("lab-detail");
+            }}
+          />
+        )}
+        {view === "lab-detail" && activeLabId && (
+          <LabResultDetail
+            labResultId={activeLabId}
+            onBack={() => setView("labs")}
+          />
+        )}
+        {view !== "home" ? null : (
+          <>
         {/*  Header */}
         <div className='dash-header'>
           <div>
@@ -321,31 +370,45 @@ export default function PatientDashboard({ user, onSignOut }) {
             <div className='dash-card'>
               <div className='dash-card-header'>
                 <h3 className='dash-card-title'>Recent Labs</h3>
-                <button className='dash-view-all'>View all</button>
+                <button
+                  className='dash-view-all'
+                  onClick={() => setView("labs")}>
+                  View all
+                </button>
               </div>
-              {labResult.map((lab) => {
-                let labNameClass = "dash-lab-name";
-                let labStatusClass = "dash-lab-status";
-
-                if (lab.flag) {
-                  labNameClass = "dash-lab-name flagged";
-                  labStatusClass = "dash-lab-status flagged";
-                }
-                {
-                  /* flag lab result*/
-                }
-                return (
-                  <div key={lab.test} className='dash-lab-row'>
-                    <div className='dash-lab-name-wrap'>
-                      {lab.flag && <span className='dash-lab-dot'></span>}
-
-                      <p className={labNameClass}>{lab.test}</p>
-                    </div>
-
-                    <span className={labStatusClass}>{lab.result}</span>
+              {labResult.length === 0 ? (
+                <div className='dash-lab-row'>
+                  <div className='dash-lab-name-wrap'>
+                    <p className='dash-lab-name'>No results yet</p>
                   </div>
-                );
-              })}
+                  <span className='dash-lab-status'>—</span>
+                </div>
+              ) : (
+                labResult.map((lab) => {
+                  let labNameClass = "dash-lab-name";
+                  let labStatusClass = "dash-lab-status";
+                  if (lab.flag) {
+                    labNameClass = "dash-lab-name flagged";
+                    labStatusClass = "dash-lab-status flagged";
+                  }
+                  return (
+                    <div
+                      key={lab.id}
+                      className='dash-lab-row'
+                      style={{ cursor: "pointer" }}
+                      onClick={() => {
+                        setActiveLabId(lab.id);
+                        setView("lab-detail");
+                      }}>
+                      <div className='dash-lab-name-wrap'>
+                        {lab.flag && <span className='dash-lab-dot'></span>}
+                        <p className={labNameClass}>{lab.test}</p>
+                      </div>
+                      <span className={labStatusClass}>{lab.result}</span>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         </div>
@@ -366,6 +429,8 @@ export default function PatientDashboard({ user, onSignOut }) {
             <MessageCircleQuestion size={16} /> Ask Pulse
           </button>
         </div>
+          </>
+        )}
       </main>
 
       {/* ── Footer ── */}
