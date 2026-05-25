@@ -1,3 +1,11 @@
+"""
+AI-USAGE SUMMARY
+Tools: Opus 4.7
+Overall AI Contribution: ~55%
+AI-Assisted Areas: Scaffolded the FastAPI dependency wiring (bearer-token parsing, gotrue user lookup, supabase-admin query chains for the providers/patients/relationships tables).
+Human Contributions: Authorization model and role gating, active-relationship time-window semantics, 401 vs 403 mapping, and the decision to enforce care-team checks in Python in parallel with the RLS layer.
+"""
+
 from __future__ import annotations
 
 from datetime import datetime, timezone

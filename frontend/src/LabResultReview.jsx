@@ -1,3 +1,10 @@
+/**
+ * AI-USAGE SUMMARY
+ * Tools: Opus 4.7
+ * Overall AI Contribution: ~70%
+ * AI-Assisted Areas: Generated the editable entries grid, the per-field meta inputs, the per-entry diff calculation that builds the minimal patch payload, the sticky action footer, the eyebrow + MRN-pill header, and the summary stat tiles.
+ * Human Contributions: Workflow design (save vs release-with-implicit-patch), the manual-entry-required gating on release, the patient-name resolution wiring, and the decision to mirror server state into a local editable copy with explicit diffing rather than a controlled-from-server pattern.
+ */
 import { useEffect, useMemo, useState } from "react";
 import {
   ChevronLeft,
@@ -45,8 +52,15 @@ function fmtDate(iso) {
   });
 }
 
+function mrn(patient, patientId) {
+  const raw = patient?.mrn;
+  if (raw) return /^mrn[-\s]/i.test(raw) ? raw : `MRN-${raw}`;
+  if (!patientId) return "—";
+  return `MRN-${patientId.slice(0, 5).toUpperCase()}`;
+}
+
 function shortPatient(id) {
-  if (!id) return "—";
+  if (!id) return "Patient";
   return `Patient #${id.slice(0, 8)}`;
 }
 
@@ -55,7 +69,7 @@ export default function LabResultReview({ labResultId, onBack, onChanged }) {
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [busy, setBusy] = useState(null); // "save" | "release" | "archive"
+  const [busy, setBusy] = useState(null);
   const [toast, setToastRaw] = useState(null);
   const [toastLeaving, setToastLeaving] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
@@ -133,6 +147,13 @@ export default function LabResultReview({ labResultId, onBack, onChanged }) {
 
   const manualEntryRemaining = useMemo(
     () => entries.filter((e) => e.needs_manual_entry && !e.value).length,
+    [entries]
+  );
+
+  const abnormalCount = useMemo(
+    () =>
+      entries.filter((e) => e.abnormal_flag && e.abnormal_flag !== "normal")
+        .length,
     [entries]
   );
 
@@ -283,7 +304,9 @@ export default function LabResultReview({ labResultId, onBack, onChanged }) {
   if (loading) {
     return (
       <div className='lab-page'>
-        <span className='lab-spinner' />
+        <div className='lab-empty'>
+          <span className='lab-spinner' />
+        </div>
       </div>
     );
   }
@@ -301,21 +324,25 @@ export default function LabResultReview({ labResultId, onBack, onChanged }) {
     );
   }
 
+  const patientSubtitle = patient ? formatPatientSubtitle(patient) : "";
+
   return (
     <div className='lab-page'>
       <button className='lab-back-link' onClick={onBack}>
         <ChevronLeft size={14} /> Back to lab results
       </button>
 
+      <div className='lab-eyebrow'>Lab result review</div>
       <div className='lab-header'>
         <div>
           <h1 className='lab-header-title'>
             {patient ? formatPatientName(patient) : shortPatient(original.patient_id)}
           </h1>
           <p className='lab-header-subtitle'>
-            {patient && formatPatientSubtitle(patient)
-              ? `${formatPatientSubtitle(patient)} · `
-              : ""}
+            <span className='lab-mrn' style={{ marginRight: 10 }}>
+              {mrn(patient, original.patient_id)}
+            </span>
+            {patientSubtitle ? `${patientSubtitle} · ` : ""}
             {meta.lab_name || "Lab result"} ·{" "}
             {original.source_format.toUpperCase()} · Uploaded{" "}
             {fmtDate(original.created_at)}
@@ -330,6 +357,8 @@ export default function LabResultReview({ labResultId, onBack, onChanged }) {
           </button>
         </div>
       </div>
+
+      <div style={{ height: 24 }} />
 
       {error && <div className='lab-banner lab-banner-danger'>{error}</div>}
       {manualEntryRemaining > 0 && (
@@ -434,12 +463,8 @@ export default function LabResultReview({ labResultId, onBack, onChanged }) {
               <dd>{entries.length}</dd>
             </div>
             <div className='lab-info-row'>
-              <dt>Abnormal</dt>
-              <dd>
-                {entries.filter(
-                  (e) => e.abnormal_flag && e.abnormal_flag !== "normal"
-                ).length}
-              </dd>
+              <dt>Flagged</dt>
+              <dd>{abnormalCount}</dd>
             </div>
             <div className='lab-info-row'>
               <dt>Needs entry</dt>
@@ -464,7 +489,7 @@ export default function LabResultReview({ labResultId, onBack, onChanged }) {
               Components ({entries.length})
             </h3>
             <p className='lab-card-subtitle'>
-              Click any cell to edit. Yellow rows need a manual value.
+              Click any cell to edit. Highlighted rows need a manual value or are critical.
             </p>
           </div>
         </div>

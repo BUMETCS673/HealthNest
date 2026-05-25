@@ -1,4 +1,10 @@
-"""Lab-result parsers: HL7v2 / JSON / XML → normalized ParsedLabResult."""
+"""
+AI-USAGE SUMMARY
+Tools: Opus 4.7
+Overall AI Contribution: ~60%
+AI-Assisted Areas: Wrote the format-registry dispatch table and the byte-signature sniff helper (BOM/whitespace handling, MSH|/braces/angle-bracket detection).
+Human Contributions: Picked the canonical set of accepted formats, decided sniff returns None for unknown content (vs. guessing), and tuned the two-pass strip ordering for whitespace+BOM edge cases.
+"""
 
 from __future__ import annotations
 

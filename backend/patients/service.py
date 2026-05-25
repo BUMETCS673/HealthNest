@@ -1,3 +1,11 @@
+"""
+AI-USAGE SUMMARY
+Tools: Opus 4.7
+Overall AI Contribution: ~55%
+AI-Assisted Areas: Wrote the supabase-py query chains (in_, ilike OR-filter, ordering) and the active-relationship-id resolution helper.
+Human Contributions: Care-team scoping enforcement, ilike escape logic for PostgREST's `,` and `.` delimiters, the decision to filter post-fetch on ended_at to avoid an OR-clause that PostgREST doesn't handle cleanly, and the column whitelist that keeps *_enc PHI server-side.
+"""
+
 from __future__ import annotations
 
 from datetime import datetime, timezone

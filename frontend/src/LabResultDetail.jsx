@@ -1,5 +1,12 @@
+/**
+ * AI-USAGE SUMMARY
+ * Tools: Opus 4.7
+ * Overall AI Contribution: ~70%
+ * AI-Assisted Areas: Generated the read-only entries table, the FlagPill subcomponent, the signed-URL download handler, the summary stat strip, and the eyebrow + abnormal-banner copy.
+ * Human Contributions: Patient-facing copy ("discuss with your provider"), abnormal-count banner threshold logic, and the layout decisions around what to show/hide on the patient-side detail vs. the provider review screen.
+ */
 import { useEffect, useState } from "react";
-import { ChevronLeft, Download } from "lucide-react";
+import { ChevronLeft, Download, FlaskConical } from "lucide-react";
 import { labResultsApi } from "./lib/labResultsApi";
 import "./labResults.css";
 
@@ -23,9 +30,22 @@ function fmtDate(iso) {
   });
 }
 
+function fmtShortDate(iso) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 function FlagPill({ flag }) {
   if (!flag || flag === "normal") {
-    return <span className='lab-flag lab-flag-normal'>{FLAG_LABELS[flag] || "Normal"}</span>;
+    return (
+      <span className='lab-flag lab-flag-normal'>
+        {FLAG_LABELS[flag] || "Normal"}
+      </span>
+    );
   }
   return (
     <span className={`lab-flag lab-flag-${flag}`}>
@@ -75,7 +95,9 @@ export default function LabResultDetail({ labResultId, onBack }) {
   if (loading) {
     return (
       <div className='lab-page'>
-        <span className='lab-spinner' />
+        <div className='lab-empty'>
+          <span className='lab-spinner' />
+        </div>
       </div>
     );
   }
@@ -103,15 +125,19 @@ export default function LabResultDetail({ labResultId, onBack }) {
         <ChevronLeft size={14} /> Back to lab results
       </button>
 
+      <div className='lab-eyebrow'>Lab result</div>
       <div className='lab-header'>
         <div>
           <h1 className='lab-header-title'>{result.lab_name}</h1>
           <p className='lab-header-subtitle'>
-            Collected {fmtDate(result.collected_at)} · Resulted{" "}
-            {fmtDate(result.resulted_at)}
+            Collected {fmtShortDate(result.collected_at)} · Resulted{" "}
+            {fmtShortDate(result.resulted_at)}
           </p>
         </div>
         <div className='lab-header-actions'>
+          <span className='lab-status lab-status-released'>
+            <FlaskConical size={11} /> Released
+          </span>
           <button
             className='lab-btn'
             onClick={handleDownload}
@@ -121,6 +147,8 @@ export default function LabResultDetail({ labResultId, onBack }) {
           </button>
         </div>
       </div>
+
+      <div style={{ height: 24 }} />
 
       {abnormalCount > 0 && (
         <div className='lab-banner lab-banner-info'>
@@ -133,7 +161,9 @@ export default function LabResultDetail({ labResultId, onBack }) {
       <div className='lab-card'>
         <div className='lab-card-header'>
           <div>
-            <h3 className='lab-card-title'>Results ({result.entries?.length || 0})</h3>
+            <h3 className='lab-card-title'>
+              Results ({result.entries?.length || 0})
+            </h3>
             <p className='lab-card-subtitle'>
               Released {fmtDate(result.released_at)}
             </p>

@@ -1,3 +1,10 @@
+/**
+ * AI-USAGE SUMMARY
+ * Tools: Opus 4.7
+ * Overall AI Contribution: ~70%
+ * AI-Assisted Areas: Wrote the 180ms debounce pattern, dropdown open/close state machine, arrow-key / Enter / Escape keyboard navigation, and outside-click handling.
+ * Human Contributions: Designed the prop API (controlled value + onChange + selected-state render), fixed the alive-flag scoping so stale in-flight responses don't overwrite fresh results, and decided when the dropdown auto-opens (focus + cleared selection).
+ */
 import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import {

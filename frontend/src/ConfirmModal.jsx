@@ -1,3 +1,10 @@
+/**
+ * AI-USAGE SUMMARY
+ * Tools: Opus 4.7
+ * Overall AI Contribution: ~65%
+ * AI-Assisted Areas: Drafted the modal markup using the existing lab-modal-* class vocabulary, the Escape-to-cancel keyboard handler, and the busy-state spinner integration.
+ * Human Contributions: Designed the prop API (destructive, busy, confirmLabel/cancelLabel), decided to block backdrop close during busy state, and chose to make this reusable rather than inline to the archive flow.
+ */
 import { useEffect } from "react";
 import { X, AlertTriangle } from "lucide-react";
 import "./labResults.css";

@@ -1,3 +1,10 @@
+/**
+ * AI-USAGE SUMMARY
+ * Tools: Opus 4.7
+ * Overall AI Contribution: ~65%
+ * AI-Assisted Areas: Wrote the request wrapper, the Map-based id cache, and the getMany batched-fetch helper.
+ * Human Contributions: Caching strategy (per-session, no TTL), the name-formatter rules (preferred_name vs first_name precedence, MRN + DOB subtitle), and the decision to swallow individual lookup failures inside getMany rather than fail the whole batch.
+ */
 const API_URL =
   import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:8000";
 const SESSION_STORAGE_KEY = "healthnest.session";

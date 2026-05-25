@@ -1,3 +1,10 @@
+"""
+AI-USAGE SUMMARY
+Tools: Opus 4.7
+Overall AI Contribution: ~70%
+AI-Assisted Areas: Translated the DB column definitions into Pydantic models for the request/response surface (LabResultOut, LabResultSummary, entry/patch shapes, SignedFileUrl).
+Human Contributions: Decided what is exposed to patients vs. providers (notes/parse_error stripped on patient reads), the optional-vs-required field choices, and the patch payload structure for partial updates.
+"""
 
 from __future__ import annotations
 

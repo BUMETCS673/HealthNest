@@ -1,3 +1,11 @@
+"""
+AI-USAGE SUMMARY
+Tools: Opus 4.7
+Overall AI Contribution: ~65%
+AI-Assisted Areas: Wrote the thin wrapper around supabase-py's storage client (upload, remove, create_signed_url) and normalized the signedURL/signed_url/signedUrl response-shape inconsistency across supabase-py versions.
+Human Contributions: Bucket naming convention, 60-second signed-URL TTL choice, upsert=false to prevent silent overwrites, and the decision to keep this module dependency-only on the admin client (no business logic).
+"""
+
 from __future__ import annotations
 
 import mimetypes

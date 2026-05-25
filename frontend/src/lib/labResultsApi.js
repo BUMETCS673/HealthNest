@@ -1,3 +1,10 @@
+/**
+ * AI-USAGE SUMMARY
+ * Tools: Opus 4.7
+ * Overall AI Contribution: ~65%
+ * AI-Assisted Areas: Wrote the jsonRequest / multipartRequest fetch wrappers including the FastAPI detail-array vs string error normalization.
+ * Human Contributions: Method-level API surface (list/get/upload/patch/release/archive/fileUrl), token-pulling strategy that matches the existing authApi session shape, and the decision to keep source_format optional on upload for backwards compatibility.
+ */
 const API_URL =
   import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:8000";
 const SESSION_STORAGE_KEY = "healthnest.session";

@@ -1,3 +1,11 @@
+"""
+AI-USAGE SUMMARY
+Tools: Opus 4.7
+Overall AI Contribution: ~65%
+AI-Assisted Areas: Drafted the FastAPI route handlers, Depends injection, and the JSON response wrappers for the upload/patch/release/archive/list/get/file endpoints.
+Human Contributions: Designed the endpoint surface, picked the role-autodetect routing (provider-first then patient), defined the 400/403/422 error semantics, and wired the auto-detect sniff path with the format whitelist fallback.
+"""
+
 from __future__ import annotations
 
 from typing import Any

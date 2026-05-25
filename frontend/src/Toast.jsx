@@ -1,3 +1,10 @@
+/**
+ * AI-USAGE SUMMARY
+ * Tools: Opus 4.7
+ * Overall AI Contribution: ~55%
+ * AI-Assisted Areas: Generated the component shell, variant-to-icon mapping, and the role="status" / aria-live="polite" accessibility wiring.
+ * Human Contributions: Variant taxonomy (success/info/neutral), the leaving-prop pattern for parent-controlled fade-out, and the title+detail two-line layout rather than a single-line pill.
+ */
 import { CheckCircle2, Info, Archive } from "lucide-react";
 import "./labResults.css";
 

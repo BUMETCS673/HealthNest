@@ -1,3 +1,11 @@
+"""
+AI-USAGE SUMMARY
+Tools: Opus 4.7
+Overall AI Contribution: ~60%
+AI-Assisted Areas: Wrote the FastAPI route handlers for GET /patients (typeahead search) and GET /patients/{id} (resolution by ID), including Depends injection and response_model wiring.
+Human Contributions: Decided the endpoint is provider-only (patients should not enumerate other patients), set the limit clamp at 1-100, and chose to surface 404 vs 403 on the get-by-id path.
+"""
+
 from __future__ import annotations
 
 from typing import Any

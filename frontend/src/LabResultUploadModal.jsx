@@ -1,3 +1,10 @@
+/**
+ * AI-USAGE SUMMARY
+ * Tools: Opus 4.7
+ * Overall AI Contribution: ~65%
+ * AI-Assisted Areas: Wrote the drag-and-drop file zone, the file size formatter, the staged-file pre-load via the initialFile prop, and the modal markup using the shared lab-modal-* class vocabulary.
+ * Human Contributions: Decided to remove the source-format dropdown in favor of backend auto-detect, wired the PatientTypeahead, and shaped the success flow to immediately route into the review screen.
+ */
 import { useState } from "react";
 import { Upload, X, FileText } from "lucide-react";
 import { labResultsApi } from "./lib/labResultsApi";
@@ -10,8 +17,12 @@ function formatBytes(n) {
   return `${(n / 1024 / 1024).toFixed(2)} MB`;
 }
 
-export default function LabResultUploadModal({ onClose, onUploaded }) {
-  const [file, setFile] = useState(null);
+export default function LabResultUploadModal({
+  onClose,
+  onUploaded,
+  initialFile = null,
+}) {
+  const [file, setFile] = useState(initialFile);
   const [patient, setPatient] = useState(null);
   const [dragging, setDragging] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -52,7 +63,10 @@ export default function LabResultUploadModal({ onClose, onUploaded }) {
       <div className='lab-modal'>
         <div className='lab-modal-header'>
           <h3 className='lab-modal-title'>Upload lab result</h3>
-          <button className='lab-modal-close' onClick={onClose}>
+          <button
+            className='lab-modal-close'
+            onClick={onClose}
+            aria-label='Close'>
             <X size={18} />
           </button>
         </div>
@@ -85,13 +99,13 @@ export default function LabResultUploadModal({ onClose, onUploaded }) {
                   <strong>Drop a file</strong> or click to browse
                 </div>
                 <div className='lab-field-hint' style={{ marginTop: 4 }}>
-                  HL7 v2, FHIR JSON, or FHIR XML
+                  HL7 v2, FHIR JSON, FHIR XML, PDF, or CSV
                 </div>
               </>
             )}
             <input
               type='file'
-              accept='.hl7,.txt,.json,.xml,application/json,application/xml,text/xml'
+              accept='.hl7,.txt,.json,.xml,.pdf,.csv,application/json,application/xml,text/xml,application/pdf,text/csv'
               style={{ display: "none" }}
               onChange={(e) => setFile(e.target.files?.[0] || null)}
             />
