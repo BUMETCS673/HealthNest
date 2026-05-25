@@ -1,3 +1,12 @@
+# AI-USAGE SUMMARY 
+# Tools: Claude Code
+# Overall AI Contribution: ~60% 
+# AI-Assisted Areas: Implementing the function to retrieve providers from the database.
+# Human Contributions: Defining the business logic and integrating them with the router and schemas.
+# Notes: AI was used to help quickly set up the basic structure of our service layer and to implement
+# the core function for getting provider information.
+
+
 from typing import Any
 
 from auth.client import get_supabase

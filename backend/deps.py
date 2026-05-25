@@ -1,3 +1,12 @@
+# AI-USAGE SUMMARY 
+# Tools: Claude Code
+# Overall AI Contribution: ~40% 
+# AI-Assisted Areas: Setting up authentication dependencies, including extracting bearer token and getting current user ID.
+# Human Contributions: Implementing the logic to extract the token and retrieve user information, ensuring it fits with our authentication system.
+# Notes: AI was used to help quickly set up the basic structure of our authentication dependencies.
+
+
+
 from fastapi import Depends, Header, HTTPException, status
 
 from auth.service import get_user

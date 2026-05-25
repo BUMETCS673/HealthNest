@@ -1,3 +1,13 @@
+// AI-USAGE SUMMARY
+// Tools: Claude Code
+// Overall AI Contribution: ~60%
+// AI-Assisted Areas: Setting up the main application component, handling authentication state, and routing between
+// different pages based on user actions and URL paths.
+// Human Contributions: Defining the overall structure of the application, integrating authentication logic, and ensuring that
+// navigation and state management work correctly.
+// Notes: AI was used to help quickly set up the main application component and to implement the core logic for handling
+// authentication state and routing.
+
 import { useEffect, useState } from "react";
 import Login from "./Login";
 import Signup from "./Signup";
@@ -84,7 +94,12 @@ export default function App() {
     }
 
     if (page === "booking") {
-      return <BookingPage {...sharedProps} appointments={pageData?.appointments ?? null} />;
+      return (
+        <BookingPage
+          {...sharedProps}
+          appointments={pageData?.appointments ?? null}
+        />
+      );
     }
 
     return <PatientDashboard {...sharedProps} />;

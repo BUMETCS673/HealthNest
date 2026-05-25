@@ -1,3 +1,12 @@
+# AI-USAGE SUMMARY 
+# Tools: Claude Code
+# Overall AI Contribution: ~60% 
+# AI-Assisted Areas: Implementing the service layer for appointments, including functions to get, create, update, and cancel appointments.
+# Human Contributions: Defining the business logic for each function, ensuring they fit with our application's requirements, 
+# and integrating them with the router and schemas.
+# Notes: AI was used to help quickly set up the basic structure of our service layer and to implement the core functions for managing appointments.
+
+
 from typing import Any
 
 from fastapi import HTTPException, status
@@ -6,8 +15,23 @@ from auth.client import get_supabase
 from .schemas import AppointmentCreate, AppointmentUpdate
 
 
-# ── Helpers ─────────────────────────────────────────────────
 
+# AI-ASSISTED: YES 
+# Tool: Claude Code
+# Prompt Summary: "Could you help me implement these actions for appointments in out application: Book new appointment, 
+# View/list appointments, Cancel or reschedule, Provider availability/slots" 
+# AI Contribution: Initial draft (~60%) 
+# Modifications: 
+# - Provided buysiness logic and made adjustments to ensure it fits our application's needs. 
+# - Integrated it with the other parts of the application.
+# Verification: 
+# - So far, I've reviewed the coded and tested the actions manually. I also used out CI/CD pipeline to run automated tests 
+# to verify that the endpoints are working as expected.
+# Confidence: High. All of the code has been reviewed and tested. 
+# This note applies to get_appointments and the helper functions.
+
+
+# ── Helpers ─────────────────────────────────────────────────
 def _normalize_time(t: str) -> str:
     """Trim seconds from 'HH:MM:SS' → 'HH:MM'."""
     return ":".join(t.split(":")[:2])
@@ -20,7 +44,6 @@ def _clean(appt: dict) -> dict:
 
 
 # ── Appointments ─────────────────────────────────────────────
-
 def get_appointments(patient_id: str) -> list[dict[str, Any]]:
     result = (
         get_supabase()
@@ -34,6 +57,19 @@ def get_appointments(patient_id: str) -> list[dict[str, Any]]:
     return [_clean(a) for a in result.data]
 
 
+
+# AI-ASSISTED: YES 
+# Tool: Claude Code
+# Prompt Summary: "Could you help me implement these actions for appointments in out application: Book new appointment, 
+# View/list appointments, Cancel or reschedule, Provider availability/slots" 
+# AI Contribution: Initial draft (~60%) 
+# Modifications: 
+# - Provided buysiness logic and made adjustments to ensure it fits our application's needs. 
+# - Integrated it with the other parts of the application.
+# Verification: 
+# - So far, I've reviewed the coded and tested the actions manually. I also used out CI/CD pipeline to run automated tests 
+# to verify that the endpoints are working as expected.
+# Confidence: High. All of the code has been reviewed and tested. 
 def create_appointment(patient_id: str, payload: AppointmentCreate) -> dict[str, Any]:
     data = {
         "patient_id": patient_id,
@@ -62,6 +98,18 @@ def create_appointment(patient_id: str, payload: AppointmentCreate) -> dict[str,
     return _clean(result.data[0])
 
 
+# AI-ASSISTED: YES 
+# Tool: Claude Code
+# Prompt Summary: "Could you help me implement these actions for appointments in out application: Book new appointment, 
+# View/list appointments, Cancel or reschedule, Provider availability/slots" 
+# AI Contribution: Initial draft (~60%) 
+# Modifications: 
+# - Provided buysiness logic and made adjustments to ensure it fits our application's needs. 
+# - Integrated it with the other parts of the application.
+# Verification: 
+# - So far, I've reviewed the coded and tested the actions manually. I also used out CI/CD pipeline to run automated tests 
+# to verify that the endpoints are working as expected.
+# Confidence: High. All of the code has been reviewed and tested. 
 def update_appointment(
     appointment_id: str, patient_id: str, payload: AppointmentUpdate
 ) -> dict[str, Any]:
@@ -94,6 +142,19 @@ def update_appointment(
     return _clean(result.data[0])
 
 
+
+# AI-ASSISTED: YES 
+# Tool: Claude Code
+# Prompt Summary: "Could you help me implement these actions for appointments in out application: Book new appointment, 
+# View/list appointments, Cancel or reschedule, Provider availability/slots" 
+# AI Contribution: Initial draft (~60%) 
+# Modifications: 
+# - Provided buysiness logic and made adjustments to ensure it fits our application's needs. 
+# - Integrated it with the other parts of the application.
+# Verification: 
+# - So far, I've reviewed the coded and tested the actions manually. I also used out CI/CD pipeline to run automated tests 
+# to verify that the endpoints are working as expected.
+# Confidence: High. All of the code has been reviewed and tested. 
 def cancel_appointment(appointment_id: str, patient_id: str) -> None:
     existing = (
         get_supabase()
@@ -116,8 +177,21 @@ def cancel_appointment(appointment_id: str, patient_id: str) -> None:
     ).execute()
 
 
-# ── Provider Availability ────────────────────────────────────
 
+# AI-ASSISTED: YES 
+# Tool: Claude Code
+# Prompt Summary: "Could you help me implement these actions for appointments in out application: Book new appointment, 
+# View/list appointments, Cancel or reschedule, Provider availability/slots" 
+# AI Contribution: Initial draft (~60%) 
+# Modifications: 
+# - Provided buysiness logic and made adjustments to ensure it fits our application's needs. 
+# - Integrated it with the other parts of the application.
+# Verification: 
+# - So far, I've reviewed the coded and tested the actions manually. I also used out CI/CD pipeline to run automated tests 
+# to verify that the endpoints are working as expected.
+# Confidence: High. All of the code has been reviewed and tested. 
+
+# ── Provider Availability ────────────────────────────────────
 def get_availability() -> list[dict[str, Any]]:
     result = (
         get_supabase()
