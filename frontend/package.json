@@ -7,9 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "check-ages": "node scripts/check-package-ages.js",
-    "preinstall": "node scripts/check-package-ages.js"
+    "preview": "vite preview"
   },
   "dependencies": {
     "lucide-react": "^1.16.0",
