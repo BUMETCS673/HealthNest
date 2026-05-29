@@ -31,6 +31,10 @@ services:
       SUPABASE_SERVICE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR1dWpvZm13ZnJpY2pxZGhxbnNkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTIwMDU4OCwiZXhwIjoyMDk0Nzc2NTg4fQ.NuJ-FeYbpRpwOmKTpXOthA1-Xh3IegNy9FzSYqhmPUc
       LAB_RESULTS_KEK: hQ7p2k3Z6vJtY9bN8mF4rL5gH1xA0sQwEcD7uI8oP9k=
       CORS_ALLOWED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      OPENAI_API_KEY: ENTER-API-KEY-HERE
+      PULSE_MODEL: gpt-5.2
+      PULSE_EMBED_MODEL: text-embedding-3-small
+      PULSE_DEIDENTIFY: "false"
   db:
     image: postgres:16
     restart: always
