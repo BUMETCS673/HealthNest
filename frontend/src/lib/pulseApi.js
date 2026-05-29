@@ -75,6 +75,7 @@ async function streamMessage(
       const j = await res.json();
       detail = typeof j.detail === "string" ? j.detail : detail;
     } catch {
+      /* PLACEHOLDER */
     }
     onError?.(new Error(detail));
     return;
