@@ -7,6 +7,15 @@ export default [
   {
     ignores: ["dist", "node_modules"],
   },
+  // Node.js scripts — use node globals instead of browser globals
+  {
+    files: ["scripts/**/*.js"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      globals: globals.node,
+    },
+  },
   {
     files: ["**/*.{js,jsx}"],
     languageOptions: {
@@ -34,6 +43,7 @@ export default [
       ],
     },
   },
+  // Mock files — allow CommonJS module.exports
   {
     files: ["__mocks__/**/*.js"],
     languageOptions: {
@@ -48,6 +58,10 @@ export default [
       "**/*.test.{js,jsx}",
       "src/setupTests.js",
     ],
+  },
+  // Jest test files — allow Jest globals
+  {
+    files: ["src/__tests__/**/*.{js,jsx}", "**/*.test.{js,jsx}"],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",

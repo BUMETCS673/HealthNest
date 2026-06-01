@@ -1,4 +1,4 @@
 /*
- * To handle css files
- */
+To handle css files
+*/
 module.exports = {};
