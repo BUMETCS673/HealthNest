@@ -71,6 +71,7 @@ export default function App() {
 
   const handleSignOut = () => {
     authApi.signOut();
+    setSession(null);
     setPage("dashboard");
     setPageData(null);
     window.history.pushState(null, "", "/");
@@ -89,7 +90,7 @@ export default function App() {
   };
 
   if (session) {
-    const role = session.user?.user_metadata?.role ?? "patient";
+    const role = session.user?.user_metadata?.role ?? session.user?.raw_user_meta_data?.role ?? "patient";
     const sharedProps = {
       user: session.user,
       onNavigate: handleNavigate,
