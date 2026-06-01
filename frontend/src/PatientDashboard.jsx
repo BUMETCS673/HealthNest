@@ -24,6 +24,7 @@ import { labResultsApi } from "./lib/labResultsApi";
 import PatientLabResultsPage from "./PatientLabResultsPage";
 import LabResultDetail from "./LabResultDetail";
 import { usePulse } from "./pulse/PulseProvider";
+import { authApi } from "./lib/authApi";
 
 function formatRole(role) {
   if (!role) return "Patient";
@@ -233,6 +234,27 @@ export default function PatientDashboard({ user, onNavigate, onSignOut, pageData
             </button>
             {menuOpen && (
               <div className="dash-user-menu" role="menu">
+                <button
+                  type="button"
+                  className="dash-user-menu-item"
+                  onClick={async () => {
+                    setMenuOpen(false);
+                    try {
+                      const session = authApi.getSession();
+                      if (!session?.access_token) {
+                        alert("Passkey already enabled for this account.");
+                        return;
+                      }
+                      await authApi.enableBiometricLogin();
+                      alert("Biometric login enabled for this device.");
+                    } catch (e) {
+                      alert("Unable to enable biometric login: " + (e.message || e));
+                    }
+                  }}
+                  role="menuitem"
+                >
+                  Enable biometric login
+                </button>
                 <button
                   type="button"
                   className="dash-user-menu-item"

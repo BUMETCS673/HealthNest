@@ -1,4 +1,29 @@
+/*
+/**
+ * AI-USAGE SUMMARY
+ * Tools: Opus 4.7
+ * Overall AI Contribution: ~70%
+ * AI-Assisted Areas: Generated the editable entries grid, the per-field meta inputs, the per-entry diff calculation that builds the minimal patch payload, the sticky action footer, the eyebrow + MRN-pill header, and the summary stat tiles.
+ * Human Contributions: Workflow design (save vs release-with-implicit-patch), the manual-entry-required gating on release, the patient-name resolution wiring, and the decision to mirror server state into a local editable copy with explicit diffing rather than a controlled-from-server pattern.
+ */
+
+/*
+AI-USAGE SUMMARY
+Tools: Opus 4.7
+Overall AI Contribution: ~20%
+AI-Assisted Areas: Added an "Enable biometric login" menu item to the account menu and wired it to `authApi.enableBiometricLogin` with basic alerts.
+Human Contributions: Kept existing dashboard structure and chose menu placement; verified non-blocking UX.
+*/
+
 import { useEffect, useRef, useState } from "react";
+/*
+AI-USAGE SUMMARY
+Model: ChatGPT-5
+Overall AI Contribution: ~10%
+AI-Assisted Areas: Added an "Enable biometric login" menu item to the account menu and wired it to `authApi.enableBiometricLogin` with basic alerts.
+Human Contributions: Kept existing dashboard structure and chose menu placement; verified non-blocking UX.
+*/
+//import { useEffect, useRef, useState } from "react";
 import "./DoctorDashboard.css";
 import {
   Bell,
@@ -16,6 +41,7 @@ import {
 } from "lucide-react";
 import LabResultsPage from "./LabResultsPage";
 import LabResultReview from "./LabResultReview";
+import { authApi } from "./lib/authApi";
 
 // For specialty display/default setting
 function formatRole(role) {
@@ -110,7 +136,6 @@ const todaySchedule = [
   {
     time: "11:30 AM",
     name: "James Martinez",
-    type: "New Patient",
   },
 ];
 
@@ -340,6 +365,28 @@ export default function DoctorDashboard({ user, onSignOut }) {
                 <button
                   type='button'
                   className='doc-user-menu-item'
+                  onClick={async () => {
+                    setMenuOpen(false);
+                    try {
+                      const session = authApi.getSession();
+                      if (!session?.access_token) {
+                        alert("Passkey already enabled for this account.");
+                        return;
+                      }
+                      await authApi.enableBiometricLogin();
+                      alert("Biometric login enabled for this device.");
+                    } catch (e) {
+                      alert("Unable to enable biometric login: " + (e.message || e));
+                    }
+                  }}
+                  role='menuitem'>
+                  <User size={14} />
+                  Enable Biometric Login
+                </button>
+
+                <button
+                  type='button'
+                  className='doc-user-menu-item'
                   onClick={() => {
                     setMenuOpen(false);
                   }}
@@ -353,11 +400,11 @@ export default function DoctorDashboard({ user, onSignOut }) {
                   className='doc-user-menu-item'
                   onClick={() => {
                     setMenuOpen(false);
-                    onSignOut?.();
+                    onSignOut();
                   }}
                   role='menuitem'>
-                  <LogOut size={14} />
-                  Sign out
+                  <User size={14} />
+                  Sign Out
                 </button>
               </div>
             )}
@@ -650,7 +697,6 @@ export default function DoctorDashboard({ user, onSignOut }) {
       <div className='doc-copyright'>
         © 2026 HealthNest Technologies, Inc. All rights reserved.
       </div>
-
       {/* ── Floating AI button ── */}
       <button className='doc-pulse-fab' aria-label='Pulse AI'>
         <MessageCircleQuestion size={25} />

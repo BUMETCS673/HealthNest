@@ -1,3 +1,11 @@
+/*
+AI-USAGE SUMMARY
+Model: ChatGPT-5
+Overall AI Contribution: ~45%
+AI-Assisted Areas: Added WebAuthn helpers (`_b64ToBuffer`, `_bufferToB64`) and the `enableBiometricLogin` / `signInBiometric` flows that convert ArrayBuffers and call backend endpoints.
+Human Contributions: Preserved existing session read/write logic and error handling; integrated flows to reuse existing `request` helper.
+*/
+
 const API_URL =
   import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:8000";
 const SESSION_STORAGE_KEY = "healthnest.session";
@@ -97,5 +105,92 @@ export const authApi = {
       writeStoredSession(null);
       return null;
     }
+  },
+
+  // --- WebAuthn / Biometric helpers ---
+  _b64ToBuffer(b64url) {
+    const padding = "=".repeat((4 - (b64url.length % 4)) % 4);
+    const base64 = b64url.replace(/-/g, "+").replace(/_/g, "/") + padding;
+    const raw = atob(base64);
+    const buf = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; ++i) buf[i] = raw.charCodeAt(i);
+    return buf.buffer;
+  },
+
+  _bufferToB64(buf) {
+    const bytes = new Uint8Array(buf);
+    let binary = "";
+    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+    const b64 = btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    return b64;
+  },
+
+  async enableBiometricLogin() {
+    // Requires current session (user must be signed in)
+    const session = readStoredSession();
+    if (!session?.access_token) throw new Error("Not signed in");
+
+    // Start registration
+    const start = await request("/auth/biometric/register/start", {
+      method: "POST",
+      token: session.access_token,
+    });
+
+    const publicKey = start.options;
+    // Convert challenge and user.id from base64url to ArrayBuffer
+    publicKey.challenge = this._b64ToBuffer(publicKey.challenge);
+    if (publicKey.user && publicKey.user.id)
+      publicKey.user.id = this._b64ToBuffer(publicKey.user.id);
+    publicKey.userVerification = "discouraged";
+    const credential = await navigator.credentials.create({ publicKey });
+    if (!credential) throw new Error("Credential creation cancelled");
+
+    // Prepare credential for server (convert ArrayBuffers to base64url)
+    const clientDataJSON = this._bufferToB64(credential.response.clientDataJSON);
+    const attestation = this._bufferToB64(credential.response.attestationObject);
+
+    const res = await request("/auth/biometric/register/finish", {
+      method: "POST",
+      token: session.access_token,
+      body: { credential: { id: credential.id, rawId: this._bufferToB64(credential.rawId), response: { clientDataJSON, attestation }, type: credential.type } },
+    });
+    return res;
+  },
+
+  async signInBiometric(email) {
+    if (!email) throw new Error("Email required for biometric sign-in");
+    const start = await request("/auth/biometric/login/start", {
+      method: "POST",
+      body: { email },
+    });
+
+    const publicKey = start.options;
+    publicKey.challenge = this._b64ToBuffer(publicKey.challenge);
+    if (publicKey.allowCredentials)
+      publicKey.allowCredentials = publicKey.allowCredentials.map((c) => ({ ...c, id: this._b64ToBuffer(c.id) }));
+    publicKey.userVerification = "discouraged";
+    let assertion;
+    try {
+      assertion = await Promise.race([
+        navigator.credentials.get({ publicKey }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Passkey timed out after 30s")), 30000))
+      ]);
+    } catch (err) {
+      throw err;
+    }
+    if (!assertion) throw new Error("Credential assertion cancelled");
+
+    const authData = this._bufferToB64(assertion.response.authenticatorData);
+    const clientDataJSON = this._bufferToB64(assertion.response.clientDataJSON);
+    const signature = this._bufferToB64(assertion.response.signature);
+    const userHandle = assertion.response.userHandle ? this._bufferToB64(assertion.response.userHandle) : null;
+
+    const res = await request("/auth/biometric/login/finish", {
+      method: "POST",
+      body: { email, credential: { id: assertion.id, rawId: this._bufferToB64(assertion.rawId), response: { authenticatorData: authData, clientDataJSON, signature, userHandle }, type: assertion.type } },
+    });
+
+    if (res.session) writeStoredSession(res.session);
+    return res;
   },
 };
