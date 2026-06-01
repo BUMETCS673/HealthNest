@@ -170,14 +170,10 @@ export const authApi = {
       publicKey.allowCredentials = publicKey.allowCredentials.map((c) => ({ ...c, id: this._b64ToBuffer(c.id) }));
     publicKey.userVerification = "discouraged";
     let assertion;
-    try {
       assertion = await Promise.race([
         navigator.credentials.get({ publicKey }),
         new Promise((_, reject) => setTimeout(() => reject(new Error("Passkey timed out after 30s")), 30000))
       ]);
-    } catch (err) {
-      throw err;
-    }
     if (!assertion) throw new Error("Credential assertion cancelled");
 
     const authData = this._bufferToB64(assertion.response.authenticatorData);
