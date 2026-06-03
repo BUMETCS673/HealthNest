@@ -10,12 +10,13 @@ from .base import AISkill, Reply, SkillContext, SkillScope, SkillSpec
 from .registry import SkillRegistry, default_registry
 from .appointments_skill import AppointmentsSkill
 from .lab_results_skill import LabResultsSkill
-
+from .visit_overview_skill import VisitOverviewSkill
 
 def _bootstrap() -> SkillRegistry:
     reg = default_registry()
     reg.register(AppointmentsSkill())
     reg.register(LabResultsSkill())
+    reg.register(VisitOverviewSkill())
     return reg
 
 
@@ -31,5 +32,6 @@ __all__ = [
     "SkillRegistry",
     "SkillScope",
     "SkillSpec",
+    "VisitOverviewSkill",
     "registry",
 ]
