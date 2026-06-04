@@ -12,7 +12,10 @@ import {
   FileText,
   AlertCircle,
   MessageCircleQuestion,
+  FlaskConical,
 } from "lucide-react";
+import LabResultsPage from "./LabResultsPage";
+import LabResultReview from "./LabResultReview";
 
 // For specialty display/default setting
 function formatRole(role) {
@@ -195,6 +198,9 @@ export default function DoctorDashboard({ user, onSignOut }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
+  const [view, setView] = useState("home");
+  const [activeLabId, setActiveLabId] = useState(null);
+
   // closes the profile menu if the user clicks outside of it.
   useEffect(() => {
     if (!menuOpen) return undefined;
@@ -274,8 +280,13 @@ export default function DoctorDashboard({ user, onSignOut }) {
           </span>
 
           {navOption.map((option) => {
-            const buttonClass =
-              option === "Dashboard" ? "doc-nav-link active" : "doc-nav-link";
+            const isLabsView = view !== "home";
+            const isActive =
+              (option === "Patient Records" && isLabsView) ||
+              (option === "Dashboard" && !isLabsView);
+            const buttonClass = isActive
+              ? "doc-nav-link active"
+              : "doc-nav-link";
 
             const showMessageBadge =
               option === "Messages" && unreadMessages > 0;
@@ -397,6 +408,14 @@ export default function DoctorDashboard({ user, onSignOut }) {
                   {signNotesCount > 0 && (
                     <span className="doc-action-count">{signNotesCount}</span>
                   )}
+                </button>
+
+                <button
+                  className="doc-action-btn"
+                  onClick={() => setView("labs")}
+                >
+                  <FlaskConical size={14} />
+                  Lab Results
                 </button>
 
                 <button

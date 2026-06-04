@@ -15,6 +15,9 @@ import {
   ChevronDown,
   LogOut,
 } from "lucide-react";
+import { labResultsApi } from "./lib/labResultsApi";
+import PatientLabResultsPage from "./PatientLabResultsPage";
+import LabResultDetail from "./LabResultDetail";
 
 function formatRole(role) {
   if (!role) return "Patient";
@@ -131,6 +134,15 @@ export default function PatientDashboard({
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [menuOpen]);
 
+  useEffect(() => {
+    labResultsApi
+      .list({ limit: 10 })
+      .then((rows) => setLabRows(rows || []))
+      .catch(() => setLabRows([]));
+  }, [view]);
+
+  const labResult = summarizeForCard(labRows);
+
   const today = new Date();
   const dateFormat = today.toLocaleDateString("en-US", {
     weekday: "long",
@@ -168,11 +180,21 @@ export default function PatientDashboard({
           </span>
 
           {navOption.map((option) => {
-            const buttonClass =
-              option === "Dashboard" ? "dash-nav-link active" : "dash-nav-link";
+            const isLabsView = view !== "home";
+            const isActive =
+              (option === "Records" && isLabsView) ||
+              (option === "Dashboard" && !isLabsView);
+            const buttonClass = isActive
+              ? "dash-nav-link active"
+              : "dash-nav-link";
 
             const showMessageBadge =
               option === "Messages" && unreadMessages > 0;
+
+            const onClick = () => {
+              if (option === "Dashboard") setView("home");
+              else if (option === "Records") setView("labs");
+            };
 
             return (
               <button
@@ -382,47 +404,31 @@ export default function PatientDashboard({
                 <div className="dash-card">
                   <div className="dash-card-header">
                     <h3 className="dash-card-title">Recent Labs</h3>
-                    <button
-                      className="dash-view-all"
-                      onClick={() => setView("labs")}
-                    >
-                      View all
-                    </button>
+                    <button className="dash-view-all">View all</button>
                   </div>
-                  {labResult.length === 0 ? (
-                    <div className="dash-lab-row">
-                      <div className="dash-lab-name-wrap">
-                        <p className="dash-lab-name">No results yet</p>
-                      </div>
-                      <span className="dash-lab-status">—</span>
-                    </div>
-                  ) : (
-                    labResult.map((lab) => {
-                      let labNameClass = "dash-lab-name";
-                      let labStatusClass = "dash-lab-status";
-                      if (lab.flag) {
-                        labNameClass = "dash-lab-name flagged";
-                        labStatusClass = "dash-lab-status flagged";
-                      }
-                      return (
-                        <div
-                          key={lab.id}
-                          className="dash-lab-row"
-                          style={{ cursor: "pointer" }}
-                          onClick={() => {
-                            setActiveLabId(lab.id);
-                            setView("lab-detail");
-                          }}
-                        >
-                          <div className="dash-lab-name-wrap">
-                            {lab.flag && <span className="dash-lab-dot"></span>}
-                            <p className={labNameClass}>{lab.test}</p>
-                          </div>
-                          <span className={labStatusClass}>{lab.result}</span>
+                  {labResult.map((lab) => {
+                    let labNameClass = "dash-lab-name";
+                    let labStatusClass = "dash-lab-status";
+
+                    if (lab.flag) {
+                      labNameClass = "dash-lab-name flagged";
+                      labStatusClass = "dash-lab-status flagged";
+                    }
+                    {
+                      /* flag lab result*/
+                    }
+                    return (
+                      <div key={lab.test} className="dash-lab-row">
+                        <div className="dash-lab-name-wrap">
+                          {lab.flag && <span className="dash-lab-dot"></span>}
+
+                          <p className={labNameClass}>{lab.test}</p>
                         </div>
-                      );
-                    })
-                  )}
+
+                        <span className={labStatusClass}>{lab.result}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
