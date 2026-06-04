@@ -471,9 +471,9 @@ export default function DoctorDashboard({ user, onSignOut }) {
             const onClick = () => {
               if (option === "Dashboard") setView("home");
               else if (option === "Patient Records") setView("labs");
-              else if (option === "Messages") onNavigate?.("messages");
-              else if (option === "Schedule") onNavigate?.("schedule");
-              else if (option === "Pulse AI") onNavigate?.("pulse");
+              else if (option === "Messages") setView("messages");
+              else if (option === "Schedule") setView("schedule");
+              else if (option === "Pulse AI") setView("pulse");
             };
 
             return (
