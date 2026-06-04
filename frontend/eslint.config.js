@@ -52,7 +52,13 @@ export default [
       globals: globals.node,
     },
   },
-
+  {
+    files: [
+      "src/__test__/**/*.{js,jsx}",
+      "**/*.test.{js,jsx}",
+      "src/setupTests.js",
+    ],
+  },
   // Jest test files — allow Jest globals
   {
     files: ["src/__tests__/**/*.{js,jsx}", "**/*.test.{js,jsx}"],

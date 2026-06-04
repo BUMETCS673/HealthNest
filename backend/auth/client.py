@@ -1,10 +1,15 @@
+import logging
 import os
+from typing import Any, Callable, TypeVar
 
 from supabase import Client, create_client
 
 
+_log = logging.getLogger(__name__)
 _client: Client | None = None
 _admin_client: Client | None = None
+
+T = TypeVar("T")
 
 
 def get_supabase() -> Client:
@@ -31,3 +36,34 @@ def get_supabase_admin() -> Client:
             )
         _admin_client = create_client(url, key)
     return _admin_client
+
+
+def reset_supabase_admin() -> None:
+    global _admin_client
+    _admin_client = None
+
+
+def _is_disconnect_error(exc: BaseException) -> bool:
+    name = type(exc).__name__
+    if name in {"RemoteProtocolError", "ConnectError", "ReadError", "WriteError"}:
+        return True
+    msg = str(exc).lower()
+    return (
+        "server disconnected" in msg
+        or "connection reset" in msg
+        or "remote protocol" in msg
+        or "connection terminated" in msg
+    )
+
+
+def with_admin_retry(fn: Callable[..., T], *args: Any, **kwargs: Any) -> T:
+    try:
+        return fn(*args, **kwargs)
+    except Exception as exc:  # noqa: BLE001
+        if not _is_disconnect_error(exc):
+            raise
+        _log.warning(
+            "admin client disconnect on %s; resetting + retrying once", fn.__name__
+        )
+        reset_supabase_admin()
+        return fn(*args, **kwargs)

@@ -1,10 +1,10 @@
-# AI-USAGE SUMMARY 
-# Tools: Claude Code
-# Overall AI Contribution: ~40% 
-# AI-Assisted Areas: Setting up the FastAPI application, configuring CORS middleware, and including routers for different modules.
+# AI-USAGE SUMMARY
+# Tools: Claude Code, Opus 4.7
+# Overall AI Contribution: ~40%
+# AI-Assisted Areas: Setting up the FastAPI application, configuring CORS middleware, and including routers for different modules. Opus 4.7 added the ai_router include for SCRUM-39 (Pulse AI Patient-Facing Assistant).
 # Human Contributions: Defining the structure of the application, integrating different components, and ensuring that environment
-# variables are handled correctly.
-# Notes: AI was used to help quickly set up the basic structure of our FastAPI application and to configure CORS middleware. 
+# variables are handled correctly. Reviewed the ai_router include alongside the other module includes to confirm registration order doesn't matter here.
+# Notes: AI was used to help quickly set up the basic structure of our FastAPI application and to configure CORS middleware.
 
 
 import os

@@ -1,10 +1,10 @@
 // AI-USAGE SUMMARY
-// Tools: Claude Code
+// Tools: Claude Code, Opus 4.7
 // Overall AI Contribution: ~60%
 // AI-Assisted Areas: Setting up the main application component, handling authentication state, and routing between
-// different pages based on user actions and URL paths.
+// different pages based on user actions and URL paths. Opus 4.7 added the /pulse route, wrapped the signed-in tree in PulseProvider, and mounted the PulseDrawer once at App level so any patient page can open it.
 // Human Contributions: Defining the overall structure of the application, integrating authentication logic, and ensuring that
-// navigation and state management work correctly.
+// navigation and state management work correctly. Owned the decision to mount the drawer at App level (portal-style) so the conversation state survives navigating between dashboard / appointments / pulse routes.
 // Notes: AI was used to help quickly set up the main application component and to implement the core logic for handling
 // authentication state and routing.
 
@@ -74,19 +74,29 @@ export default function App() {
 
   const handleSignOut = () => {
     authApi.signOut();
+    setSession(null);
     setPage("dashboard");
     setPageData(null);
     window.history.pushState(null, "", "/");
   };
 
   const handleNavigate = (newPage, data = null) => {
+    if (newPage === "labs") {
+      setPage("dashboard");
+      setPageData({ intent: "labs", ...(data || {}) });
+      window.history.pushState(null, "", "/");
+      return;
+    }
     setPage(newPage);
     setPageData(data);
     window.history.pushState(null, "", PAGE_TO_PATH[newPage] ?? "/");
   };
 
   if (session) {
-    const role = session.user?.user_metadata?.role ?? "patient";
+    const role =
+      session.user?.user_metadata?.role ??
+      session.user?.raw_user_meta_data?.role ??
+      "patient";
     const sharedProps = {
       user: session.user,
       onNavigate: handleNavigate,

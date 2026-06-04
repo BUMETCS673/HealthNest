@@ -1,3 +1,8 @@
+// AI-USAGE SUMMARY
+// Tools: Claude Code, Opus 4.7
+// Overall AI Contribution: ~55%
+// AI-Assisted Areas: Original dashboard layout and summary cards (Claude Code); Opus 4.7 wired the Pulse AI entry points (top-nav button, banner CTA, floating FAB) into the new PulseProvider hooks.
+// Human Contributions: Owned the data-source decisions (appointments + labs), the role-based gating, and the decision to wire ALL three Pulse entry points to the same drawer state so promotion to the full workspace is one click anywhere on the page.
 import { useEffect, useRef, useState } from "react";
 import "./PatientDashboard.css";
 import { appointmentsApi, apptToDisplayRow } from "./lib/appointmentsApi";
@@ -18,6 +23,8 @@ import {
 import { labResultsApi } from "./lib/labResultsApi";
 import PatientLabResultsPage from "./PatientLabResultsPage";
 import LabResultDetail from "./LabResultDetail";
+import { usePulse } from "./pulse/PulseProvider";
+import { authApi } from "./lib/authApi";
 
 function formatRole(role) {
   if (!role) return "Patient";
@@ -90,6 +97,7 @@ export default function PatientDashboard({
   pageData,
 }) {
   const currentUser = deriveCurrentUser(user);
+  const pulse = usePulse();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const [upcomingAppoint, setUpcomingAppoint] = useState([]);
@@ -191,11 +199,6 @@ export default function PatientDashboard({
             const showMessageBadge =
               option === "Messages" && unreadMessages > 0;
 
-            const onClick = () => {
-              if (option === "Dashboard") setView("home");
-              else if (option === "Records") setView("labs");
-            };
-
             return (
               <button
                 key={option}
@@ -243,6 +246,29 @@ export default function PatientDashboard({
             </button>
             {menuOpen && (
               <div className="dash-user-menu" role="menu">
+                <button
+                  type="button"
+                  className="dash-user-menu-item"
+                  onClick={async () => {
+                    setMenuOpen(false);
+                    try {
+                      const session = authApi.getSession();
+                      if (!session?.access_token) {
+                        alert("Passkey already enabled for this account.");
+                        return;
+                      }
+                      await authApi.enableBiometricLogin();
+                      alert("Biometric login enabled for this device.");
+                    } catch (e) {
+                      alert(
+                        "Unable to enable biometric login: " + (e.message || e),
+                      );
+                    }
+                  }}
+                  role="menuitem"
+                >
+                  Enable biometric login
+                </button>
                 <button
                   type="button"
                   className="dash-user-menu-item"
@@ -502,10 +528,15 @@ export default function PatientDashboard({
       <div className="dash-copyright">
         © 2026 HealthNest Technologies, Inc. All rights reserved.
       </div>
-      {/* ── Floating AI button ── */}
-      <button className="dash-pulse-fab">
-        <MessageCircleQuestion size={25} />
-      </button>
+      {!pulse.drawerOpen && (
+        <button
+          className="dash-pulse-fab"
+          onClick={() => pulse.openDrawer()}
+          aria-label="Open Pulse AI"
+        >
+          <MessageCircleQuestion size={25} />
+        </button>
+      )}
     </div>
   );
 }
