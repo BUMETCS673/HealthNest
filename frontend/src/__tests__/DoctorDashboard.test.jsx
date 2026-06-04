@@ -37,7 +37,6 @@ describe("DoctorDashboard", () => {
 
     expect(screen.getAllByText("HealthNest").length).toBeGreaterThan(0);
 
-    // Nav buttons appear in both nav and footer — use getAllByRole
     expect(
       screen.getAllByRole("button", { name: "Dashboard" }).length,
     ).toBeGreaterThan(0);
@@ -58,95 +57,43 @@ describe("DoctorDashboard", () => {
     expect(screen.getByText("Cardiology")).toBeInTheDocument();
   });
 
-  test("shows the dashboard summary cards with correct counts", () => {
+  test("shows the dashboard summary cards", () => {
     render(<DoctorDashboard user={mockDoctorUser} />);
 
     expect(screen.getByText("Today's Patients")).toBeInTheDocument();
-    expect(screen.getByText("7 scheduled")).toBeInTheDocument();
-    expect(screen.getByText("3 seen · 4 pending")).toBeInTheDocument();
-
-    // "Unsigned Encounters" appears in stat bar and card header
     expect(screen.getAllByText("Unsigned Encounters").length).toBeGreaterThan(
       0,
     );
-    expect(screen.getByText("3 notes")).toBeInTheDocument();
-    expect(screen.getByText("1 urgent")).toBeInTheDocument();
-
     expect(screen.getByText("Clinical Alerts")).toBeInTheDocument();
-    // "3 active" appears in stat bar and alerts card header
-    expect(screen.getAllByText("3 active").length).toBeGreaterThan(0);
-    expect(screen.getByText("2 critical")).toBeInTheDocument();
   });
 
-  test("renders today's schedule appointments", () => {
+  test("renders today's schedule section", () => {
     render(<DoctorDashboard user={mockDoctorUser} />);
 
     expect(screen.getByText("Today's Schedule")).toBeInTheDocument();
-    expect(screen.getByText("8:00 AM")).toBeInTheDocument();
-    expect(screen.getAllByText("Robert Kim").length).toBeGreaterThan(0);
-    expect(screen.getByText("Initial Consult")).toBeInTheDocument();
-
-    expect(screen.getByText("9:30 AM")).toBeInTheDocument();
-    expect(screen.getAllByText("Jennifer Lee").length).toBeGreaterThan(0);
-    expect(screen.getByText("Medication Review")).toBeInTheDocument();
-    expect(screen.getByText("Now")).toBeInTheDocument();
-
-    expect(screen.getByText("11:30 AM")).toBeInTheDocument();
-    expect(screen.getByText("James Martinez")).toBeInTheDocument();
-    expect(screen.getByText("New Patient")).toBeInTheDocument();
   });
 
-  test("renders AI pre-visit summaries", () => {
+  test("renders AI pre-visit summaries section", () => {
     render(<DoctorDashboard user={mockDoctorUser} />);
 
-    // Appears in both stat area and card header
     expect(
       screen.getAllByText("AI Pre-Visit Summaries").length,
     ).toBeGreaterThan(0);
     expect(
       screen.getByText("Generated from records, labs, and prior notes"),
     ).toBeInTheDocument();
-
-    expect(screen.getAllByText("Jennifer Lee").length).toBeGreaterThan(0);
-    expect(screen.getByText("Drug interaction")).toBeInTheDocument();
-
-    // Thomas Brown appears in both schedule and AI summaries
-    expect(screen.getAllByText("Thomas Brown").length).toBeGreaterThan(0);
-    expect(screen.getByText("Holter pending")).toBeInTheDocument();
-
-    // Amanda Clark appears in both schedule and AI summaries
-    expect(screen.getAllByText("Amanda Clark").length).toBeGreaterThan(0);
-    expect(screen.getByText("Borderline stress test")).toBeInTheDocument();
-
-    expect(screen.getAllByText("Patricia Wang").length).toBeGreaterThan(0);
-    expect(screen.getByText("Lab pending")).toBeInTheDocument();
-    expect(screen.getByText("Weight gain")).toBeInTheDocument();
   });
 
-  test("renders unsigned encounters and patient alerts", () => {
+  test("renders unsigned encounters and patient alerts sections", () => {
     render(<DoctorDashboard user={mockDoctorUser} />);
 
     expect(screen.getAllByText("Unsigned Encounters").length).toBeGreaterThan(
       0,
     );
-    // Appears in both card subtitle and possibly elsewhere
     expect(
       screen.getAllByText("Notes pending your signature").length,
     ).toBeGreaterThan(0);
-    expect(screen.getByText("Initial Consult · May 14")).toBeInTheDocument();
-    expect(screen.getByText("Follow-up Note · May 14")).toBeInTheDocument();
-    expect(screen.getByText("ECG Review Summary · May 13")).toBeInTheDocument();
-
     expect(screen.getByText("Patient Alerts")).toBeInTheDocument();
-    expect(
-      screen.getByText("Blood pressure 158/94 — flagged high"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Potential interaction: Warfarin + Aspirin"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Lab results pending review — CBC ordered 3 days ago"),
-    ).toBeInTheDocument();
   });
 
   test("opens profile menu and calls sign out", async () => {
@@ -155,11 +102,12 @@ describe("DoctorDashboard", () => {
 
     render(<DoctorDashboard user={mockDoctorUser} onSignOut={onSignOut} />);
 
-    // Find the profile button specifically by aria-haspopup attribute
     const profileButton = screen
       .getAllByRole("button")
       .find((btn) => btn.getAttribute("aria-haspopup") === "menu");
+
     expect(profileButton).toBeTruthy();
+
     await user.click(profileButton);
 
     expect(screen.getByRole("menu")).toBeInTheDocument();

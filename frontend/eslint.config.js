@@ -7,6 +7,7 @@ export default [
   {
     ignores: ["dist", "node_modules"],
   },
+  // Node.js scripts — use node globals instead of browser globals
   {
     files: ["scripts/**/*.js"],
     languageOptions: {
@@ -53,17 +54,20 @@ export default [
   },
   {
     files: [
-      "src/__tests__/**/*.{js,jsx}",
+      "src/__test__/**/*.{js,jsx}",
       "**/*.test.{js,jsx}",
       "src/setupTests.js",
     ],
+  },
+  // Jest test files — allow Jest globals
+  {
+    files: ["src/__tests__/**/*.{js,jsx}", "**/*.test.{js,jsx}"],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
       globals: {
         ...globals.browser,
         ...globals.jest,
-        vi: "readonly",
       },
       parserOptions: {
         ecmaFeatures: {

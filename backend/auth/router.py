@@ -1,3 +1,11 @@
+"""
+AI-USAGE SUMMARY
+Model: ChatGPT-5
+Overall AI Contribution: ~50%
+AI-Assisted Areas: Added `/auth/biometric/*` FastAPI routes and wired them to new service functions; kept existing auth endpoints untouched.
+Human Contributions: Ensured bearer token enforcement and response models follow current project patterns.
+"""
+
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 
 from . import service
@@ -6,6 +14,11 @@ from .schemas import (
     RefreshRequest,
     SignInRequest,
     SignUpRequest,
+)
+from .schemas import (
+    BiometricLoginStartRequest,
+    BiometricRegisterFinishRequest,
+    BiometricLoginFinishRequest,
 )
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -28,6 +41,29 @@ def signup(payload: SignUpRequest) -> AuthResponse:
 @router.post("/signin", response_model=AuthResponse)
 def signin(payload: SignInRequest) -> AuthResponse:
     return AuthResponse(**service.sign_in(payload))
+
+
+# --- Biometric / WebAuthn routes ---
+@router.post("/biometric/register/start")
+def biometric_register_start(token: str = Depends(_bearer_token)) -> dict:
+    return service.start_biometric_registration(token)
+
+
+@router.post("/biometric/register/finish")
+def biometric_register_finish(
+    payload: BiometricRegisterFinishRequest, token: str = Depends(_bearer_token)
+) -> dict:
+    return service.finish_biometric_registration(token, payload)
+
+
+@router.post("/biometric/login/start")
+def biometric_login_start(payload: BiometricLoginStartRequest) -> dict:
+    return service.start_biometric_login(payload)
+
+
+@router.post("/biometric/login/finish", response_model=AuthResponse)
+def biometric_login_finish(payload: BiometricLoginFinishRequest) -> AuthResponse:
+    return AuthResponse(**service.finish_biometric_login(payload))
 
 
 @router.post("/signout", status_code=status.HTTP_204_NO_CONTENT)
