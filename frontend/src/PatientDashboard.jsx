@@ -34,7 +34,6 @@ function deriveCurrentUser(user) {
   };
 }
 
-
 const activeMed = [
   {
     name: "Lisinopril",
@@ -56,16 +55,23 @@ const activeMed = [
   },
 ];
 
-const labResult = [
-  { test: "CBC Panel", result: "Normal", flag: false },
-  { test: "HbA1c", result: "6.4%", flag: true }, // example of how a not normal lab result looks like
-  { test: "Lipid Panel", result: "Normal", flag: false },
-  { test: "TSH", result: "Normal", flag: false },
-];
+function summarizeForCard(rows) {
+  return (rows || []).slice(0, 4).map((r) => ({
+    id: r.id,
+    test: r.lab_name,
+    result: new Date(
+      r.resulted_at || r.released_at || r.created_at,
+    ).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+    flag: false,
+  }));
+}
 
 function SummaryCard({ icon, label, value, detail, onClick }) {
   return (
-    <div className={`summ-card${onClick ? " summ-card--clickable" : ""}`} onClick={onClick}>
+    <div
+      className={`summ-card${onClick ? " summ-card--clickable" : ""}`}
+      onClick={onClick}
+    >
       <div className="summ-icon">{icon}</div>
       <p className="summ-label">{label}</p>
       <p className="summ-value">{value}</p>
@@ -74,14 +80,20 @@ function SummaryCard({ icon, label, value, detail, onClick }) {
   );
 }
 
-export default function PatientDashboard({ user, onNavigate, onSignOut }) {
+export default function PatientDashboard({
+  user,
+  onNavigate,
+  onSignOut,
+  pageData,
+}) {
   const currentUser = deriveCurrentUser(user);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const [upcomingAppoint, setUpcomingAppoint] = useState([]);
 
   useEffect(() => {
-    appointmentsApi.getAppointments()
+    appointmentsApi
+      .getAppointments()
       .then((data) => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -96,6 +108,17 @@ export default function PatientDashboard({ user, onNavigate, onSignOut }) {
       })
       .catch(() => {});
   }, []);
+
+  const [view, setView] = useState(() => {
+    if (pageData?.intent === "labs" && pageData.labResultId)
+      return "lab-detail";
+    if (pageData?.intent === "labs") return "labs";
+    return "home";
+  });
+  const [activeLabId, setActiveLabId] = useState(
+    () => pageData?.labResultId ?? null,
+  );
+  const [labRows, setLabRows] = useState([]);
 
   useEffect(() => {
     if (!menuOpen) return undefined;
@@ -156,7 +179,12 @@ export default function PatientDashboard({ user, onNavigate, onSignOut }) {
                 key={option}
                 className={buttonClass}
                 onClick={() => {
-                  if (option === "Appointments") onNavigate?.("appointments");
+                  if (option === "Dashboard") setView("home");
+                  else if (option === "Records") setView("labs");
+                  else if (option === "Appointments")
+                    onNavigate?.("appointments");
+                  else if (option === "Pulse AI") onNavigate?.("pulse");
+                  else if (option === "Messages") onNavigate?.("messages");
                 }}
               >
                 {option}
@@ -213,167 +241,215 @@ export default function PatientDashboard({ user, onNavigate, onSignOut }) {
 
       {/* ── Main content ── */}
       <main className="dash-main">
-        {/*  Header */}
-        <div className="dash-header">
-          <div>
-            <p className="dash-date">{dateFormat}</p>
-            <h1 className="dash-greeting">
-              {greetingMes}, {currentUser.firstName}
-            </h1>
-          </div>
-          <button
-            className="dash-book-btn"
-            onClick={() => onNavigate?.("booking")}
-          >
-            <Plus size={16} /> Book Appointment
-          </button>
-        </div>
-
-        {/* Top Four cards */}
-        <div className="dash-sumcard">
-          <SummaryCard
-            icon={<Calendar size={16} />}
-            label="Next Appointment"
-            value={upcomingAppoint[0] ? `${upcomingAppoint[0].month} ${upcomingAppoint[0].day}` : "None"}
-            detail={upcomingAppoint[0] ? `${upcomingAppoint[0].doctor}${upcomingAppoint[0].specialty ? ` · ${upcomingAppoint[0].specialty}` : ""}` : "No upcoming appointments"}
-            onClick={() => onNavigate?.("appointments")}
+        {view === "labs" && (
+          <PatientLabResultsPage
+            onBack={() => setView("home")}
+            onOpenDetail={(id) => {
+              setActiveLabId(id);
+              setView("lab-detail");
+            }}
           />
-          <SummaryCard
-            icon={<Pill size={16} />}
-            label="Active Medications"
-            value="3"
-            detail="Refill due May 28"
+        )}
+        {view === "lab-detail" && activeLabId && (
+          <LabResultDetail
+            labResultId={activeLabId}
+            onBack={() => setView("labs")}
           />
-          <SummaryCard
-            icon={<Activity size={16} />}
-            label="Recent Labs"
-            value="4"
-            detail="1 result flagged"
-          />
-          <SummaryCard
-            icon={<FileText size={16} />}
-            label="Balance Due"
-            value="$142"
-            detail="Due Jun 1 · BCBS on file"
-          />
-        </div>
-
-        {/* ── Middle layout ── */}
-        <div className="dash-middle">
-          {/* Upcoming Appointments */}
-          <div className="dash-card">
-            <div className="dash-card-header">
-              <h3 className="dash-card-title">Upcoming Appointments</h3>
+        )}
+        {view !== "home" ? null : (
+          <>
+            {/*  Header */}
+            <div className="dash-header">
+              <div>
+                <p className="dash-date">{dateFormat}</p>
+                <h1 className="dash-greeting">
+                  {greetingMes}, {currentUser.firstName}
+                </h1>
+              </div>
               <button
-                className="dash-view-all"
-                onClick={() => onNavigate?.("appointments")}
+                className="dash-book-btn"
+                onClick={() => onNavigate?.("booking")}
               >
-                View all
+                <Plus size={16} /> Book Appointment
               </button>
             </div>
-            {upcomingAppoint.length === 0 && (
-              <p className="dash-appt-empty">No upcoming appointments.</p>
-            )}
-            {upcomingAppoint.map((appt) => (
-              <button
-                key={appt.id}
-                className="dash-appt-row"
+
+            {/* Top Four cards */}
+            <div className="dash-sumcard">
+              <SummaryCard
+                icon={<Calendar size={16} />}
+                label="Next Appointment"
+                value={
+                  upcomingAppoint[0]
+                    ? `${upcomingAppoint[0].month} ${upcomingAppoint[0].day}`
+                    : "None"
+                }
+                detail={
+                  upcomingAppoint[0]
+                    ? `${upcomingAppoint[0].doctor}${upcomingAppoint[0].specialty ? ` · ${upcomingAppoint[0].specialty}` : ""}`
+                    : "No upcoming appointments"
+                }
                 onClick={() => onNavigate?.("appointments")}
-              >
-                <div className="dash-appt-date">
-                  <span className="dash-appt-month">{appt.month}</span>
-                  <span className="dash-appt-day">{appt.day}</span>
-                </div>
-
-                <div className="dash-appt-divider" />
-
-                <div className="dash-appt-info">
-                  <p className="dash-appt-doctor">{appt.doctor}</p>
-                  <p className="dash-appt-specialty">
-                    {appt.specialty} · {appt.address}
-                  </p>
-                </div>
-
-                <div className="dash-appt-time">
-                  <span>{appt.time}</span>
-                  <Stethoscope size={14} />
-                </div>
-
-                <ChevronRight size={16} className="dash-appt-arrow" />
-              </button>
-            ))}
-          </div>
-
-          {/* ── Right sidebar ── */}
-          <div className="dash-sidebar">
-            {/* Medications */}
-            <div className="dash-card">
-              <div className="dash-card-header">
-                <h3 className="dash-card-title">Active Medications</h3>
-                <button className="dash-view-all">View all</button>
-              </div>
-              {activeMed.map((med) => (
-                <div key={med.name} className="dash-med-row">
-                  <div>
-                    <p className="dash-med-name">{med.name}</p>
-                    <p className="dash-med-detail">
-                      {med.dose} · {med.frequency}
-                    </p>
-                  </div>
-                  <span className="dash-med-refill">{med.refillDue}</span>
-                </div>
-              ))}
+              />
+              <SummaryCard
+                icon={<Pill size={16} />}
+                label="Active Medications"
+                value="3"
+                detail="Refill due May 28"
+              />
+              <SummaryCard
+                icon={<Activity size={16} />}
+                label="Recent Labs"
+                value="4"
+                detail="1 result flagged"
+              />
+              <SummaryCard
+                icon={<FileText size={16} />}
+                label="Balance Due"
+                value="$142"
+                detail="Due Jun 1 · BCBS on file"
+              />
             </div>
 
-            {/* ── Labs ── */}
-            <div className="dash-card">
-              <div className="dash-card-header">
-                <h3 className="dash-card-title">Recent Labs</h3>
-                <button className="dash-view-all">View all</button>
-              </div>
-              {labResult.map((lab) => {
-                let labNameClass = "dash-lab-name";
-                let labStatusClass = "dash-lab-status";
-
-                if (lab.flag) {
-                  labNameClass = "dash-lab-name flagged";
-                  labStatusClass = "dash-lab-status flagged";
-                }
-                {
-                  /* flag lab result*/
-                }
-                return (
-                  <div key={lab.test} className="dash-lab-row">
-                    <div className="dash-lab-name-wrap">
-                      {lab.flag && <span className="dash-lab-dot"></span>}
-
-                      <p className={labNameClass}>{lab.test}</p>
+            {/* ── Middle layout ── */}
+            <div className="dash-middle">
+              {/* Upcoming Appointments */}
+              <div className="dash-card">
+                <div className="dash-card-header">
+                  <h3 className="dash-card-title">Upcoming Appointments</h3>
+                  <button
+                    className="dash-view-all"
+                    onClick={() => onNavigate?.("appointments")}
+                  >
+                    View all
+                  </button>
+                </div>
+                {upcomingAppoint.length === 0 && (
+                  <p className="dash-appt-empty">No upcoming appointments.</p>
+                )}
+                {upcomingAppoint.map((appt) => (
+                  <button
+                    key={appt.id}
+                    className="dash-appt-row"
+                    onClick={() => onNavigate?.("appointments")}
+                  >
+                    <div className="dash-appt-date">
+                      <span className="dash-appt-month">{appt.month}</span>
+                      <span className="dash-appt-day">{appt.day}</span>
                     </div>
 
-                    <span className={labStatusClass}>{lab.result}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
+                    <div className="dash-appt-divider" />
 
-        {/* ── AI Banner ── */}
-        <div className="dash-ai-banner">
-          <div className="dash-ai-icon">
-            <MessageCircleQuestion size={22} />
-          </div>
-          <div className="dash-ai-text">
-            <p className="dash-ai-title">Pulse AI — built around your care</p>
-            <p className="dash-ai-detail">
-              Ask about your upcoming visit, medication interactions, lab
-              results, or anything on your mind.
-            </p>
-          </div>
-          <button className="dash-ai-btn">
-            <MessageCircleQuestion size={16} /> Ask Pulse
-          </button>
-        </div>
+                    <div className="dash-appt-info">
+                      <p className="dash-appt-doctor">{appt.doctor}</p>
+                      <p className="dash-appt-specialty">
+                        {appt.specialty} · {appt.address}
+                      </p>
+                    </div>
+
+                    <div className="dash-appt-time">
+                      <span>{appt.time}</span>
+                      <Stethoscope size={14} />
+                    </div>
+
+                    <ChevronRight size={16} className="dash-appt-arrow" />
+                  </button>
+                ))}
+              </div>
+
+              {/* ── Right sidebar ── */}
+              <div className="dash-sidebar">
+                {/* Medications */}
+                <div className="dash-card">
+                  <div className="dash-card-header">
+                    <h3 className="dash-card-title">Active Medications</h3>
+                    <button className="dash-view-all">View all</button>
+                  </div>
+                  {activeMed.map((med) => (
+                    <div key={med.name} className="dash-med-row">
+                      <div>
+                        <p className="dash-med-name">{med.name}</p>
+                        <p className="dash-med-detail">
+                          {med.dose} · {med.frequency}
+                        </p>
+                      </div>
+                      <span className="dash-med-refill">{med.refillDue}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* ── Labs ── */}
+                <div className="dash-card">
+                  <div className="dash-card-header">
+                    <h3 className="dash-card-title">Recent Labs</h3>
+                    <button
+                      className="dash-view-all"
+                      onClick={() => setView("labs")}
+                    >
+                      View all
+                    </button>
+                  </div>
+                  {labResult.length === 0 ? (
+                    <div className="dash-lab-row">
+                      <div className="dash-lab-name-wrap">
+                        <p className="dash-lab-name">No results yet</p>
+                      </div>
+                      <span className="dash-lab-status">—</span>
+                    </div>
+                  ) : (
+                    labResult.map((lab) => {
+                      let labNameClass = "dash-lab-name";
+                      let labStatusClass = "dash-lab-status";
+                      if (lab.flag) {
+                        labNameClass = "dash-lab-name flagged";
+                        labStatusClass = "dash-lab-status flagged";
+                      }
+                      return (
+                        <div
+                          key={lab.id}
+                          className="dash-lab-row"
+                          style={{ cursor: "pointer" }}
+                          onClick={() => {
+                            setActiveLabId(lab.id);
+                            setView("lab-detail");
+                          }}
+                        >
+                          <div className="dash-lab-name-wrap">
+                            {lab.flag && <span className="dash-lab-dot"></span>}
+                            <p className={labNameClass}>{lab.test}</p>
+                          </div>
+                          <span className={labStatusClass}>{lab.result}</span>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* ── AI Banner ── */}
+            <div className="dash-ai-banner">
+              <div className="dash-ai-icon">
+                <MessageCircleQuestion size={22} />
+              </div>
+              <div className="dash-ai-text">
+                <p className="dash-ai-title">
+                  Pulse AI — built around your care
+                </p>
+                <p className="dash-ai-detail">
+                  Ask about your upcoming visit, medication interactions, lab
+                  results, or anything on your mind.
+                </p>
+              </div>
+              <button
+                className="dash-ai-btn"
+                onClick={() => pulse.openDrawer()}
+              >
+                <MessageCircleQuestion size={16} /> Ask Pulse
+              </button>
+            </div>
+          </>
+        )}
       </main>
 
       {/* ── Footer ── */}

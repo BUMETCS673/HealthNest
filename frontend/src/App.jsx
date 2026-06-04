@@ -15,17 +15,25 @@ import PatientDashboard from "./PatientDashboard";
 import DoctorDashboard from "./DoctorDashboard";
 import AppointmentsPage from "./AppointmentsPage";
 import BookingPage from "./BookingPage";
+import PulseProvider from "./pulse/PulseProvider";
+import PulseDrawer from "./pulse/PulseDrawer";
+import PulseWorkspace from "./pulse/PulseWorkspace";
+import MessagesPage from "./MessagesPage";
 import { authApi } from "./lib/authApi";
 
 const PATH_TO_PAGE = {
   "/appointments": "appointments",
   "/booking": "booking",
+  "/pulse": "pulse",
+  "/messages": "messages",
 };
 
 const PAGE_TO_PATH = {
   dashboard: "/",
   appointments: "/appointments",
   booking: "/booking",
+  pulse: "/pulse",
+  messages: "/messages",
 };
 
 function getPageFromPath() {
@@ -89,20 +97,30 @@ export default function App() {
       return <DoctorDashboard user={session.user} onSignOut={handleSignOut} />;
     }
 
-    if (page === "appointments") {
-      return <AppointmentsPage {...sharedProps} />;
-    }
+    const patientPage = (() => {
+      if (page === "appointments") return <AppointmentsPage {...sharedProps} />;
+      if (page === "messages") return <MessagesPage {...sharedProps} />;
+      if (page === "booking") {
+        return (
+          <BookingPage
+            {...sharedProps}
+            appointments={pageData?.appointments ?? null}
+          />
+        );
+      }
+      if (page === "pulse") return <PulseWorkspace {...sharedProps} />;
+      return <PatientDashboard {...sharedProps} pageData={pageData} />;
+    })();
 
-    if (page === "booking") {
-      return (
-        <BookingPage
-          {...sharedProps}
-          appointments={pageData?.appointments ?? null}
+    return (
+      <PulseProvider>
+        {patientPage}
+        <PulseDrawer
+          onOpenWorkspace={() => handleNavigate("pulse")}
+          onNavigate={handleNavigate}
         />
-      );
-    }
-
-    return <PatientDashboard {...sharedProps} />;
+      </PulseProvider>
+    );
   }
 
   return view === "signup" ? (

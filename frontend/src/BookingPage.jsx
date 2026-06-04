@@ -111,6 +111,7 @@ export default function BookingPage({
               onClick={() => {
                 if (link === "Dashboard") onNavigate?.("dashboard");
                 if (link === "Appointments") onNavigate?.("appointments");
+                if (link === "Messages") onNavigate?.("messages");
               }}
             >
               {link}

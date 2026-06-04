@@ -41,7 +41,8 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
   useEffect(() => {
     if (!menuOpen) return undefined;
     const onDocClick = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
+      if (menuRef.current && !menuRef.current.contains(e.target))
+        setMenuOpen(false);
     };
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
@@ -62,7 +63,9 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { fetchAppointments(); }, []);
+  useEffect(() => {
+    fetchAppointments();
+  }, []);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -119,6 +122,7 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
               onClick={() => {
                 if (link === "Dashboard") onNavigate?.("dashboard");
                 if (link === "Appointments") onNavigate?.("appointments");
+                if (link === "Messages") onNavigate?.("messages");
               }}
             >
               {link}
@@ -151,7 +155,10 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
                 <button
                   type="button"
                   className="ap-user-menu-item"
-                  onClick={() => { setMenuOpen(false); onSignOut?.(); }}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onSignOut?.();
+                  }}
                   role="menuitem"
                 >
                   <LogOut size={14} />
@@ -348,7 +355,10 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
         <AppointmentModal
           rescheduleId={rescheduleId}
           providerName={rescheduleProvider}
-          onClose={() => { setRescheduleId(null); setRescheduleProvider(null); }}
+          onClose={() => {
+            setRescheduleId(null);
+            setRescheduleProvider(null);
+          }}
           onBooked={() => {
             setRescheduleId(null);
             setRescheduleProvider(null);

@@ -1,0 +1,379 @@
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap");
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.mp-page {
+  min-height: 100vh;
+  background: #f9f9f7;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Nav ─────────────────────────────────────────── */
+.mp-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 80px;
+  height: 56px;
+  background: #fff;
+  border-bottom: 1px solid #f2f2f1;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.mp-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.mp-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mp-logo {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-style: italic;
+  font-size: 30px;
+  font-weight: 500;
+  color: #111110;
+  text-decoration: underline;
+  margin-right: 24px;
+  padding-right: 28px;
+  border-right: 1px solid #f2f2f1;
+}
+
+.mp-nav-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #71716e;
+  font-family: inherit;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.mp-nav-link.active {
+  background: #111110;
+  color: #fff;
+  font-weight: 500;
+}
+
+.mp-nav-link:hover:not(.active) {
+  background: #f2f2f1;
+  color: #111110;
+}
+
+.mp-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  color: #71716e;
+}
+
+.mp-icon-btn:hover {
+  background: #f2f2f1;
+}
+
+.mp-user-wrap {
+  position: relative;
+}
+
+.mp-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  border-radius: 8px;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.mp-user:hover {
+  background: #f2f2f1;
+}
+
+.mp-user-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 140px;
+  background: #fff;
+  border: 1px solid #f2f2f1;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  padding: 6px;
+  z-index: 150;
+}
+
+.mp-user-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #111110;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.mp-user-menu-item:hover {
+  background: #f9f9f7;
+}
+
+.mp-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f2f2f1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #71716e;
+}
+
+.mp-user-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #111110;
+  display: block;
+}
+.mp-user-role {
+  font-size: 11px;
+  color: #9c9c9b;
+  display: block;
+}
+
+/* ── Main ────────────────────────────────────────── */
+.mp-main {
+  flex: 1;
+  padding: 36px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Page header ─────────────────────────────────── */
+.mp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mp-title {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: 34px;
+  font-weight: 300;
+  color: #111110;
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+
+.mp-sub {
+  font-size: 13px;
+  color: #9c9c9b;
+}
+
+/* ── Tabs ────────────────────────────────────────── */
+.mp-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid #f2f2f1;
+  padding-bottom: 0;
+}
+
+.mp-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #71716e;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+  margin-bottom: -1px;
+}
+
+.mp-tab:hover {
+  color: #111110;
+}
+
+.mp-tab.active {
+  color: #111110;
+  font-weight: 500;
+  border-bottom-color: #111110;
+}
+
+.mp-tab-count {
+  background: #f2f2f1;
+  color: #71716e;
+  font-size: 11px;
+  padding: 1px 7px;
+  border-radius: 10px;
+}
+
+.mp-tab.active .ap-tab-count {
+  background: #111110;
+  color: #fff;
+}
+
+/* ── Loading / empty ─────────────────────────────── */
+.mp-loading {
+  text-align: center;
+  font-size: 14px;
+  color: #9c9c9b;
+  padding: 3rem 0;
+}
+
+.mp-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 4rem 0;
+  color: #9c9c9b;
+  font-size: 14px;
+}
+
+/* ── Footer ──────────────────────────────────────── */
+.mp-footer {
+  background: #fff;
+  border-top: 1px solid #f2f2f1;
+  padding: 28px 80px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.mp-footer-tag {
+  font-size: 13px;
+  color: #9c9c9b;
+}
+
+.mp-copyright {
+  text-align: center;
+  font-size: 12px;
+  color: #9c9c9b;
+  padding: 12px;
+  background: #fff;
+  border-top: 1px solid #f2f2f1;
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 768px) {
+  .mp-nav {
+    padding: 0 1.5rem;
+  }
+  .mp-main {
+    padding: 24px 1.5rem;
+  }
+  .mp-footer {
+    padding: 20px 1.5rem;
+  }
+
+  .mp-card {
+    flex-wrap: wrap;
+  }
+  .mp-card-actions {
+    flex-direction: row;
+  }
+}
+
+.mp-compose {
+  margin-bottom: 2rem;
+}
+.mp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 600px;
+}
+.mp-input,
+.mp-textarea {
+  border: 1.5px solid #e4e4e2;
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+}
+.mp-input:focus,
+.mp-textarea:focus {
+  border-color: #111110;
+}
+.mp-send-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #111110;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  width: fit-content;
+}
+.mp-send-btn:hover {
+  background: #2a2a2a;
+}
+.mp-send-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.mp-error {
+  font-size: 13px;
+  color: #c0392b;
+}
+.mp-card {
+  background: #fff;
+  border: 1px solid #f2f2f1;
+  border-radius: 12px;
+  padding: 16px 20px;
+}
+.mp-card-from {
+  font-size: 13px;
+  font-weight: 500;
+  color: #111110;
+  margin-bottom: 4px;
+}
+.mp-card-body {
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 8px;
+}
+.mp-card-time {
+  font-size: 12px;
+  color: #9c9c9b;
+}

@@ -265,11 +265,11 @@ export default function DoctorDashboard({ user, onSignOut }) {
   ];
 
   return (
-    <div className='d-dash'>
+    <div className="d-dash">
       {/* Navigation bar */}
-      <nav className='dash-nav'>
-        <div className='dash-nav-left'>
-          <span className='dash-logo'>
+      <nav className="dash-nav">
+        <div className="dash-nav-left">
+          <span className="dash-logo">
             <u>HealthNest</u>
           </span>
 
@@ -280,35 +280,44 @@ export default function DoctorDashboard({ user, onSignOut }) {
             const showMessageBadge =
               option === "Messages" && unreadMessages > 0;
 
+            const onClick = () => {
+              if (option === "Dashboard") setView("home");
+              else if (option === "Patient Records") setView("labs");
+              else if (option === "Messages") onNavigate?.("messages");
+              else if (option === "Schedule") onNavigate?.("schedule");
+              else if (option === "Pulse AI") onNavigate?.("pulse");
+            };
+
             return (
-              <button key={option} className={buttonClass}>
+              <button key={option} className={buttonClass} onClick={onClick}>
                 {option}
 
                 {showMessageBadge && (
-                  <span className='doc-badge'>{unreadMessages}</span>
+                  <span className="doc-badge">{unreadMessages}</span>
                 )}
               </button>
             );
           })}
         </div>
 
-        <div className='dash-nav-right'>
-          <button className='doc-icon-btn' aria-label='Notifications'>
+        <div className="dash-nav-right">
+          <button className="doc-icon-btn" aria-label="Notifications">
             <Bell size={20} />
           </button>
 
-          <div className='doc-user-wrap' ref={menuRef}>
+          <div className="doc-user-wrap" ref={menuRef}>
             <button
-              type='button'
-              className='doc-user'
+              type="button"
+              className="doc-user"
               onClick={() => setMenuOpen((open) => !open)}
-              aria-haspopup='menu'
-              aria-expanded={menuOpen}>
-              <div className='doc-avatar'>{currentUser.initials}</div>
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+            >
+              <div className="doc-avatar">{currentUser.initials}</div>
 
-              <div className='doc-user-info'>
-                <span className='doc-user-name'>{currentUser.firstName}</span>
-                <span className='doc-user-role'>
+              <div className="doc-user-info">
+                <span className="doc-user-name">{currentUser.firstName}</span>
+                <span className="doc-user-role">
                   {currentUser.specialty || currentUser.role}
                 </span>
               </div>
@@ -317,26 +326,28 @@ export default function DoctorDashboard({ user, onSignOut }) {
             </button>
 
             {menuOpen && (
-              <div className='doc-user-menu' role='menu'>
+              <div className="doc-user-menu" role="menu">
                 <button
-                  type='button'
-                  className='doc-user-menu-item'
+                  type="button"
+                  className="doc-user-menu-item"
                   onClick={() => {
                     setMenuOpen(false);
                   }}
-                  role='menuitem'>
+                  role="menuitem"
+                >
                   <User size={14} />
                   Account Settings
                 </button>
 
                 <button
-                  type='button'
-                  className='doc-user-menu-item'
+                  type="button"
+                  className="doc-user-menu-item"
                   onClick={() => {
                     setMenuOpen(false);
                     onSignOut?.();
                   }}
-                  role='menuitem'>
+                  role="menuitem"
+                >
                   <LogOut size={14} />
                   Sign out
                 </button>
@@ -347,231 +358,273 @@ export default function DoctorDashboard({ user, onSignOut }) {
       </nav>
 
       {/* Main content */}
-      <main className='doc-main'>
-        {/* Header */}
-        <div className='doc-header'>
-          <div>
-            <p className='doc-date'>{dateFormat}</p>
-            <h1 className='doc-greeting'>
-              {greetingMes}, {currentUser.firstName}.
-            </h1>
-          </div>
+      <main className="doc-main">
+        {view === "labs" && (
+          <LabResultsPage
+            onBack={() => setView("home")}
+            onOpenReview={(id) => {
+              setActiveLabId(id);
+              setView("lab-review");
+            }}
+          />
+        )}
+        {view === "lab-review" && activeLabId && (
+          <LabResultReview
+            labResultId={activeLabId}
+            onBack={() => setView("labs")}
+          />
+        )}
+        {view !== "home" ? null : (
+          <>
+            {/* Header */}
+            <div className="doc-header">
+              <div>
+                <p className="doc-date">{dateFormat}</p>
+                <h1 className="doc-greeting">
+                  {greetingMes}, {currentUser.firstName}.
+                </h1>
+              </div>
 
-          <div className='doc-header-actions'>
-            <div className='doc-search'>
-              <Search size={14} />
-              <span>Quick patient lookup...</span> {/*search bar*/}
-            </div>
-
-            <button className='doc-action-btn'>
-              <FileSignature size={14} />
-              Sign Notes
-              {signNotesCount > 0 && (
-                <span className='doc-action-count'>{signNotesCount}</span>
-              )}
-            </button>
-
-            <button className='doc-action-btn doc-action-filled'>
-              <MessageSquare size={14} />
-              Inbox
-              {inboxCount > 0 && (
-                <span className='doc-action-count doc-action-count-light'>
-                  {inboxCount}
-                </span>
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Top summary cards */}
-        <div className='doc-stats'>
-          <div className='doc-stat-item'>
-            <Users size={18} className='doc-stat-icon' />
-
-            <div className='doc-stat-main'>
-              <p className='doc-stat-label'>Today's Patients</p>
-              <p className='doc-stat-value'>{todayPatientsCount} scheduled</p>
-            </div>
-
-            <p className='doc-stat-side'>
-              {seenPatientCount} seen · {pendingPatientCount} pending
-            </p>
-          </div>
-
-          <div className='doc-stat-item'>
-            <FileText size={18} className='doc-stat-icon' />
-
-            <div className='doc-stat-main'>
-              <p className='doc-stat-label'>Unsigned Encounters</p>
-              <p className='doc-stat-value'>{unsignEnCount} notes</p>
-            </div>
-
-            {urgentEncounterCount > 0 && (
-              <p className='doc-stat-side doc-stat-side-urgent'>
-                {urgentEncounterCount} urgent
-              </p>
-            )}
-          </div>
-
-          <div className='doc-stat-item'>
-            <AlertCircle size={18} className='doc-stat-icon doc-stat-alert' />
-
-            <div className='doc-stat-main'>
-              <p className='doc-stat-label'>Clinical Alerts</p>
-              <p className='doc-stat-value'>{activeAlertCount} active</p>
-            </div>
-
-            {criticalAlertCount > 0 && (
-              <p className='doc-stat-side doc-stat-side-urgent'>
-                {criticalAlertCount} critical
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Dashboard body */}
-        <div className='doc-grid'>
-          {/* Today's schedule */}
-          <div className='doc-card doc-schedule-card'>
-            <div className='doc-card-header'>
-              <h3 className='doc-card-title'>Today's Schedule</h3>
-              <span className='doc-date-badge'>{badgeDateFormat}</span>
-            </div>
-
-            {todaySchedule.map((appt) => (
-              <div
-                key={appt.time + appt.name}
-                className={`doc-sched-row${appt.now ? " now" : ""}${
-                  appt.done ? " done" : ""
-                }`}>
-                <span className='doc-sched-time'>{appt.time}</span>
-                <span className='doc-sched-dot'></span>
-
-                <div className='doc-sched-info'>
-                  <p className='doc-sched-name'>{appt.name}</p>
-                  <p className='doc-sched-type'>{appt.type}</p>
+              <div className="doc-header-actions">
+                <div className="doc-search">
+                  <Search size={14} />
+                  <span>Quick patient lookup...</span> {/*search bar*/}
                 </div>
 
-                {appt.now && <span className='doc-now-badge'>Now</span>}
-              </div>
-            ))}
-          </div>
+                <button className="doc-action-btn">
+                  <FileSignature size={14} />
+                  Sign Notes
+                  {signNotesCount > 0 && (
+                    <span className="doc-action-count">{signNotesCount}</span>
+                  )}
+                </button>
 
-          {/* Middle section for AI summaries and notes */}
-          <div className='doc-col-main'>
-            <div className='doc-card'>
-              <div className='doc-card-header'>
-                <div>
-                  <h3 className='doc-card-title'>AI Pre-Visit Summaries</h3>
-                  <p className='doc-card-subtitle'>
-                    Generated from records, labs, and prior notes
+                <button
+                  className="doc-action-btn"
+                  onClick={() => setView("labs")}
+                >
+                  <FlaskConical size={14} />
+                  Lab Results
+                </button>
+
+                <button className="doc-action-btn doc-action-filled">
+                  <MessageSquare size={14} />
+                  Inbox
+                  {inboxCount > 0 && (
+                    <span className="doc-action-count doc-action-count-light">
+                      {inboxCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Top summary cards */}
+            <div className="doc-stats">
+              <div className="doc-stat-item">
+                <Users size={18} className="doc-stat-icon" />
+
+                <div className="doc-stat-main">
+                  <p className="doc-stat-label">Today's Patients</p>
+                  <p className="doc-stat-value">
+                    {todayPatientsCount} scheduled
                   </p>
                 </div>
 
-                <span className='doc-date-badge'>4 upcoming</span>
+                <p className="doc-stat-side">
+                  {seenPatientCount} seen · {pendingPatientCount} pending
+                </p>
               </div>
 
-              {aiSummaries.map((summary) => (
-                <div key={summary.id} className='doc-summary-item'>
-                  <div className='doc-summary-top'>
-                    <div className='doc-summary-avatar'>{summary.initials}</div>
+              <div className="doc-stat-item">
+                <FileText size={18} className="doc-stat-icon" />
 
-                    <div className='doc-summary-info'>
-                      <p className='doc-summary-name'>{summary.name}</p>
-                      <p className='doc-summary-appt'>
-                        {summary.time} · {summary.apptType}
+                <div className="doc-stat-main">
+                  <p className="doc-stat-label">Unsigned Encounters</p>
+                  <p className="doc-stat-value">{unsignEnCount} notes</p>
+                </div>
+
+                {urgentEncounterCount > 0 && (
+                  <p className="doc-stat-side doc-stat-side-urgent">
+                    {urgentEncounterCount} urgent
+                  </p>
+                )}
+              </div>
+
+              <div className="doc-stat-item">
+                <AlertCircle
+                  size={18}
+                  className="doc-stat-icon doc-stat-alert"
+                />
+
+                <div className="doc-stat-main">
+                  <p className="doc-stat-label">Clinical Alerts</p>
+                  <p className="doc-stat-value">{activeAlertCount} active</p>
+                </div>
+
+                {criticalAlertCount > 0 && (
+                  <p className="doc-stat-side doc-stat-side-urgent">
+                    {criticalAlertCount} critical
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Dashboard body */}
+            <div className="doc-grid">
+              {/* Today's schedule */}
+              <div className="doc-card doc-schedule-card">
+                <div className="doc-card-header">
+                  <h3 className="doc-card-title">Today's Schedule</h3>
+                  <span className="doc-date-badge">{badgeDateFormat}</span>
+                </div>
+
+                {todaySchedule.map((appt) => (
+                  <div
+                    key={appt.time + appt.name}
+                    className={`doc-sched-row${appt.now ? " now" : ""}${
+                      appt.done ? " done" : ""
+                    }`}
+                  >
+                    <span className="doc-sched-time">{appt.time}</span>
+                    <span className="doc-sched-dot"></span>
+
+                    <div className="doc-sched-info">
+                      <p className="doc-sched-name">{appt.name}</p>
+                      <p className="doc-sched-type">{appt.type}</p>
+                    </div>
+
+                    {appt.now && <span className="doc-now-badge">Now</span>}
+                  </div>
+                ))}
+              </div>
+
+              {/* Middle section for AI summaries and notes */}
+              <div className="doc-col-main">
+                <div className="doc-card">
+                  <div className="doc-card-header">
+                    <div>
+                      <h3 className="doc-card-title">AI Pre-Visit Summaries</h3>
+                      <p className="doc-card-subtitle">
+                        Generated from records, labs, and prior notes
                       </p>
                     </div>
 
-                    <div className='doc-summary-tags'>
-                      {summary.tags.map((tag) => (
-                        <span
-                          key={tag.label}
-                          className={`doc-tag doc-tag-${tag.style}`}>
-                          {tag.label}
-                        </span>
-                      ))}
+                    <span className="doc-date-badge">4 upcoming</span>
+                  </div>
+
+                  {aiSummaries.map((summary) => (
+                    <div key={summary.id} className="doc-summary-item">
+                      <div className="doc-summary-top">
+                        <div className="doc-summary-avatar">
+                          {summary.initials}
+                        </div>
+
+                        <div className="doc-summary-info">
+                          <p className="doc-summary-name">{summary.name}</p>
+                          <p className="doc-summary-appt">
+                            {summary.time} · {summary.apptType}
+                          </p>
+                        </div>
+
+                        <div className="doc-summary-tags">
+                          {summary.tags.map((tag) => (
+                            <span
+                              key={tag.label}
+                              className={`doc-tag doc-tag-${tag.style}`}
+                            >
+                              {tag.label}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <p className="doc-summary-snippet">{summary.snippet}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="doc-card">
+                  <div className="doc-card-header">
+                    <div>
+                      <h3 className="doc-card-title">Unsigned Encounters</h3>
+                      <p className="doc-card-subtitle">
+                        Notes pending your signature
+                      </p>
+                    </div>
+
+                    <span className="doc-date-badge">
+                      {unsignEnCount} pending
+                    </span>
+                  </div>
+
+                  {unsignEn.map((encounter) => (
+                    <div key={encounter.name} className="doc-encounter-row">
+                      <div className="doc-encounter-info">
+                        <p className="doc-encounter-name">
+                          {encounter.name}
+
+                          {encounter.urgent && (
+                            <span className="doc-urgent-badge">Urgent</span>
+                          )}
+                        </p>
+
+                        <p className="doc-encounter-detail">
+                          {encounter.detail}
+                        </p>
+                      </div>
+
+                      <div className="doc-encounter-actions">
+                        <button className="doc-btn-review">Review</button>
+                        <button className="doc-btn-sign">Sign</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Patient alerts */}
+              <div className="doc-card doc-alerts-card">
+                <div className="doc-card-header">
+                  <h3 className="doc-card-title">Patient Alerts</h3>
+                  <span className="doc-date-badge">
+                    {activeAlertCount} active
+                  </span>
+                </div>
+
+                {patientAlerts.map((alert) => (
+                  <div key={alert.name} className="doc-alert-row">
+                    <div className="doc-alert-icon">!</div>
+
+                    <div>
+                      <p className="doc-alert-name">{alert.name}</p>
+                      <p className="doc-alert-desc">{alert.desc}</p>
                     </div>
                   </div>
-
-                  <p className='doc-summary-snippet'>{summary.snippet}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className='doc-card'>
-              <div className='doc-card-header'>
-                <div>
-                  <h3 className='doc-card-title'>Unsigned Encounters</h3>
-                  <p className='doc-card-subtitle'>
-                    Notes pending your signature
-                  </p>
-                </div>
-
-                <span className='doc-date-badge'>{unsignEnCount} pending</span>
+                ))}
               </div>
-
-              {unsignEn.map((encounter) => (
-                <div key={encounter.name} className='doc-encounter-row'>
-                  <div className='doc-encounter-info'>
-                    <p className='doc-encounter-name'>
-                      {encounter.name}
-
-                      {encounter.urgent && (
-                        <span className='doc-urgent-badge'>Urgent</span>
-                      )}
-                    </p>
-
-                    <p className='doc-encounter-detail'>{encounter.detail}</p>
-                  </div>
-
-                  <div className='doc-encounter-actions'>
-                    <button className='doc-btn-review'>Review</button>
-                    <button className='doc-btn-sign'>Sign</button>
-                  </div>
-                </div>
-              ))}
             </div>
-          </div>
-
-          {/* Patient alerts */}
-          <div className='doc-card doc-alerts-card'>
-            <div className='doc-card-header'>
-              <h3 className='doc-card-title'>Patient Alerts</h3>
-              <span className='doc-date-badge'>{activeAlertCount} active</span>
-            </div>
-
-            {patientAlerts.map((alert) => (
-              <div key={alert.name} className='doc-alert-row'>
-                <div className='doc-alert-icon'>!</div>
-
-                <div>
-                  <p className='doc-alert-name'>{alert.name}</p>
-                  <p className='doc-alert-desc'>{alert.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+          </>
+        )}
       </main>
 
       {/* ── Footer ── */}
-      <footer className='doc-footer'>
-        <div className='doc-footer-left'>
-          <span className='dash-logo'>
+      <footer className="doc-footer">
+        <div className="doc-footer-left">
+          <span className="dash-logo">
             <u>HealthNest</u>
           </span>
 
-          <p className='doc-footer-tag'>
+          <p className="doc-footer-tag">
             Coordinated care across clinics,
             <br />
             built for patients and providers.
           </p>
         </div>
 
-        <div className='doc-footer-links'>
+        <div className="doc-footer-links">
           <div>
-            <p className='doc-footer-heading'>PLATFORM</p>
+            <p className="doc-footer-heading">PLATFORM</p>
 
             {[
               "Patient Portal",
@@ -579,14 +632,14 @@ export default function DoctorDashboard({ user, onSignOut }) {
               "AI Health Assistant",
               "Appointment Scheduling",
             ].map((link) => (
-              <p key={link} className='doc-footer-link'>
+              <p key={link} className="doc-footer-link">
                 {link}
               </p>
             ))}
           </div>
 
           <div>
-            <p className='doc-footer-heading'>SUPPORT</p>
+            <p className="doc-footer-heading">SUPPORT</p>
 
             {[
               "Help Center",
@@ -594,7 +647,7 @@ export default function DoctorDashboard({ user, onSignOut }) {
               "Privacy Policy",
               "Terms of Service",
             ].map((link) => (
-              <p key={link} className='doc-footer-link'>
+              <p key={link} className="doc-footer-link">
                 {link}
               </p>
             ))}
@@ -602,12 +655,12 @@ export default function DoctorDashboard({ user, onSignOut }) {
         </div>
       </footer>
 
-      <div className='doc-copyright'>
+      <div className="doc-copyright">
         © 2026 HealthNest Technologies, Inc. All rights reserved.
       </div>
 
       {/* ── Floating AI button ── */}
-      <button className='doc-pulse-fab' aria-label='Pulse AI'>
+      <button className="doc-pulse-fab" aria-label="Pulse AI">
         <MessageCircleQuestion size={25} />
       </button>
     </div>
