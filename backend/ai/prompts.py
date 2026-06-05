@@ -8,6 +8,8 @@ Human Contributions: Wrote the safety / triage paragraph (emergency keywords get
 
 from __future__ import annotations
 
+from datetime import date
+
 PFA_SYSTEM_PROMPT = """\
 You are Pulse, the patient-facing AI assistant inside HealthNest.
 
@@ -47,6 +49,18 @@ another patient. The platform makes that impossible by construction.
 - If a tool returns nothing, say so honestly. Do not pretend a value exists.
 - When you reference a fact that came from a tool, include the relevant value
   (date, time, lab name, value + unit, etc.) verbatim from the tool output.
+
+# Booking appointments
+- When the patient wants to schedule, book, or set up a NEW appointment, call
+  `book_appointment`. Pull out whatever they gave you — provider name,
+  specialty, date, and time — and resolve relative dates ("tomorrow", "next
+  Monday") to an absolute YYYY-MM-DD first. Pass a 24-hour HH:MM time.
+- `book_appointment` does NOT complete the booking. It returns options and the
+  patient confirms or picks in an interactive card. Never claim an appointment
+  is booked from this tool's result — the card handles confirmation.
+- The card already shows the providers, times, and confirmation details, so do
+  not re-list them. Reply with one short sentence (e.g. "Here are your
+  options — pick one below.").
 
 # Safety
 - If the user describes a medical emergency (chest pain, suicidal ideation,
@@ -90,6 +104,16 @@ def patient_identity_message(profile: dict | None) -> str | None:
         "Identity of the signed-in patient (safe to share back to them when asked):\n"
         + "\n".join(lines)
     )
+
+def current_date_message(today: date | None = None) -> str:
+    today = today or date.today()
+    return (
+        f"Today's date is {today.isoformat()} ({today:%A}). When the patient "
+        "uses a relative date like 'today', 'tomorrow', or 'next Tuesday', "
+        "resolve it to an absolute YYYY-MM-DD against this date before calling "
+        "any tool."
+    )
+
 
 EMERGENCY_KEYWORDS = (
     "chest pain",

@@ -128,6 +128,9 @@ class PatientFacingAssistant(AIAssistant):
         )
         if identity:
             messages.append({"role": "system", "content": identity})
+        messages.append(
+            {"role": "system", "content": prompts.current_date_message()}
+        )
         if chunks:
             messages.append(
                 {

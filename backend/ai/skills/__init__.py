@@ -9,12 +9,14 @@ Human Contributions: Decided to centralize registration here (instead of forcing
 from .base import AISkill, Reply, SkillContext, SkillScope, SkillSpec
 from .registry import SkillRegistry, default_registry
 from .appointments_skill import AppointmentsSkill
+from .book_appointment_skill import BookAppointmentSkill
 from .lab_results_skill import LabResultsSkill
 from .visit_overview_skill import VisitOverviewSkill
 
 def _bootstrap() -> SkillRegistry:
     reg = default_registry()
     reg.register(AppointmentsSkill())
+    reg.register(BookAppointmentSkill())
     reg.register(LabResultsSkill())
     reg.register(VisitOverviewSkill())
     return reg
@@ -26,6 +28,7 @@ registry = _bootstrap()
 __all__ = [
     "AISkill",
     "AppointmentsSkill",
+    "BookAppointmentSkill",
     "LabResultsSkill",
     "Reply",
     "SkillContext",
