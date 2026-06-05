@@ -1,7 +1,18 @@
-node_modules
-venv
-__pycache__
+# Node
+node_modules/
+
+# Python virtual environments
+venv/
+.venv/
+backend/venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment files
 .env
-.vscode/
-.venv
 backend/.env
+
+# Editor settings
+.vscode/

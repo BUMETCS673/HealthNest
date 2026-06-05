@@ -18,12 +18,14 @@ import BookingPage from "./BookingPage";
 import PulseProvider from "./pulse/PulseProvider";
 import PulseDrawer from "./pulse/PulseDrawer";
 import PulseWorkspace from "./pulse/PulseWorkspace";
+import MessagesPage from "./MessagesPage";
 import { authApi } from "./lib/authApi";
 
 const PATH_TO_PAGE = {
   "/appointments": "appointments",
   "/booking": "booking",
   "/pulse": "pulse",
+  "/messages": "messages",
 };
 
 const PAGE_TO_PATH = {
@@ -31,6 +33,7 @@ const PAGE_TO_PATH = {
   appointments: "/appointments",
   booking: "/booking",
   pulse: "/pulse",
+  messages: "/messages",
 };
 
 function getPageFromPath() {
@@ -90,7 +93,10 @@ export default function App() {
   };
 
   if (session) {
-    const role = session.user?.user_metadata?.role ?? session.user?.raw_user_meta_data?.role ?? "patient";
+    const role =
+      session.user?.user_metadata?.role ??
+      session.user?.raw_user_meta_data?.role ??
+      "patient";
     const sharedProps = {
       user: session.user,
       onNavigate: handleNavigate,
@@ -103,6 +109,7 @@ export default function App() {
 
     const patientPage = (() => {
       if (page === "appointments") return <AppointmentsPage {...sharedProps} />;
+      if (page === "messages") return <MessagesPage {...sharedProps} />;
       if (page === "booking") {
         return (
           <BookingPage

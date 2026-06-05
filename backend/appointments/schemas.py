@@ -7,43 +7,57 @@
 # Notes: We reviewed the generated schemas and made adjustments to ensure they align with our application's requirements. 
 # We also helped integrate these schemas with the routers and service layers of our application.
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+from enum import Enum
 
+
+class AppointmentStatus(str, Enum):
+    PENDING = "pending"
+    SCHEDULED = "scheduled"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+    NO_SHOW = "no_show"
 
 class AppointmentCreate(BaseModel):
-    provider_name: str
+    provider_id: str
+    availability_id: str
+    notes: str | None = None
+
+
+class AppointmentNotesUpdate(BaseModel):
+    notes: str | None = None
+
+
+class AppointmentReschedule(BaseModel):
+    availability_id: str
+
+class ProviderSummary(BaseModel):
+    title: str | None = None
+    first_name: str
+    last_name: str
     specialty: str | None = None
-    location: str | None = None
-    appointment_date: str  # YYYY-MM-DD
-    appointment_time: str  # HH:MM
-    notes: str | None = None
 
-
-class AppointmentUpdate(BaseModel):
-    appointment_date: str | None = None
-    appointment_time: str | None = None
-    status: str | None = Field(default=None, pattern="^(scheduled|cancelled|completed|rescheduled)$")
-    notes: str | None = None
-
+class AppointmentAvailability(BaseModel):
+    available_date: str
+    available_time: str
 
 class AppointmentOut(BaseModel):
     id: str
     patient_id: str
-    provider_name: str
-    specialty: str | None = None
-    location: str | None = None
-    appointment_date: str
-    appointment_time: str
-    status: str
+    provider_id: str
+    availability_id: str
+    status: AppointmentStatus
     notes: str | None = None
     created_at: str | None = None
-
+    updated_at: str | None = None
+    providers: ProviderSummary | None = None
+    provider_availability: AppointmentAvailability | None = None
 
 class AvailabilitySlot(BaseModel):
     id: str
-    provider_name: str
-    specialty: str | None = None
-    location: str | None = None
+    provider_id: str
     available_date: str
     available_time: str
+    created_at: str | None = None
     is_booked: bool
+    providers: ProviderSummary

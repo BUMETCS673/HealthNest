@@ -13,16 +13,22 @@ jest.mock("../lib/appointmentsApi", () => ({
   },
   apptToDisplayRow: jest.fn((appt) => ({
     id: appt.id,
-    month: appt.appointment_date === "2099-12-31" ? "Dec" : "Jan",
-    day: appt.appointment_date === "2099-12-31" ? "31" : "1",
-    doctor: appt.provider_name,
-    specialty: appt.specialty || "",
+    month:
+      appt.provider_availability.available_date === "2099-12-31"
+        ? "Dec"
+        : "Jan",
+    day:
+      appt.provider_availability.available_date === "2099-12-31" ? "31" : "1",
+    doctor: `${appt.providers.first_name} ${appt.providers.last_name}`,
+    specialty: appt.providers.specialty || "",
     date:
-      appt.appointment_date === "2099-12-31"
+      appt.provider_availability.available_date === "2099-12-31"
         ? "December 31, 2099"
         : "January 1, 2020",
-    time: appt.appointment_time === "09:30" ? "9:30 AM" : "10:00 AM",
-    address: appt.location || "",
+    time:
+      appt.provider_availability.available_time === "09:30"
+        ? "9:30 AM"
+        : "10:00 AM",
     status: appt.status,
     raw: appt,
   })),
@@ -47,23 +53,33 @@ const mockUser = {
 const mockAppointments = [
   {
     id: "1",
-    provider_name: "Dr. Emily Park",
-    specialty: "Cardiology",
-    location: "Boston Medical Center",
-    appointment_date: "2099-12-31",
-    appointment_time: "09:30",
+    provider_id: "prov-emily",
     status: "scheduled",
     notes: null,
+    providers: {
+      first_name: "Emily",
+      last_name: "Park",
+      specialty: "Cardiology",
+    },
+    provider_availability: {
+      available_date: "2099-12-31",
+      available_time: "09:30",
+    },
   },
   {
     id: "2",
-    provider_name: "Dr. John Smith",
-    specialty: "Primary Care",
-    location: "Main Clinic",
-    appointment_date: "2020-01-01",
-    appointment_time: "10:00",
+    provider_id: "prov-john",
     status: "completed",
     notes: null,
+    providers: {
+      first_name: "John",
+      last_name: "Smith",
+      specialty: "Primary Care",
+    },
+    provider_availability: {
+      available_date: "2020-01-01",
+      available_time: "10:00",
+    },
   },
 ];
 
@@ -106,9 +122,8 @@ describe("AppointmentsPage", () => {
       expect(screen.getByText("Dr. Emily Park")).toBeInTheDocument();
     });
 
-    expect(
-      screen.getByText("Cardiology · Boston Medical Center"),
-    ).toBeInTheDocument();
+    expect(screen.getAllByText("Cardiology").length).toBeGreaterThan(0);
+
     expect(
       screen.getByText((content) => content.includes("9:30 AM")),
     ).toBeInTheDocument();

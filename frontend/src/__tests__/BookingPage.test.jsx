@@ -33,15 +33,22 @@ const mockUser = {
 
 const previousAppointment = {
   id: "1",
-  provider_name: "Dr. Emily Park",
-  specialty: "Cardiology",
-  location: "Boston Medical Center",
-  appointment_date: "2026-06-20",
-  appointment_time: "09:30",
+  provider_id: "prov-emily",
   status: "scheduled",
+  providers: {
+    title: "Dr.",
+    first_name: "Emily",
+    last_name: "Park",
+    specialty: "Cardiology",
+  },
+  provider_availability: {
+    available_date: "2026-06-20",
+    available_time: "09:30",
+  },
 };
 
 const newProvider = {
+  id: "prov-john",
   title: "Dr.",
   first_name: "John",
   last_name: "Smith",

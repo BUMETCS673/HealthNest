@@ -29,43 +29,31 @@ def _iso(d: date) -> str:
 def appts():
     today = date.today()
     return [
-        {
-            "id": "a-next",
-            "provider_name": "Dr. Smith",
-            "specialty": "Primary Care",
-            "location": "Main Clinic",
-            "appointment_date": _iso(today + timedelta(days=2)),
-            "appointment_time": "09:30",
-            "status": "scheduled",
-        },
-        {
-            "id": "a-later",
-            "provider_name": "Dr. Jones",
-            "specialty": "Cardiology",
-            "location": None,
-            "appointment_date": _iso(today + timedelta(days=10)),
-            "appointment_time": "14:00",
-            "status": "scheduled",
-        },
-        {
-            "id": "a-cancelled",
-            "provider_name": "Dr. Gray",
-            "specialty": None,
-            "location": None,
-            "appointment_date": _iso(today + timedelta(days=5)),
-            "appointment_time": "11:00",
-            "status": "cancelled",
-        },
-        {
-            "id": "a-past",
-            "provider_name": "Dr. Vale",
-            "specialty": "Dermatology",
-            "location": "Annex",
-            "appointment_date": _iso(today - timedelta(days=7)),
-            "appointment_time": "08:00",
-            "status": "completed",
-        },
-    ]
+    {
+        "id": "a-next",
+        "status": "scheduled",
+        "providers": {"title": "Dr.", "first_name": "Sam", "last_name": "Smith", "specialty": "Primary Care"},
+        "provider_availability": {"available_date": _iso(today + timedelta(days=2)), "available_time": "09:30"},
+    },
+    {
+        "id": "a-later",
+        "status": "scheduled",
+        "providers": {"title": "Dr.", "first_name": "Jo", "last_name": "Jones", "specialty": "Cardiology"},
+        "provider_availability": {"available_date": _iso(today + timedelta(days=10)), "available_time": "14:00"},
+    },
+    {
+        "id": "a-cancelled",
+        "status": "cancelled",
+        "providers": {"title": "Dr.", "first_name": "Gail", "last_name": "Gray", "specialty": None},
+        "provider_availability": {"available_date": _iso(today + timedelta(days=5)), "available_time": "11:00"},
+    },
+    {
+        "id": "a-past",
+        "status": "completed",
+        "providers": {"title": "Dr.", "first_name": "Val", "last_name": "Vale", "specialty": "Dermatology"},
+        "provider_availability": {"available_date": _iso(today - timedelta(days=7)), "available_time": "08:00"},
+    },
+]
 
 
 @pytest.fixture
@@ -105,7 +93,7 @@ class TestRun:
         reply = skill.run(ctx, filter="next", date=None)
         assert len(reply.payload["appointments"]) == 1
         assert reply.payload["appointments"][0]["id"] == "a-next"
-        assert "Next appointment: Dr. Smith" in reply.summary
+        assert "Next appointment: Dr. Sam Smith" in reply.summary
 
     def test_past_returns_only_past(self, skill, ctx):
         reply = skill.run(ctx, filter="past", date=None)
@@ -118,7 +106,7 @@ class TestRun:
         assert "requires a `date`" in reply.summary
 
     def test_on_date_matches_exact_day(self, skill, ctx, appts):
-        target = appts[0]["appointment_date"]
+        target = appts[0]["provider_availability"]["available_date"]
         reply = skill.run(ctx, filter="on_date", date=target)
         ids = [a["id"] for a in reply.payload["appointments"]]
         assert ids == ["a-next"]
@@ -153,23 +141,20 @@ class TestHelpers:
         assert _parse_date("not-a-date") is None
 
     def test_sort_key_orders_by_date_then_time(self):
-        early = {"appointment_date": "2026-06-01", "appointment_time": "08:00"}
-        late = {"appointment_date": "2026-06-01", "appointment_time": "09:00"}
+        early = {"provider_availability": {"available_date": "2026-06-01", "available_time": "08:00"}}
+        late = {"provider_availability": {"available_date": "2026-06-01", "available_time": "09:00"}}
         assert _sort_key(early) < _sort_key(late)
 
     def test_card_row_projects_expected_fields(self):
         row = _to_card_row(
             {
                 "id": "x",
-                "provider_name": "Dr. A",
-                "specialty": "Cardio",
-                "location": "Clinic",
-                "appointment_date": "2026-06-01",
-                "appointment_time": "08:00",
                 "status": "scheduled",
                 "notes": "n",
                 "secret": "should-not-appear",
+                "providers": {"title": "Dr.", "first_name": "Alice", "last_name": "Smith", "specialty": "Cardio"},
+                "provider_availability": {"available_date": "2026-06-01", "available_time": "08:00"},
             }
         )
         assert "secret" not in row
-        assert row["provider_name"] == "Dr. A"
+        assert row["provider_name"] == "Dr. Alice Smith"

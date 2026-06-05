@@ -18,6 +18,7 @@ from providers import router as providers_router
 from lab_results import router as lab_results_router
 from patients import router as patients_router
 from ai import router as ai_router
+from messages import router as messages_router
 
 app = FastAPI()
 
@@ -42,6 +43,7 @@ app.include_router(providers_router)
 app.include_router(lab_results_router)
 app.include_router(patients_router)
 app.include_router(ai_router)
+app.include_router(messages_router)
 
 
 @app.get("/")

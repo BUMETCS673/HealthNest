@@ -48,39 +48,41 @@ export default function BookingPage({
       providersApi.getProviders().catch(() => []),
     ])
       .then(([appointments, providers]) => {
-        // Distinct provider names from appointment history
-        const seenNames = new Set();
+        // Distinct providers from appointment history (keyed by provider_id)
+        const seenIds = new Set();
         const mine = [];
         for (const appt of [...appointments].reverse()) {
-          if (!seenNames.has(appt.provider_name)) {
-            seenNames.add(appt.provider_name);
+          if (appt.provider_id && !seenIds.has(appt.provider_id)) {
+            seenIds.add(appt.provider_id);
             mine.push({
-              provider_name: appt.provider_name,
-              specialty: appt.specialty || null,
-              location: appt.location || null,
+              id: appt.provider_id,
+              name: appt.providers
+                ? [
+                    appt.providers.title,
+                    appt.providers.first_name,
+                    appt.providers.last_name,
+                  ]
+                    .filter(Boolean)
+                    .join(" ")
+                : "Your provider",
+              specialty: appt.providers?.specialty || null,
             });
           }
         }
         setMyProviders(mine);
 
-        // All providers not already in the patient's history
+        // Providers the patient hasn't seen yet
         const available = providers
-          .filter((p) => {
-            const fullName = [p.title, p.first_name, p.last_name]
-              .filter(Boolean)
-              .join(" ");
-            return !seenNames.has(fullName);
-          })
+          .filter((p) => !seenIds.has(p.id))
           .map((p) => ({
-            provider_name: [p.title, p.first_name, p.last_name]
+            id: p.id,
+            name: [p.title, p.first_name, p.last_name]
               .filter(Boolean)
               .join(" "),
             specialty: p.specialty || null,
-            location: null,
           }));
         setNewProviders(available);
 
-        // If the patient has no history, jump straight to find-a-doctor view
         if (mine.length === 0) setShowFindDoctor(true);
       })
       .catch(() => {})
@@ -111,6 +113,7 @@ export default function BookingPage({
               onClick={() => {
                 if (link === "Dashboard") onNavigate?.("dashboard");
                 if (link === "Appointments") onNavigate?.("appointments");
+                if (link === "Messages") onNavigate?.("messages");
               }}
             >
               {link}
@@ -183,9 +186,9 @@ export default function BookingPage({
                 <div className="bp-grid">
                   {myProviders.map((p) => (
                     <ProviderCard
-                      key={p.provider_name}
+                      key={p.id}
                       provider={p}
-                      onClick={() => setSelectedProvider(p.provider_name)}
+                      onClick={() => setSelectedProvider(p)}
                     />
                   ))}
                 </div>
@@ -212,9 +215,9 @@ export default function BookingPage({
                     <div className="bp-grid">
                       {newProviders.map((p) => (
                         <ProviderCard
-                          key={p.provider_name}
+                          key={p.id}
                           provider={p}
-                          onClick={() => setSelectedProvider(p.provider_name)}
+                          onClick={() => setSelectedProvider(p)}
                         />
                       ))}
                     </div>
@@ -240,7 +243,8 @@ export default function BookingPage({
 
       {selectedProvider && (
         <AppointmentModal
-          providerName={selectedProvider}
+          providerID={selectedProvider.id}
+          providerName={selectedProvider.name}
           onClose={() => setSelectedProvider(null)}
           onBooked={() => {
             setSelectedProvider(null);
@@ -258,11 +262,10 @@ function ProviderCard({ provider, onClick }) {
       <div className="bp-card-avatar">
         <User size={28} />
       </div>
-      <p className="bp-card-name">{provider.provider_name}</p>
+      <p className="bp-card-name">{provider.name}</p>
       {provider.specialty && (
         <span className="bp-card-badge">{provider.specialty}</span>
       )}
-      {provider.location && <p className="bp-card-loc">{provider.location}</p>}
     </button>
   );
 }

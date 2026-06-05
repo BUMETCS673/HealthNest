@@ -79,6 +79,10 @@ def current_patient(user: dict[str, Any] = Depends(current_user)) -> dict[str, A
     return rows[0]
 
 
+def current_patient_id(patient: dict[str, Any] = Depends(current_patient)) -> str:
+    return patient["id"]
+
+
 def provider_has_active_relationship(provider_id: str, patient_id: str) -> bool:
     now_iso = datetime.now(timezone.utc).isoformat()
     admin = get_supabase_admin()

@@ -5,10 +5,22 @@
  * AI-Assisted Areas: Drafted the date-pill / row layout that visually matches the existing PatientDashboard upcoming-appointments tile.
  * Human Contributions: Tied the "Open in Appointments" button into the dashboard onNavigate('appointments') hook so the card never owns its own fetcher; empty-state copy is patient-facing, not engineer-facing.
  */
-import { Calendar, MapPin, Stethoscope, ExternalLink } from "lucide-react";
+import { Calendar, Stethoscope, ExternalLink } from "lucide-react";
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 
 function fmtDate(d) {
   if (!d) return { m: "–", n: "–" };
@@ -31,10 +43,10 @@ export default function AppointmentsCard({ payload, onNavigate }) {
     payload?.filter === "next"
       ? "Your next appointment"
       : payload?.filter === "past"
-      ? "Past appointments"
-      : payload?.filter === "on_date"
-      ? "Appointments on that date"
-      : "Your upcoming appointments";
+        ? "Past appointments"
+        : payload?.filter === "on_date"
+          ? "Appointments on that date"
+          : "Your upcoming appointments";
 
   return (
     <div className="pulse-card pulse-card--appts">
@@ -76,15 +88,11 @@ export default function AppointmentsCard({ payload, onNavigate }) {
                   <p className="pulse-appt-meta">
                     <Stethoscope size={11} />
                     <span>{fmtTime(a.appointment_time)}</span>
-                    {a.location && (
-                      <>
-                        <MapPin size={11} />
-                        <span>{a.location}</span>
-                      </>
-                    )}
                   </p>
                 </div>
-                <span className={`pulse-appt-status pulse-appt-status--${a.status}`}>
+                <span
+                  className={`pulse-appt-status pulse-appt-status--${a.status}`}
+                >
                   {a.status}
                 </span>
               </li>
