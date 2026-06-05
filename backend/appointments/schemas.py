@@ -31,6 +31,15 @@ class AppointmentNotesUpdate(BaseModel):
 class AppointmentReschedule(BaseModel):
     availability_id: str
 
+class ProviderSummary(BaseModel):
+    title: str | None = None
+    first_name: str
+    last_name: str
+    specialty: str | None = None
+
+class AppointmentAvailability(BaseModel):
+    available_date: str
+    available_time: str
 
 class AppointmentOut(BaseModel):
     id: str
@@ -41,11 +50,8 @@ class AppointmentOut(BaseModel):
     notes: str | None = None
     created_at: str | None = None
     updated_at: str | None = None
-
-class ProviderSummary(BaseModel):
-    first_name: str
-    last_name: str
-    specialty: str
+    providers: ProviderSummary | None = None
+    provider_availability: AppointmentAvailability | None = None
 
 class AvailabilitySlot(BaseModel):
     id: str
@@ -54,4 +60,4 @@ class AvailabilitySlot(BaseModel):
     available_time: str
     created_at: str | None = None
     is_booked: bool
-    provider: ProviderSummary
+    providers: ProviderSummary

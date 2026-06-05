@@ -111,7 +111,9 @@ export default function PatientDashboard({
         const upcoming = data
           .map(apptToDisplayRow)
           .filter((a) => {
-            const d = new Date(a.raw.appointment_date + "T00:00:00");
+            const d = new Date(
+              a.raw.provider_availability?.available_date + "T00:00:00",
+            );
             return d >= today && a.status === "scheduled";
           })
           .slice(0, 3);
@@ -390,9 +392,7 @@ export default function PatientDashboard({
 
                     <div className="dash-appt-info">
                       <p className="dash-appt-doctor">{appt.doctor}</p>
-                      <p className="dash-appt-specialty">
-                        {appt.specialty} · {appt.address}
-                      </p>
+                      <p className="dash-appt-specialty">{appt.specialty}</p>
                     </div>
 
                     <div className="dash-appt-time">

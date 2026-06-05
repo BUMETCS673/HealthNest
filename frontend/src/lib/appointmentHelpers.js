@@ -33,27 +33,6 @@ export function formatApptDate(dateStr) {
   });
 }
 
-export function apptToDisplayRow(appt) {
-  const d = new Date(appt.appointment_date + "T12:00:00");
-
-  return {
-    id: appt.id,
-    month: d.toLocaleDateString("en-US", { month: "short" }),
-    day: String(d.getDate()),
-    doctor: appt.provider_name,
-    specialty: appt.specialty || "",
-    date: d.toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    }),
-    time: formatApptTime(appt.appointment_time),
-    address: appt.location || "",
-    status: appt.status,
-    raw: appt,
-  };
-}
-
 export function parseLocal(str) {
   const [y, m, d] = str.split("-").map(Number);
   return new Date(y, m - 1, d);

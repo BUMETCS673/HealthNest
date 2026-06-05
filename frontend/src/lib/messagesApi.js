@@ -1,11 +1,13 @@
 const BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 function authHeaders() {
-  const session = JSON.parse(
-    localStorage.getItem("sb-tuujofmwfricjqdhqnsd-auth-token") ?? "{}",
-  );
-  const token = session?.access_token;
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  try {
+    const raw = localStorage.getItem("healthnest.session");
+    const token = raw ? JSON.parse(raw)?.access_token : null;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  } catch {
+    return {};
+  }
 }
 
 async function request(path, options = {}) {

@@ -8,7 +8,7 @@
 
 from fastapi import APIRouter, Depends, status
 
-from deps import current_user_id
+from auth.deps import current_patient_id
 from .schemas import AppointmentCreate, AppointmentOut, AppointmentNotesUpdate, AvailabilitySlot, AppointmentReschedule
 from . import service
 
@@ -25,7 +25,7 @@ def get_availability():
 
 
 @router.get("/", response_model=list[AppointmentOut])
-def get_appointments(patient_id: str = Depends(current_user_id)):
+def get_appointments(patient_id: str = Depends(current_patient_id)):
     """List all appointments for the authenticated patient."""
     return service.get_appointments(patient_id)
 
@@ -34,7 +34,7 @@ def get_appointments(patient_id: str = Depends(current_user_id)):
 @router.post("/", response_model=AppointmentOut, status_code=status.HTTP_201_CREATED)
 def create_appointment(
     payload: AppointmentCreate,
-    patient_id: str = Depends(current_user_id),
+    patient_id: str = Depends(current_patient_id),
 ):
     """Book a new appointment."""
     return service.create_appointment(patient_id, payload)
@@ -45,7 +45,7 @@ def create_appointment(
 def edit_appointment_notes(
     appointment_id: str,
     payload: AppointmentNotesUpdate,
-    patient_id: str = Depends(current_user_id),
+    patient_id: str = Depends(current_patient_id),
 ):
     """Update notes on an appointment."""
     return service.edit_appointment_notes(appointment_id, patient_id, payload)
@@ -55,7 +55,7 @@ def edit_appointment_notes(
 def reschedule_appointment(
     appointment_id: str,
     payload: AppointmentReschedule,
-    patient_id: str = Depends(current_user_id),
+    patient_id: str = Depends(current_patient_id),
 ):
     return service.reschedule_appointment(
         appointment_id,
@@ -68,7 +68,7 @@ def reschedule_appointment(
 @router.post("/{appointment_id}/cancel", status_code=status.HTTP_204_NO_CONTENT)
 def cancel_appointment(
     appointment_id: str,
-    patient_id: str = Depends(current_user_id),
+    patient_id: str = Depends(current_patient_id),
 ):
     """Soft-cancel an appointment (sets status → 'cancelled')."""
     service.cancel_appointment(appointment_id, patient_id)

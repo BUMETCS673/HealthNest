@@ -64,11 +64,11 @@ class AppointmentsSkill(AISkill):
         today = date.today()
 
         def is_upcoming(a: dict[str, Any]) -> bool:
-            d = _parse_date(a.get("appointment_date"))
+            d = _parse_date(_appt_date(a))
             return d is not None and d >= today and a.get("status") == "scheduled"
 
         def is_past(a: dict[str, Any]) -> bool:
-            d = _parse_date(a.get("appointment_date"))
+            d = _parse_date(_appt_date(a))
             return d is not None and d < today
 
         if filt == "upcoming":
@@ -91,7 +91,7 @@ class AppointmentsSkill(AISkill):
                     summary="filter='on_date' requires a `date` argument (YYYY-MM-DD).",
                     payload={"appointments": [], "filter": filt},
                 )
-            picked = [a for a in all_appts if a.get("appointment_date") == on_date]
+            picked = [a for a in all_appts if _appt_date(a) == on_date]
         else:  # "all"
             picked = sorted(all_appts, key=_sort_key)[:_MAX_RETURNED]
 
@@ -103,7 +103,6 @@ class AppointmentsSkill(AISkill):
             payload={"appointments": rows, "filter": filt},
         )
 
-
 def _parse_date(s: str | None) -> date | None:
     if not s:
         return None
@@ -111,20 +110,30 @@ def _parse_date(s: str | None) -> date | None:
         return datetime.fromisoformat(s).date()
     except (TypeError, ValueError):
         return None
+    
+def _appt_date(a):
+    return (a.get("provider_availability") or {}).get("available_date")
+
+def _appt_time(a):
+    return (a.get("provider_availability") or {}).get("available_time")
 
 
 def _sort_key(a: dict[str, Any]) -> tuple[str, str]:
-    return (a.get("appointment_date") or "", a.get("appointment_time") or "")
+    return (_appt_date(a) or "", _appt_time(a) or "")
 
 
 def _to_card_row(a: dict[str, Any]) -> dict[str, Any]:
+    prov = a.get("providers") or {}
+    avail = a.get("provider_availability") or {}
+    name = " ".join(
+        x for x in [prov.get("title"), prov.get("first_name"), prov.get("last_name")] if x
+    )
     return {
         "id": a.get("id"),
-        "provider_name": a.get("provider_name"),
-        "specialty": a.get("specialty"),
-        "location": a.get("location"),
-        "appointment_date": a.get("appointment_date"),
-        "appointment_time": a.get("appointment_time"),
+        "provider_name": name,
+        "specialty": prov.get("specialty"),
+        "appointment_date": avail.get("available_date"),
+        "appointment_time": avail.get("available_time"),
         "status": a.get("status"),
         "notes": a.get("notes"),
     }
@@ -146,6 +155,5 @@ def _summarize(filt: str, rows: list[dict[str, Any]]) -> str:
             f"Next appointment: {a['provider_name']}"
             + (f" ({a['specialty']})" if a.get("specialty") else "")
             + f" on {a['appointment_date']} at {a['appointment_time']}"
-            + (f" — {a['location']}." if a.get("location") else ".")
         )
     return f"Returned {len(rows)} {filt} appointment(s)."

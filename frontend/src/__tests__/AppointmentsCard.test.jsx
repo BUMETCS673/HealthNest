@@ -13,7 +13,6 @@ const appointment = {
   id: "a1",
   provider_name: "Dr. Taylor Smith",
   specialty: "Primary Care",
-  location: "Main Clinic",
   appointment_date: "2026-06-20",
   appointment_time: "14:30",
   status: "scheduled",
@@ -45,7 +44,6 @@ describe("AppointmentsCard", () => {
     expect(screen.getByText("Dr. Taylor Smith")).toBeInTheDocument();
     expect(screen.getByText("· Primary Care")).toBeInTheDocument();
     expect(screen.getByText("2:30 PM")).toBeInTheDocument();
-    expect(screen.getByText("Main Clinic")).toBeInTheDocument();
   });
 
   test("renders the date pill from the appointment date", () => {
@@ -57,7 +55,10 @@ describe("AppointmentsCard", () => {
   test("fires onNavigate('appointments') from the Open link", () => {
     const onNavigate = jest.fn();
     render(
-      <AppointmentsCard payload={{ appointments: [] }} onNavigate={onNavigate} />,
+      <AppointmentsCard
+        payload={{ appointments: [] }}
+        onNavigate={onNavigate}
+      />,
     );
     fireEvent.click(screen.getByText("Open"));
     expect(onNavigate).toHaveBeenCalledWith("appointments");

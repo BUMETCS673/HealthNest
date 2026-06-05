@@ -1,12 +1,12 @@
 import {
   formatApptTime,
   formatApptDate,
-  apptToDisplayRow,
   parseLocal,
   toDateKey,
   weekStart,
   weekKeys,
 } from "../lib/appointmentHelpers";
+import { apptToDisplayRow } from "../lib/appointmentsApi";
 
 describe("Appointment Scheduler helper tests", () => {
   describe("formatApptTime", () => {
@@ -42,37 +42,40 @@ describe("Appointment Scheduler helper tests", () => {
   });
 
   describe("apptToDisplayRow", () => {
-    // AI-generated sample data: 70% (tool: ChatGPT; generated realistic appointment test data)
-    // Human: 30% (verified field names match actual API response shape)
     const appointment = {
       id: 1,
-      provider_name: "Dr. Taylor Smith",
-      specialty: "Primary Care",
-      location: "Main Clinic",
-      appointment_date: "2026-06-20",
-      appointment_time: "09:30",
       status: "scheduled",
+      providers: {
+        first_name: "Taylor",
+        last_name: "Smith",
+        specialty: "Primary Care",
+      },
+      provider_availability: {
+        available_date: "2026-06-20",
+        available_time: "09:30",
+      },
     };
 
     test("formats appointment data for the appointment card", () => {
       const result = apptToDisplayRow(appointment);
-
       expect(result).toMatchObject({
         id: 1,
-        doctor: "Dr. Taylor Smith",
+        doctor: "Taylor Smith",
         specialty: "Primary Care",
         time: "9:30 AM",
         month: "Jun",
         day: "20",
-        address: "Main Clinic",
         status: "scheduled",
       });
     });
 
-    test("handles missing location without showing undefined", () => {
-      expect(apptToDisplayRow({ ...appointment, location: null }).address).toBe(
-        "",
-      );
+    test("degrades gracefully when the join data is missing", () => {
+      const result = apptToDisplayRow({
+        ...appointment,
+        provider_availability: null,
+      });
+      expect(result.time).toBe("");
+      expect(result.month).toBe("");
     });
   });
 

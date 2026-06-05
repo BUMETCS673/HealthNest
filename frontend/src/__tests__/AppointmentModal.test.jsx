@@ -11,7 +11,7 @@ jest.mock("../lib/appointmentsApi", () => ({
   appointmentsApi: {
     getAvailability: jest.fn(),
     createAppointment: jest.fn(),
-    cancelAppointment: jest.fn(),
+    rescheduleAppointment: jest.fn(),
   },
   formatApptDate: jest.fn((date) => `Formatted: ${date}`),
   formatApptTime: jest.fn((time) => {
@@ -30,19 +30,27 @@ jest.mock("../lib/appointmentsApi", () => ({
 const mockSlots = [
   {
     id: "slot-1",
-    provider_name: "Dr. Emily Park",
-    specialty: "Cardiology",
-    location: "Boston Medical Center",
+    provider_id: "prov-1",
     available_date: "2026-06-20",
     available_time: "09:30",
+    is_booked: false,
+    providers: {
+      first_name: "Emily",
+      last_name: "Park",
+      specialty: "Cardiology",
+    },
   },
   {
     id: "slot-2",
-    provider_name: "Dr. Emily Park",
-    specialty: "Cardiology",
-    location: "Boston Medical Center",
+    provider_id: "prov-1",
     available_date: "2026-06-20",
     available_time: "14:00",
+    is_booked: false,
+    providers: {
+      first_name: "Emily",
+      last_name: "Park",
+      specialty: "Cardiology",
+    },
   },
 ];
 
@@ -50,7 +58,7 @@ describe("AppointmentModal", () => {
   beforeEach(() => {
     appointmentsApi.getAvailability.mockResolvedValue([]);
     appointmentsApi.createAppointment.mockResolvedValue({});
-    appointmentsApi.cancelAppointment.mockResolvedValue({});
+    appointmentsApi.rescheduleAppointment.mockResolvedValue({});
   });
 
   afterEach(() => {
@@ -62,7 +70,7 @@ describe("AppointmentModal", () => {
       <AppointmentModal
         onClose={jest.fn()}
         onBooked={jest.fn()}
-        providerName='Dr. Emily Park'
+        providerId="prov-1"
       />,
     );
 
@@ -80,7 +88,7 @@ describe("AppointmentModal", () => {
       <AppointmentModal
         onClose={jest.fn()}
         onBooked={jest.fn()}
-        providerName='Dr. Emily Park'
+        providerId="prov-1"
       />,
     );
 
@@ -98,7 +106,7 @@ describe("AppointmentModal", () => {
       <AppointmentModal
         onClose={jest.fn()}
         onBooked={jest.fn()}
-        providerName='Dr. Emily Park'
+        providerId="prov-1"
       />,
     );
 
@@ -114,7 +122,7 @@ describe("AppointmentModal", () => {
       <AppointmentModal
         onClose={jest.fn()}
         onBooked={jest.fn()}
-        providerName='Dr. Emily Park'
+        providerId="prov-1"
       />,
     );
 
@@ -132,8 +140,8 @@ describe("AppointmentModal", () => {
       <AppointmentModal
         onClose={jest.fn()}
         onBooked={jest.fn()}
-        providerName='Dr. Emily Park'
-        rescheduleId='appt-1'
+        providerId="prov-1"
+        rescheduleId="appt-1"
       />,
     );
 
@@ -153,7 +161,7 @@ describe("AppointmentModal", () => {
       <AppointmentModal
         onClose={onClose}
         onBooked={jest.fn()}
-        providerName='Dr. Emily Park'
+        providerId="prov-1"
       />,
     );
 

@@ -5,7 +5,6 @@ import {
   ChevronDown,
   Clock,
   LogOut,
-  MapPin,
   Plus,
   RefreshCw,
   Stethoscope,
@@ -13,15 +12,15 @@ import {
   X,
 } from "lucide-react";
 import { appointmentsApi, apptToDisplayRow } from "./lib/appointmentsApi";
-import { authApi } from "./lib/authApi";
 import AppointmentModal from "./AppointmentModal";
 import "./AppointmentsPage.css";
 
 const STATUS_META = {
+  pending: { label: "Pending", cls: "ap-status--pending" },
   scheduled: { label: "Scheduled", cls: "ap-status--scheduled" },
-  cancelled: { label: "Cancelled", cls: "ap-status--cancelled" },
   completed: { label: "Completed", cls: "ap-status--completed" },
-  rescheduled: { label: "Rescheduled", cls: "ap-status--rescheduled" },
+  cancelled: { label: "Cancelled", cls: "ap-status--cancelled" },
+  no_show: { label: "No-Show", cls: "ap-status--no-show" },
 };
 
 const TABS = ["Upcoming", "Past", "All"];
@@ -48,8 +47,6 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [menuOpen]);
 
-  const firstName =
-    user?.user_metadata?.first_name || user?.email?.split("@")[0] || "there";
   const fullName =
     `${user?.user_metadata?.first_name || ""} ${user?.user_metadata?.last_name || ""}`.trim() ||
     user?.email ||
@@ -70,13 +67,30 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  const isUpcoming = (a) => {
+    const dateStr = a.raw.provider_availability?.available_date;
+    if (!dateStr) return false;
+    return (
+      new Date(dateStr + "T00:00:00") >= today &&
+      (a.status === "scheduled" || a.status === "pending")
+    );
+  };
+
+  const isPast = (a) => {
+    const dateStr = a.raw.provider_availability?.available_date;
+    if (!dateStr) return false;
+    return (
+      new Date(dateStr + "T00:00:00") < today ||
+      a.status === "cancelled" ||
+      a.status === "completed"
+    );
+  };
+
+  const upcomingCount = appointments.filter(isUpcoming).length;
+
   const filtered = appointments.filter((a) => {
-    const d = new Date(a.raw.appointment_date + "T00:00:00");
-    const isUpcoming = d >= today && a.status === "scheduled";
-    const isPast =
-      d < today || a.status === "cancelled" || a.status === "completed";
-    if (activeTab === "Upcoming") return isUpcoming;
-    if (activeTab === "Past") return isPast;
+    if (activeTab === "Upcoming") return isUpcoming(a);
+    if (activeTab === "Past") return isPast(a);
     return true;
   });
 
@@ -95,7 +109,10 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
 
   const handleReschedule = (appt) => {
     setRescheduleId(appt.id);
-    setRescheduleProvider(appt.raw?.provider_name ?? null);
+    setRescheduleProvider({
+      id: appt.raw.provider_id,
+      name: `${appt.raw.providers.first_name} ${appt.raw.providers.last_name}`,
+    });
   };
 
   const navLinks = [
@@ -176,10 +193,7 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
         <div className="ap-header">
           <div>
             <h1 className="ap-title">My Appointments</h1>
-            <p className="ap-sub">
-              {appointments.filter((a) => a.status === "scheduled").length}{" "}
-              upcoming
-            </p>
+            <p className="ap-sub">{upcomingCount} upcoming</p>
           </div>
           <button
             className="ap-book-btn"
@@ -199,14 +213,7 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
             >
               {tab}
               {tab === "Upcoming" && (
-                <span className="ap-tab-count">
-                  {
-                    appointments.filter((a) => {
-                      const d = new Date(a.raw.appointment_date + "T00:00:00");
-                      return d >= today && a.status === "scheduled";
-                    }).length
-                  }
-                </span>
+                <span className="ap-tab-count">{upcomingCount}</span>
               )}
             </button>
           ))}
@@ -236,7 +243,7 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
           <div className="ap-list">
             {filtered.map((appt) => {
               const meta = STATUS_META[appt.status] || STATUS_META.scheduled;
-              const canAct = appt.status === "scheduled";
+              const canAct = ["scheduled", "pending"].includes(appt.status);
               return (
                 <div key={appt.id} className="ap-card">
                   {/* Date badge */}
@@ -256,11 +263,7 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
                         {meta.label}
                       </span>
                     </div>
-                    <p className="ap-card-detail">
-                      {[appt.specialty, appt.address]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </p>
+                    <p className="ap-card-detail">{appt.specialty}</p>
                     <p className="ap-card-time">
                       <Clock size={13} />
                       {appt.time}
@@ -271,12 +274,6 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
                         </>
                       )}
                     </p>
-                    {appt.address && (
-                      <p className="ap-card-loc">
-                        <MapPin size={13} />
-                        {appt.address}
-                      </p>
-                    )}
                   </div>
 
                   {/* Actions */}
@@ -354,7 +351,8 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
       {rescheduleId && (
         <AppointmentModal
           rescheduleId={rescheduleId}
-          providerName={rescheduleProvider}
+          providerId={rescheduleProvider?.id}
+          providerName={rescheduleProvider?.name}
           onClose={() => {
             setRescheduleId(null);
             setRescheduleProvider(null);
