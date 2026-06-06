@@ -8,7 +8,6 @@ Human Contributions: Authorization model and role gating, active-relationship ti
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from typing import Any
 
 from fastapi import Depends, Header, HTTPException, status
@@ -84,20 +83,17 @@ def current_patient_id(patient: dict[str, Any] = Depends(current_patient)) -> st
 
 
 def provider_has_active_relationship(provider_id: str, patient_id: str) -> bool:
-    now_iso = datetime.now(timezone.utc).isoformat()
     admin = get_supabase_admin()
     resp = (
         admin.table("patient_provider_relationships")
-        .select("id, ended_at, started_at")
+        .select("id")
         .eq("provider_id", provider_id)
         .eq("patient_id", patient_id)
-        .lte("started_at", now_iso)
+        .eq("status", "active")
+        .limit(1)
         .execute()
     )
-    for row in resp.data or []:
-        if row["ended_at"] is None or row["ended_at"] > now_iso:
-            return True
-    return False
+    return bool(resp.data)
 
 
 def require_active_relationship(provider_id: str, patient_id: str) -> None:

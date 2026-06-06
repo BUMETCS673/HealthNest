@@ -3,12 +3,11 @@ AI-USAGE SUMMARY
 Tools: Opus 4.7
 Overall AI Contribution: ~55%
 AI-Assisted Areas: Wrote the supabase-py query chains (in_, ilike OR-filter, ordering) and the active-relationship-id resolution helper.
-Human Contributions: Care-team scoping enforcement, ilike escape logic for PostgREST's `,` and `.` delimiters, the decision to filter post-fetch on ended_at to avoid an OR-clause that PostgREST doesn't handle cleanly, and the column whitelist that keeps *_enc PHI server-side.
+Human Contributions: Care-team scoping enforcement, ilike escape logic for PostgREST's `,` and `.` delimiters, scoping active care-team membership on the relationship `status` column, and the column whitelist that keeps *_enc PHI server-side.
 """
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from typing import Any
 
 from fastapi import HTTPException, status
@@ -21,20 +20,15 @@ _SAFE_COLUMNS = "id, first_name, last_name, preferred_name, mrn, date_of_birth"
 
 
 def _active_patient_ids_for_provider(provider_id: str) -> list[str]:
-    now_iso = datetime.now(timezone.utc).isoformat()
     resp = (
         get_supabase_admin()
         .table("patient_provider_relationships")
-        .select("patient_id, started_at, ended_at")
+        .select("patient_id")
         .eq("provider_id", provider_id)
-        .lte("started_at", now_iso)
+        .eq("status", "active")
         .execute()
     )
-    return [
-        r["patient_id"]
-        for r in (resp.data or [])
-        if r["ended_at"] is None or r["ended_at"] > now_iso
-    ]
+    return [r["patient_id"] for r in (resp.data or [])]
 
 
 def _escape_ilike(term: str) -> str:

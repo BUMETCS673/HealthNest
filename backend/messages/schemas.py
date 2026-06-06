@@ -11,3 +11,8 @@ class MessageOut(BaseModel):
     body: str
     sent_at: str
     read_at: str | None = None
+
+class ContactOut(BaseModel):
+    user_id: str                 # the counterpart's auth id → use as recipient_id
+    name: str
+    specialty: str | None = None

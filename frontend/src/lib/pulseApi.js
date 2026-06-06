@@ -1,3 +1,5 @@
+import { authApi } from "./authApi";
+
 /**
  * AI-USAGE SUMMARY
  * Tools: Opus 4.7
@@ -7,20 +9,9 @@
  */
 const API_URL =
   import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:8000";
-const SESSION_STORAGE_KEY = "healthnest.session";
-
-function token() {
-  try {
-    const raw = localStorage.getItem(SESSION_STORAGE_KEY);
-    return raw ? JSON.parse(raw)?.access_token ?? null : null;
-  } catch {
-    return null;
-  }
-}
-
-async function jsonRequest(path, { method = "GET", body } = {}) {
+async function jsonRequest(path, { method = "GET", body } = {}, retry = true) {
+  const t = await authApi.getValidAccessToken();
   const headers = { "Content-Type": "application/json" };
-  const t = token();
   if (t) headers.Authorization = `Bearer ${t}`;
 
   const res = await fetch(`${API_URL}${path}`, {
@@ -28,6 +19,11 @@ async function jsonRequest(path, { method = "GET", body } = {}) {
     headers,
     body: body ? JSON.stringify(body) : undefined,
   });
+
+  if (res.status === 401 && retry) {
+    const refreshed = await authApi.refreshSession();
+    if (refreshed) return jsonRequest(path, { method, body }, false);
+  }
 
   if (res.status === 204) return null;
   const data = await res.json().catch(() => ({}));
@@ -44,9 +40,10 @@ async function jsonRequest(path, { method = "GET", body } = {}) {
 async function streamMessage(
   conversationId,
   content,
-  { onDelta, onSkillOutput, onCitation, onDone, onError, signal } = {}
+  { onDelta, onSkillOutput, onCitation, onDone, onError, signal } = {},
+  retry = true,
 ) {
-  const t = token();
+  const t = await authApi.getValidAccessToken();
   const headers = {
     "Content-Type": "application/json",
     Accept: "text/event-stream",
@@ -62,7 +59,7 @@ async function streamMessage(
         headers,
         body: JSON.stringify({ content, stream: true }),
         signal,
-      }
+      },
     );
   } catch (err) {
     onError?.(err);
@@ -70,6 +67,17 @@ async function streamMessage(
   }
 
   if (!res.ok || !res.body) {
+    if (res.status === 401 && retry) {
+      const refreshed = await authApi.refreshSession();
+      if (refreshed) {
+        return streamMessage(
+          conversationId,
+          content,
+          { onDelta, onSkillOutput, onCitation, onDone, onError, signal },
+          false,
+        );
+      }
+    }
     let detail = `HTTP ${res.status}`;
     try {
       const j = await res.json();
@@ -116,7 +124,10 @@ async function streamMessage(
     buffer += decoder.decode(value, { stream: true });
 
     let sepIdx;
-    while ((sepIdx = buffer.indexOf("\r\n\r\n")) !== -1 || (sepIdx = buffer.indexOf("\n\n")) !== -1) {
+    while (
+      (sepIdx = buffer.indexOf("\r\n\r\n")) !== -1 ||
+      (sepIdx = buffer.indexOf("\n\n")) !== -1
+    ) {
       const block = buffer.slice(0, sepIdx);
       const sepLen = buffer.slice(sepIdx, sepIdx + 4) === "\r\n\r\n" ? 4 : 2;
       buffer = buffer.slice(sepIdx + sepLen);

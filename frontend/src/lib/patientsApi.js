@@ -1,3 +1,5 @@
+import { authApi } from "./authApi";
+
 /**
  * AI-USAGE SUMMARY
  * Tools: Opus 4.7
@@ -7,22 +9,17 @@
  */
 const API_URL =
   import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:8000";
-const SESSION_STORAGE_KEY = "healthnest.session";
-
-function token() {
-  try {
-    const raw = localStorage.getItem(SESSION_STORAGE_KEY);
-    return raw ? JSON.parse(raw)?.access_token ?? null : null;
-  } catch {
-    return null;
-  }
-}
-
-async function request(path) {
+async function request(path, retry = true) {
+  const t = await authApi.getValidAccessToken();
   const headers = {};
-  const t = token();
   if (t) headers.Authorization = `Bearer ${t}`;
   const res = await fetch(`${API_URL}${path}`, { headers });
+
+  if (res.status === 401 && retry) {
+    const refreshed = await authApi.refreshSession();
+    if (refreshed) return request(path, false);
+  }
+
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     const detail =

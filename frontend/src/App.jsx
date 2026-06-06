@@ -72,6 +72,13 @@ export default function App() {
     return () => window.removeEventListener("popstate", onPop);
   }, []);
 
+  // Proactively refresh the access token before it expires (the timer
+  // checks the stored session itself, so it's a no-op when signed out)
+  useEffect(() => {
+    authApi.startAutoRefresh();
+    return () => authApi.stopAutoRefresh();
+  }, []);
+
   const handleSignOut = () => {
     authApi.signOut();
     setSession(null);
