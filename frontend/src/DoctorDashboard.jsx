@@ -42,6 +42,8 @@ import {
 import LabResultsPage from "./LabResultsPage";
 import LabResultReview from "./LabResultReview";
 import { authApi } from "./lib/authApi";
+import { useMessages } from "./messages/MessagesProvider";
+import MessagesView from "./messages/MessagesView";
 
 // For specialty display/default setting
 function formatRole(role) {
@@ -384,7 +386,7 @@ export default function DoctorDashboard({ user, onSignOut }) {
   }
 
   //dashboard counts
-  const unreadMessages = 0;
+  const { unreadCount: unreadMessages } = useMessages();
   const signNotesCount = 0;
   const inboxCount = 0;
 
@@ -457,10 +459,15 @@ export default function DoctorDashboard({ user, onSignOut }) {
           </span>
 
           {navOption.map((option) => {
-            const isLabsView = view !== "home";
             const isActive =
-              (option === "Patient Records" && isLabsView) ||
-              (option === "Dashboard" && !isLabsView);
+              (option === "Dashboard" && view === "home") ||
+              (option === "Patient Records" &&
+                (view === "labs" ||
+                  view === "lab-review" ||
+                  view === "full-chart")) ||
+              (option === "Messages" && view === "messages") ||
+              (option === "Schedule" && view === "schedule") ||
+              (option === "Pulse AI" && view === "pulse");
             const buttonClass = isActive
               ? "doc-nav-link active"
               : "doc-nav-link";
@@ -581,6 +588,8 @@ export default function DoctorDashboard({ user, onSignOut }) {
             }}
           />
         )}
+
+        {view === "messages" && <MessagesView myId={user?.id} />}
 
         {view === "full-chart" && selectedChart && (
           <div className="patient-record-page">

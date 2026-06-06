@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { appointmentsApi, apptToDisplayRow } from "./lib/appointmentsApi";
 import AppointmentModal from "./AppointmentModal";
+import { useMessages } from "./messages/MessagesProvider";
 import "./AppointmentsPage.css";
 
 const STATUS_META = {
@@ -115,6 +116,8 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
     });
   };
 
+  const { unreadCount } = useMessages();
+
   const navLinks = [
     "Dashboard",
     "Appointments",
@@ -143,6 +146,9 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
               }}
             >
               {link}
+              {link === "Messages" && unreadCount > 0 && (
+                <span className="mp-nav-badge">{unreadCount}</span>
+              )}
             </button>
           ))}
         </div>

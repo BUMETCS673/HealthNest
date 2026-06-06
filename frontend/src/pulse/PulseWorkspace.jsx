@@ -17,6 +17,7 @@ import ConversationSidebar from "./ConversationSidebar";
 import ConversationThread from "./ConversationThread";
 import Composer from "./Composer";
 import { pulseApi } from "../lib/pulseApi";
+import { useMessages } from "../messages/MessagesProvider";
 import "../AppointmentsPage.css";
 import "./PulseWorkspace.css";
 
@@ -43,6 +44,7 @@ export default function PulseWorkspace({ user, onNavigate, onSignOut }) {
     refreshConversations,
   } = usePulse();
 
+  const { unreadCount } = useMessages();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const mountedRef = useRef(false);
@@ -74,6 +76,7 @@ export default function PulseWorkspace({ user, onNavigate, onSignOut }) {
     if (link === "Dashboard") onNavigate?.("dashboard");
     else if (link === "Appointments") onNavigate?.("appointments");
     else if (link === "Records") onNavigate?.("labs");
+    else if (link === "Messages") onNavigate?.("messages");
     else if (link === "Pulse AI") onNavigate?.("pulse");
   };
 
@@ -91,6 +94,9 @@ export default function PulseWorkspace({ user, onNavigate, onSignOut }) {
               onClick={() => handleNavClick(link)}
             >
               {link}
+              {link === "Messages" && unreadCount > 0 && (
+                <span className="mp-nav-badge">{unreadCount}</span>
+              )}
             </button>
           ))}
         </div>

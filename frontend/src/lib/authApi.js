@@ -70,7 +70,7 @@ function decodeJwtExp(token) {
 
 function isExpiringSoon(token, skewSeconds = 60) {
   const exp = decodeJwtExp(token);
-  if (!exp) return true; // unreadable → treat as expiring
+  if (!exp) return false; // unreadable → rely on the reactive 401-retry instead
   return exp * 1000 <= Date.now() + skewSeconds * 1000;
 }
 

@@ -119,7 +119,7 @@ describe("AppointmentsPage", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Dr. Emily Park")).toBeInTheDocument();
+      expect(screen.getByText("Emily Park")).toBeInTheDocument();
     });
 
     expect(screen.getAllByText("Cardiology").length).toBeGreaterThan(0);
@@ -139,14 +139,14 @@ describe("AppointmentsPage", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Dr. Emily Park")).toBeInTheDocument();
+      expect(screen.getByText("Emily Park")).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByText("All"));
 
     await waitFor(() => {
-      expect(screen.getByText("Dr. Emily Park")).toBeInTheDocument();
-      expect(screen.getByText("Dr. John Smith")).toBeInTheDocument();
+      expect(screen.getByText("Emily Park")).toBeInTheDocument();
+      expect(screen.getByText("John Smith")).toBeInTheDocument();
     });
   });
 });

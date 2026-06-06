@@ -19,6 +19,7 @@ import PulseProvider from "./pulse/PulseProvider";
 import PulseDrawer from "./pulse/PulseDrawer";
 import PulseWorkspace from "./pulse/PulseWorkspace";
 import MessagesPage from "./MessagesPage";
+import MessagesProvider from "./messages/MessagesProvider";
 import { authApi } from "./lib/authApi";
 
 const PATH_TO_PAGE = {
@@ -110,10 +111,6 @@ export default function App() {
       onSignOut: handleSignOut,
     };
 
-    if (role === "provider") {
-      return <DoctorDashboard user={session.user} onSignOut={handleSignOut} />;
-    }
-
     const patientPage = (() => {
       if (page === "appointments") return <AppointmentsPage {...sharedProps} />;
       if (page === "messages") return <MessagesPage {...sharedProps} />;
@@ -129,14 +126,23 @@ export default function App() {
       return <PatientDashboard {...sharedProps} pageData={pageData} />;
     })();
 
+    const signedInTree =
+      role === "provider" ? (
+        <DoctorDashboard user={session.user} onSignOut={handleSignOut} />
+      ) : (
+        <PulseProvider>
+          {patientPage}
+          <PulseDrawer
+            onOpenWorkspace={() => handleNavigate("pulse")}
+            onNavigate={handleNavigate}
+          />
+        </PulseProvider>
+      );
+
+    // Mount the messaging provider around the whole signed-in tree so the
+    // Realtime subscription + unread state are available on every page.
     return (
-      <PulseProvider>
-        {patientPage}
-        <PulseDrawer
-          onOpenWorkspace={() => handleNavigate("pulse")}
-          onNavigate={handleNavigate}
-        />
-      </PulseProvider>
+      <MessagesProvider session={session}>{signedInTree}</MessagesProvider>
     );
   }
 

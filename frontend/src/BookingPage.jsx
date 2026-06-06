@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { appointmentsApi, providersApi } from "./lib/appointmentsApi";
 import AppointmentModal from "./AppointmentModal";
+import { useMessages } from "./messages/MessagesProvider";
 import "./BookingPage.css";
 
 export default function BookingPage({
@@ -89,6 +90,8 @@ export default function BookingPage({
       .finally(() => setLoading(false));
   }, []);
 
+  const { unreadCount } = useMessages();
+
   const navLinks = [
     "Dashboard",
     "Appointments",
@@ -117,6 +120,9 @@ export default function BookingPage({
               }}
             >
               {link}
+              {link === "Messages" && unreadCount > 0 && (
+                <span className="mp-nav-badge">{unreadCount}</span>
+              )}
             </button>
           ))}
         </div>
