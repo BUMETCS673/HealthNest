@@ -76,7 +76,9 @@ export default function MessagesProvider({ session, children }) {
   useEffect(() => {
     if (!session?.access_token) return undefined;
     loadContacts();
-    refreshUnread();
+    queueMicrotask(() => {
+      refreshUnread();
+    });
 
     // Reconcile on tab focus and on a short interval, so the badge stays correct
     // even if a Realtime event is dropped or fires before the socket connects.
