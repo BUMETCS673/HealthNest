@@ -21,6 +21,7 @@ from .audit import AuditKind, log as audit_log
 from .client import chat_model, get_openai
 from .guard import screen as safety_screen
 from .retrieval import RetrievalOrchestrator
+from .safety import RiskCategory
 from .skills import SkillContext, SkillScope, registry as skill_registry
 
 MAX_TOOL_ROUNDS = 4
@@ -73,6 +74,44 @@ class AIAssistant(abc.ABC):
     ) -> Generator[AssistantStreamEvent, None, None]: ...
 
 
+def _safety_audit_kind(guard: Any) -> AuditKind:
+    if guard.category == RiskCategory.SELF_HARM_CRISIS:
+        return AuditKind.SELF_HARM_DETECTED
+    return AuditKind.EMERGENCY_DETECTED
+
+
+def _emit_safety_response(
+    ctx: AssistantContext, guard: Any, started: float
+) -> Generator[AssistantStreamEvent, None, None]:
+    """Stream the canned safety reply, persist it, and audit the detection.
+
+    Shared by the patient- and provider-facing pipelines so emergency and
+    self-harm routing behave identically and stay on one audit trail.
+    """
+    audit_log(
+        _safety_audit_kind(guard),
+        patient_id=ctx.patient_id,
+        actor_user_id=ctx.user_id,
+        conversation_id=ctx.conversation_id,
+        payload={
+            "category": guard.category.value,
+            "confidence": guard.confidence,
+            "tier": guard.tier,
+            "signals": list(guard.signals),
+        },
+    )
+    reply = guard.reply or ""
+    for piece in _stream_text(reply):
+        yield AssistantStreamEvent("delta", {"text": piece})
+    conversation.append_message(
+        conversation_id=ctx.conversation_id,
+        role="assistant",
+        content=reply,
+        latency_ms=int((time.time() - started) * 1000),
+    )
+    yield AssistantStreamEvent("done", {"reason": guard.category.value})
+
+
 class PatientFacingAssistant(AIAssistant):
     scope = SkillScope.PFA_ONLY
     system_prompt = prompts.PFA_SYSTEM_PROMPT
@@ -94,24 +133,10 @@ class PatientFacingAssistant(AIAssistant):
             payload={"length": len(user_text)},
         )
         guard = safety_screen(user_text)
-        if guard.is_emergency:
-            audit_log(
-                AuditKind.EMERGENCY_DETECTED,
-                patient_id=ctx.patient_id,
-                actor_user_id=ctx.user_id,
-                conversation_id=ctx.conversation_id,
-            )
-            for piece in _stream_text(guard.canned_reply or ""):
-                yield AssistantStreamEvent("delta", {"text": piece})
-            conversation.append_message(
-                conversation_id=ctx.conversation_id,
-                role="assistant",
-                content=guard.canned_reply,
-                latency_ms=int((time.time() - started) * 1000),
-            )
-            yield AssistantStreamEvent("done", {"reason": "emergency"})
+        if guard.triggered:
+            yield from _emit_safety_response(ctx, guard, started)
             return
-        
+
         orchestrator = RetrievalOrchestrator(
             patient_id=ctx.patient_id, actor_user_id=ctx.user_id
         )
@@ -353,22 +378,8 @@ class DoctorFacingAssistant(AIAssistant):
 
         # Guard — same safety screen as PFA.
         guard = safety_screen(user_text)
-        if guard.is_emergency:
-            audit_log(
-                AuditKind.EMERGENCY_DETECTED,
-                patient_id=ctx.patient_id,
-                actor_user_id=ctx.user_id,
-                conversation_id=ctx.conversation_id,
-            )
-            for piece in _stream_text(guard.canned_reply or ""):
-                yield AssistantStreamEvent("delta", {"text": piece})
-            conversation.append_message(
-                conversation_id=ctx.conversation_id,
-                role="assistant",
-                content=guard.canned_reply,
-                latency_ms=int((time.time() - started) * 1000),
-            )
-            yield AssistantStreamEvent("done", {"reason": "emergency"})
+        if guard.triggered:
+            yield from _emit_safety_response(ctx, guard, started)
             return
 
         # Retrieve — same orchestrator as PFA; patient_id carries the
