@@ -11,7 +11,7 @@ import {
   patientsApi,
   formatPatientName,
   formatPatientSubtitle,
-} from "./lib/patientsApi";
+} from "../lib/patientsApi";
 
 export default function PatientTypeahead({
   value,

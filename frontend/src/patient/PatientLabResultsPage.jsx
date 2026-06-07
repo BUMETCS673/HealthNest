@@ -7,8 +7,8 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, FlaskConical } from "lucide-react";
-import { labResultsApi } from "./lib/labResultsApi";
-import "./labResults.css";
+import { labResultsApi } from "../lib/labResultsApi";
+import "../labresults/labResults.css";
 
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",

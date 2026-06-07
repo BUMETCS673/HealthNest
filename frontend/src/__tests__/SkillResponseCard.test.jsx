@@ -13,6 +13,9 @@ import SkillResponseCard from "../pulse/SkillResponseCard";
 jest.mock("../pulse/cards/AppointmentsCard", () => () => (
   <div data-testid="appointments-card" />
 ));
+jest.mock("../pulse/cards/BookAppointmentCard", () => () => (
+  <div data-testid="book-appointment-card" />
+));
 jest.mock("../pulse/cards/LabResultsCard", () => () => (
   <div data-testid="lab-results-card" />
 ));
@@ -32,6 +35,15 @@ describe("SkillResponseCard", () => {
       />,
     );
     expect(screen.getByTestId("appointments-card")).toBeInTheDocument();
+  });
+
+  test("dispatches book_appointment to the book appointment card", () => {
+    render(
+      <SkillResponseCard
+        skillOutput={{ skill: "book_appointment", payload: { stage: "none" } }}
+      />,
+    );
+    expect(screen.getByTestId("book-appointment-card")).toBeInTheDocument();
   });
 
   test("dispatches get_lab_results to the lab results card", () => {

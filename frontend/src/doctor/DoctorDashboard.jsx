@@ -39,9 +39,9 @@ import {
   MessageCircleQuestion,
   FlaskConical,
 } from "lucide-react";
-import LabResultsPage from "./LabResultsPage";
-import LabResultReview from "./LabResultReview";
-import { authApi } from "./lib/authApi";
+import LabResultsPage from "../labresults/LabResultsPage";
+import LabResultReview from "../labresults/LabResultReview";
+import { authApi } from "../lib/authApi";
 
 // For specialty display/default setting
 function formatRole(role) {

@@ -7,7 +7,7 @@
  */
 import { useEffect, useState } from "react";
 import { ChevronLeft, Download, FlaskConical } from "lucide-react";
-import { labResultsApi } from "./lib/labResultsApi";
+import { labResultsApi } from "../lib/labResultsApi";
 import "./labResults.css";
 
 const FLAG_LABELS = {

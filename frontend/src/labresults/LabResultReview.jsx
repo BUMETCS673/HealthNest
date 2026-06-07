@@ -15,13 +15,13 @@ import {
   AlertTriangle,
   CheckCircle2,
 } from "lucide-react";
-import { labResultsApi } from "./lib/labResultsApi";
+import { labResultsApi } from "../lib/labResultsApi";
 import {
   patientsApi,
   formatPatientName,
   formatPatientSubtitle,
-} from "./lib/patientsApi";
-import ConfirmModal from "./ConfirmModal";
+} from "../lib/patientsApi";
+import ConfirmModal from "../booking/ConfirmModal";
 import Toast from "./Toast";
 import "./labResults.css";
 
