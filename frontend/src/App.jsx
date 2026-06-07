@@ -8,7 +8,7 @@
 // Notes: AI was used to help quickly set up the main application component and to implement the core logic for handling
 // authentication state and routing.
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import Login from "./loginsignup/Login";
 import Signup from "./loginsignup/Signup";
 import PatientDashboard from "./patient/PatientDashboard";
@@ -46,7 +46,6 @@ export default function App() {
   const [pageData, setPageData] = useState(null);
   const [session, setSession] = useState(() => authApi.getSession());
   const [signupRole, setSignupRole] = useState("patient");
-  const signupRoleRef = useRef("patient");
 
   // Strip Supabase tokens from the URL hash (left over from email confirmation redirects)
   useEffect(() => {
@@ -137,16 +136,16 @@ export default function App() {
 
   return view === "signup" ? (
     <Signup
-      key={signupRoleRef.current}
-      initialRole={signupRoleRef.current}
+      key={signupRole}
+      initialRole={signupRole}
       onSwitchToLogin={() => setView("login")}
       onSignedUp={(s) => setSession(s)}
     />
   ) : (
     <Login
       onSwitchToSignup={(role) => { 
-        signupRoleRef.current = role;
-        signupRoleRef.current = role; setView("signup"); }}
+        setSignupRole(role);
+        setView("signup"); }}
       onSignedIn={(s) => setSession(s)}
     />
   );
