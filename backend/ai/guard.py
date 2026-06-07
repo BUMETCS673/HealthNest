@@ -1,29 +1,71 @@
 """
 AI-USAGE SUMMARY
-Tools: Opus 4.7
-Overall AI Contribution: ~55%
-AI-Assisted Areas: Drafted the GuardResult dataclass + the keyword scanner.
-Human Contributions: Picked the conservative keyword list (kept in prompts.EMERGENCY_KEYWORDS so the matching set lives next to the canned reply), and decided that the guard returns a structured result instead of raising — the assistant pipeline composes the canned message into the conversation just like any other reply so the audit trail is uniform.
+Tools: Claude (Opus 4.8)
+Overall AI Contribution: ~60%
+AI-Assisted Areas: Drafted the two-tier orchestration that combines the deterministic
+detector with the optional LLM adjudicator.
+Human Contributions: Owned the escalation policy. HIGH-confidence rule hits fire immediately
+(never weakened by the LLM). MEDIUM hits are adjudicated; when the LLM tier is unavailable the
+fallback is category-specific — a possible self-harm crisis still surfaces resources (a miss is
+high-harm, showing 988 is low-harm), while an ambiguous medical mention does NOT auto-route to
+911 (false "call 911" is the overprotective failure we were told to avoid). Kept `screen` /
+`GuardResult` exactly as the assistant pipeline already consumes them so this drops in cleanly.
+
+Public entry point for Pulse safety screening. Tier 1 = ai.safety.detect (rules),
+Tier 2 = ai.safety_classifier.adjudicate (LLM, only for MEDIUM cases).
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from . import safety_classifier
+from .safety import (
+    HIGH,
+    MEDIUM,
+    REPLY_FOR,
+    GuardResult,
+    RiskCategory,
+    detect,
+)
 
-from .prompts import EMERGENCY_KEYWORDS, EMERGENCY_REPLY
-
-
-@dataclass
-class GuardResult:
-    is_emergency: bool
-    canned_reply: str | None = None
+__all__ = ["GuardResult", "RiskCategory", "screen", "detect"]
 
 
 def screen(text: str) -> GuardResult:
-    if not text:
-        return GuardResult(is_emergency=False)
-    lower = text.lower()
-    for kw in EMERGENCY_KEYWORDS:
-        if kw in lower:
-            return GuardResult(is_emergency=True, canned_reply=EMERGENCY_REPLY)
-    return GuardResult(is_emergency=False)
+    """Screen a user message and decide whether to route it to emergency/crisis help.
+
+    Always returns a GuardResult; never raises. `is_emergency` / `canned_reply` remain
+    available as backward-compatible aliases on the result.
+    """
+    result = detect(text)
+
+    if result.confidence == HIGH:
+        return result
+
+    if result.confidence == MEDIUM:
+        verdict = safety_classifier.adjudicate(text)
+
+        if verdict is None:
+            # LLM tier unavailable — fall back by category.
+            if result.category == RiskCategory.SELF_HARM_CRISIS:
+                return GuardResult(
+                    triggered=True,
+                    category=result.category,
+                    confidence=MEDIUM,
+                    reply=REPLY_FOR[result.category],
+                    tier="rules-fallback",
+                    signals=result.signals,
+                )
+            return GuardResult(triggered=False)
+
+        if verdict.active and verdict.category != RiskCategory.NONE:
+            return GuardResult(
+                triggered=True,
+                category=verdict.category,
+                confidence=HIGH,
+                reply=REPLY_FOR[verdict.category],
+                tier="llm",
+                signals=result.signals,
+            )
+        return GuardResult(triggered=False)
+
+    return GuardResult(triggered=False)

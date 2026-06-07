@@ -31,6 +31,9 @@ os.environ.setdefault("SUPABASE_URL", "http://localhost:54321")
 os.environ.setdefault("SUPABASE_KEY", "test-anon-key")
 os.environ.setdefault("SUPABASE_SERVICE_KEY", "test-service-key")
 os.environ.setdefault("OPENAI_API_KEY", "sk-test")
+# Keep the test suite hermetic: the LLM safety adjudicator must never hit the
+# network. Tests that exercise the LLM tier monkeypatch the classifier directly.
+os.environ.setdefault("PULSE_SAFETY_LLM", "false")
 
 
 FAKE_SENDER_ID    = "aaaaaaaa-0000-0000-0000-000000000001"

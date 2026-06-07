@@ -8,10 +8,13 @@ Human Contributions: Chose the profile permutations that matter (missing profile
 
 from __future__ import annotations
 
+from datetime import date
+
 from ai.prompts import (
     EMERGENCY_KEYWORDS,
     EMERGENCY_REPLY,
     PFA_SYSTEM_PROMPT,
+    current_date_message,
     patient_identity_message,
 )
 
@@ -69,3 +72,20 @@ class TestStaticPromptConstants:
 
     def test_emergency_reply_mentions_crisis_lines(self):
         assert "911" in EMERGENCY_REPLY and "988" in EMERGENCY_REPLY
+
+    def test_system_prompt_describes_booking_flow(self):
+        assert "book_appointment" in PFA_SYSTEM_PROMPT
+
+
+class TestCurrentDateMessage:
+    def test_includes_the_given_date_in_iso(self):
+        msg = current_date_message(date(2026, 6, 5))
+        assert "2026-06-05" in msg
+
+    def test_includes_the_weekday_name(self):
+        msg = current_date_message(date(2026, 6, 5))  # a Friday
+        assert "Friday" in msg
+
+    def test_defaults_to_today(self):
+        msg = current_date_message()
+        assert date.today().isoformat() in msg
