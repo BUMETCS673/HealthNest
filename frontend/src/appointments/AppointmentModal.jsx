@@ -11,7 +11,7 @@ import {
   appointmentsApi,
   formatApptDate,
   formatApptTime,
-} from "./lib/appointmentsApi";
+} from "../lib/appointmentsApi";
 import "./AppointmentModal.css";
 
 const SPECIALTIES = [

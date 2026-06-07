@@ -8,17 +8,17 @@
 // Notes: AI was used to help quickly set up the main application component and to implement the core logic for handling
 // authentication state and routing.
 
-import { useEffect, useState } from "react";
-import Login from "./Login";
-import Signup from "./Signup";
-import PatientDashboard from "./PatientDashboard";
-import DoctorDashboard from "./DoctorDashboard";
-import AppointmentsPage from "./AppointmentsPage";
-import BookingPage from "./BookingPage";
+import { useEffect, useState, useRef } from "react";
+import Login from "./loginsignup/Login";
+import Signup from "./loginsignup/Signup";
+import PatientDashboard from "./patient/PatientDashboard";
+import DoctorDashboard from "./doctor/DoctorDashboard";
+import AppointmentsPage from "./appointments/AppointmentsPage";
+import BookingPage from "./booking/BookingPage";
 import PulseProvider from "./pulse/PulseProvider";
 import PulseDrawer from "./pulse/PulseDrawer";
 import PulseWorkspace from "./pulse/PulseWorkspace";
-import MessagesPage from "./MessagesPage";
+import MessagesPage from "./messages/MessagesPage";
 import { authApi } from "./lib/authApi";
 
 const PATH_TO_PAGE = {
@@ -45,6 +45,8 @@ export default function App() {
   const [page, setPage] = useState(getPageFromPath);
   const [pageData, setPageData] = useState(null);
   const [session, setSession] = useState(() => authApi.getSession());
+  const [signupRole, setSignupRole] = useState("patient");
+  const signupRoleRef = useRef("patient");
 
   // Strip Supabase tokens from the URL hash (left over from email confirmation redirects)
   useEffect(() => {
@@ -135,12 +137,16 @@ export default function App() {
 
   return view === "signup" ? (
     <Signup
+      key={signupRoleRef.current}
+      initialRole={signupRoleRef.current}
       onSwitchToLogin={() => setView("login")}
       onSignedUp={(s) => setSession(s)}
     />
   ) : (
     <Login
-      onSwitchToSignup={() => setView("signup")}
+      onSwitchToSignup={(role) => { 
+        signupRoleRef.current = role;
+        signupRoleRef.current = role; setView("signup"); }}
       onSignedIn={(s) => setSession(s)}
     />
   );

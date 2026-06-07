@@ -17,7 +17,7 @@ import ConversationSidebar from "./ConversationSidebar";
 import ConversationThread from "./ConversationThread";
 import Composer from "./Composer";
 import { pulseApi } from "../lib/pulseApi";
-import "../AppointmentsPage.css";
+import "../appointments/AppointmentsPage.css";
 import "./PulseWorkspace.css";
 
 const NAV_LINKS = [

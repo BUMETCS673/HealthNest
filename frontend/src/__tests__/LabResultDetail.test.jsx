@@ -5,7 +5,7 @@
  */
 
 import { render, screen, waitFor } from "@testing-library/react";
-import LabResultDetail from "../LabResultDetail";
+import LabResultDetail from "../labresults/LabResultDetail";
 
 // mock the lab results api
 jest.mock("../lib/labResultsApi", () => ({

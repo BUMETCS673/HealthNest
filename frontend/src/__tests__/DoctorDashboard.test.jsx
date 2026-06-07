@@ -15,7 +15,7 @@ import React from "react";
 import "@testing-library/jest-dom";
 import { render, screen, cleanup } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import DoctorDashboard from "../DoctorDashboard";
+import DoctorDashboard from "../doctor/DoctorDashboard";
 
 afterEach(() => {
   cleanup();

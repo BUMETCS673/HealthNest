@@ -12,9 +12,9 @@ import {
   FlaskConical,
   Upload,
 } from "lucide-react";
-import { labResultsApi } from "./lib/labResultsApi";
-import { patientsApi, formatPatientName } from "./lib/patientsApi";
-import LabResultUploadModal from "./LabResultUploadModal";
+import { labResultsApi } from "../lib/labResultsApi";
+import { patientsApi, formatPatientName } from "../lib/patientsApi";
+import LabResultUploadModal from "../labresults/LabResultUploadModal";
 import Toast from "./Toast";
 import "./labResults.css";
 
