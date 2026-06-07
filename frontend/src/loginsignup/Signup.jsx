@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { User, Stethoscope, Check } from "lucide-react";
-import { authApi } from "./lib/authApi";
+import { authApi } from "../lib/authApi";
 import "./Login.css";
 
-export default function Signup({ onSwitchToLogin, onSignedUp }) {
-  const [role, setRole] = useState("patient");
+export default function Signup({ onSwitchToLogin, onSignedUp, initialRole = "patient" }) {
+  const [role, setRole] = useState(initialRole);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");

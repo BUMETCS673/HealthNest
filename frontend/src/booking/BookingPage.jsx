@@ -7,8 +7,8 @@ import {
   Search,
   User,
 } from "lucide-react";
-import { appointmentsApi, providersApi } from "./lib/appointmentsApi";
-import AppointmentModal from "./AppointmentModal";
+import { appointmentsApi, providersApi } from "../lib/appointmentsApi";
+import AppointmentModal from "../appointments/AppointmentModal";
 import "./BookingPage.css";
 
 export default function BookingPage({

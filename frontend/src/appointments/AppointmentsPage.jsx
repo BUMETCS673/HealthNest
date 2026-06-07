@@ -11,7 +11,7 @@ import {
   User,
   X,
 } from "lucide-react";
-import { appointmentsApi, apptToDisplayRow } from "./lib/appointmentsApi";
+import { appointmentsApi, apptToDisplayRow } from "../lib/appointmentsApi";
 import AppointmentModal from "./AppointmentModal";
 import "./AppointmentsPage.css";
 

@@ -7,8 +7,8 @@
  */
 import { useState } from "react";
 import { Upload, X, FileText } from "lucide-react";
-import { labResultsApi } from "./lib/labResultsApi";
-import PatientTypeahead from "./PatientTypeahead";
+import { labResultsApi } from "../lib/labResultsApi";
+import PatientTypeahead from "../patient/PatientTypeahead";
 import "./labResults.css";
 
 function formatBytes(n) {

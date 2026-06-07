@@ -5,7 +5,7 @@
  */
 
 import { render, screen, fireEvent } from "@testing-library/react";
-import LabResultUploadModal from "../LabResultUploadModal";
+import LabResultUploadModal from "../labresults/LabResultUploadModal";
 
 jest.mock("../lib/labResultsApi", () => ({
   labResultsApi: {
@@ -13,7 +13,7 @@ jest.mock("../lib/labResultsApi", () => ({
   },
 }));
 
-jest.mock("../PatientTypeahead", () => {
+jest.mock("../patient/PatientTypeahead", () => {
   return function MockPatientTypeahead({ onChange }) {
     return (
       <button

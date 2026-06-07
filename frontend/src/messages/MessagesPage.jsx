@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Bell, ChevronDown, LogOut, User, Send } from "lucide-react";
-import { messagesApi } from "./lib/messagesApi";
+import { messagesApi } from "../lib/messagesApi";
 import "./MessagesPage.css";
 
 export default function MessagesPage({ user, onNavigate, onSignOut }) {

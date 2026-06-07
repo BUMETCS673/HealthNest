@@ -4,7 +4,7 @@
  */
 
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import AppointmentModal from "../AppointmentModal";
+import AppointmentModal from "../appointments/AppointmentModal";
 import { appointmentsApi } from "../lib/appointmentsApi";
 
 jest.mock("../lib/appointmentsApi", () => ({

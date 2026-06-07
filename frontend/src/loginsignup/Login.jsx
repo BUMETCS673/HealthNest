@@ -16,7 +16,7 @@ import {
   Stethoscope,
   Check,
 } from "lucide-react";
-import { authApi } from "./lib/authApi";
+import { authApi } from "../lib/authApi";
 import "./Login.css";
 
 export default function Login({ onSwitchToSignup, onSignedIn }) {
@@ -223,7 +223,7 @@ export default function Login({ onSwitchToSignup, onSignedIn }) {
             <button
               type="button"
               className="login-register"
-              onClick={onSwitchToSignup}
+              onClick={() => onSwitchToSignup?.(role)}
             >
             Create an account as {role === "patient" ? "Patient" : "Provider"}
             </button>

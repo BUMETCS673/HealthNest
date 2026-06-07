@@ -5,7 +5,7 @@
  */
 
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import BookingPage from "../BookingPage";
+import BookingPage from "../booking/BookingPage";
 import { appointmentsApi, providersApi } from "../lib/appointmentsApi";
 
 jest.mock("../lib/appointmentsApi", () => ({
