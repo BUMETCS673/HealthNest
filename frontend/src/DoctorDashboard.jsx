@@ -578,7 +578,9 @@ export default function DoctorDashboard({ user, onSignOut }) {
       </nav>
 
       {/* Main content */}
-      <main className="doc-main">
+      <main
+        className={`doc-main${view === "messages" ? " doc-main--messages" : ""}`}
+      >
         {view === "labs" && (
           <LabResultsPage
             onBack={() => setView("home")}

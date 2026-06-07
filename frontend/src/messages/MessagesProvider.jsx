@@ -19,8 +19,12 @@ const DEFAULT_MESSAGES = {
   unreadCount: 0,
   unreadByContact: {},
   openThread: () => {},
+  closeThread: () => {},
   send: async () => {},
   loadContacts: () => {},
+  drawerOpen: false,
+  openDrawer: () => {},
+  closeDrawer: () => {},
 };
 
 // Falls back to a safe no-op shape when there's no provider (a component
@@ -33,6 +37,10 @@ export default function MessagesProvider({ session, children }) {
   const [activeContactId, setActiveContactId] = useState(null);
   const [thread, setThread] = useState([]);
   const [unreadByContact, setUnreadByContact] = useState({});
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const openDrawer = useCallback(() => setDrawerOpen(true), []);
+  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
   // Keep a ref of the open contact so the subscription callback reads the
   // current value without needing to resubscribe every time it changes.
@@ -52,9 +60,37 @@ export default function MessagesProvider({ session, children }) {
     }
   }, []);
 
+  // Pull authoritative unread counts from the server. Seeds the badge on load
+  // and reconciles any Realtime events that were missed or arrived early.
+  const refreshUnread = useCallback(async () => {
+    try {
+      const counts = (await messagesApi.getUnreadCounts()) || {};
+      const active = activeContactIdRef.current;
+      if (active) counts[active] = 0; // the open conversation is always read
+      setUnreadByContact(counts);
+    } catch {
+      /* keep current counts on failure */
+    }
+  }, []);
+
   useEffect(() => {
-    if (session?.access_token) loadContacts();
-  }, [session?.access_token, loadContacts]);
+    if (!session?.access_token) return undefined;
+    loadContacts();
+    refreshUnread();
+
+    // Reconcile on tab focus and on a short interval, so the badge stays correct
+    // even if a Realtime event is dropped or fires before the socket connects.
+    const onVisible = () => {
+      if (document.visibilityState === "visible") refreshUnread();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    const interval = setInterval(refreshUnread, 15000);
+
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      clearInterval(interval);
+    };
+  }, [session?.access_token, loadContacts, refreshUnread]);
 
   // Effect A — Realtime subscription (sets the initial token, then subscribes).
   useEffect(() => {
@@ -122,6 +158,14 @@ export default function MessagesProvider({ session, children }) {
     }
   }, []);
 
+  // Leave the conversation view (e.g. navigating away from Messages). Clearing
+  // the active contact means incoming messages bump the unread badge instead of
+  // being silently relayed + marked read while nothing is on screen.
+  const closeThread = useCallback(() => {
+    setActiveContactId(null);
+    setThread([]);
+  }, []);
+
   // Send to the open contact and optimistically append to my own view.
   const send = useCallback(async (body) => {
     const contactId = activeContactIdRef.current;
@@ -140,8 +184,12 @@ export default function MessagesProvider({ session, children }) {
         unreadCount,
         unreadByContact,
         openThread,
+        closeThread,
         send,
         loadContacts,
+        drawerOpen,
+        openDrawer,
+        closeDrawer,
       }}
     >
       {children}

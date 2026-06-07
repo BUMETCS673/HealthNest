@@ -14,6 +14,8 @@
   flex: 1;
   min-height: 0;
   padding: 20px 24px 28px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Unread count chip on the "Messages" nav link */
@@ -37,7 +39,9 @@
 .mp-layout {
   display: grid;
   grid-template-columns: 280px 1fr;
-  height: calc(100vh - 56px - 48px);
+  flex: 1;
+  min-height: 0;
+  width: 100%;
   max-width: 1100px;
   margin: 0 auto;
   background: #fff;

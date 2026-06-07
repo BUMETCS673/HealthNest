@@ -20,6 +20,7 @@ import PulseDrawer from "./pulse/PulseDrawer";
 import PulseWorkspace from "./pulse/PulseWorkspace";
 import MessagesPage from "./MessagesPage";
 import MessagesProvider from "./messages/MessagesProvider";
+import MessagesDrawer from "./messages/MessagesDrawer";
 import { authApi } from "./lib/authApi";
 
 const PATH_TO_PAGE = {
@@ -135,6 +136,11 @@ export default function App() {
           <PulseDrawer
             onOpenWorkspace={() => handleNavigate("pulse")}
             onNavigate={handleNavigate}
+          />
+          <MessagesDrawer
+            myId={session.user?.id}
+            onOpenMessages={() => handleNavigate("messages")}
+            hideLauncher={page === "messages"}
           />
         </PulseProvider>
       );

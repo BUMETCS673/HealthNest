@@ -56,6 +56,24 @@ def get_inbox(user_id: str) -> list[dict]:
     )
     return result.data
 
+
+def get_unread_counts(user_id: str) -> dict[str, int]:
+    """Unread message counts addressed to `user_id`, grouped by sender."""
+    result = (
+        get_supabase_admin()
+        .table("messages")
+        .select("sender_id")
+        .eq("recipient_id", user_id)
+        .is_("read_at", None)
+        .execute()
+    )
+    counts: dict[str, int] = {}
+    for row in result.data or []:
+        sid = row.get("sender_id")
+        if sid:
+            counts[sid] = counts.get(sid, 0) + 1
+    return counts
+
 def users_share_active_relationship(user_a: str, user_b: str) -> bool:
     """True if one user is a patient and the other their active provider (either direction)."""
     a_patient, a_provider = _resolve_roles(user_a)

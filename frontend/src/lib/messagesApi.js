@@ -28,6 +28,7 @@ export const messagesApi = {
   markThreadRead: (contactId) =>
     request(`/messages/thread/${contactId}/read`, { method: "PATCH" }),
   getInbox: () => request("/messages/inbox"),
+  getUnreadCounts: () => request("/messages/unread"),
   sendMessage: (recipientId, body) =>
     request("/messages/", {
       method: "POST",

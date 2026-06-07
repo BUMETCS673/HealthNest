@@ -14,6 +14,7 @@ export default function MessagesView({ myId }) {
     thread,
     unreadByContact,
     openThread,
+    closeThread,
     send,
     loadContacts,
   } = useMessages();
@@ -24,6 +25,13 @@ export default function MessagesView({ myId }) {
   useEffect(() => {
     loadContacts?.();
   }, [loadContacts]);
+
+  // When this view unmounts (navigating away from Messages), clear the active
+  // conversation so incoming messages bump the unread badge instead of being
+  // auto-read off-screen.
+  useEffect(() => {
+    return () => closeThread?.();
+  }, [closeThread]);
 
   useEffect(() => {
     threadEndRef.current?.scrollIntoView({ behavior: "smooth" });

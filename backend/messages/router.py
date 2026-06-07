@@ -24,3 +24,7 @@ def get_thread(contact_id: str, user_id: str = Depends(current_user_id)):
 @router.patch("/thread/{contact_id}/read", status_code=status.HTTP_204_NO_CONTENT)
 def mark_thread_read(contact_id: str, user_id: str = Depends(current_user_id)):
     service.mark_thread_read(user_id, contact_id)
+
+@router.get("/unread")
+def get_unread_counts(user_id: str = Depends(current_user_id)):
+    return service.get_unread_counts(user_id)

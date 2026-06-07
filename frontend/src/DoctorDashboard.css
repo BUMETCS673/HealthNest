@@ -204,6 +204,12 @@
   padding: 36px 80px;
 }
 
+/* Messages view matches the patient shell's tighter padding so the
+   shared MessagesView card is identical at every width. */
+.doc-main--messages {
+  padding: 20px 24px 28px;
+}
+
 /* ── Header ── */
 
 .doc-header {
