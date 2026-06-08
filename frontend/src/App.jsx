@@ -20,6 +20,9 @@ import PulseDrawer from "./pulse/PulseDrawer";
 import PulseWorkspace from "./pulse/PulseWorkspace";
 import MessagesPage from "./messages/MessagesPage";
 import { authApi } from "./lib/authApi";
+import DfaProvider from "./pulse/DfaProvider";
+import DfaDrawer from "./pulse/DfaDrawer";
+import DfaWorkspace from "./pulse/DfaWorkspace";
 
 const PATH_TO_PAGE = {
   "/appointments": "appointments",
@@ -34,6 +37,7 @@ const PAGE_TO_PATH = {
   booking: "/booking",
   pulse: "/pulse",
   messages: "/messages",
+  "dfa-pulse": "/pulse",
 };
 
 function getPageFromPath() {
@@ -105,7 +109,30 @@ export default function App() {
     };
 
     if (role === "provider") {
-      return <DoctorDashboard user={session.user} onSignOut={handleSignOut} />;
+      const providerPage = (() => {
+        if (page === "dfa-pulse")
+          return (
+            <DfaWorkspace
+              user={session.user}
+              onNavigate={handleNavigate}
+              onSignOut={handleSignOut}
+            />
+          );
+        return (
+          <DoctorDashboard
+            user={session.user}
+            onSignOut={handleSignOut}
+            onNavigate={handleNavigate}
+          />
+        );
+      })();
+
+      return (
+        <DfaProvider>
+          {providerPage}
+          <DfaDrawer onNavigate={handleNavigate} />
+        </DfaProvider>
+      );
     }
 
     const patientPage = (() => {
@@ -143,9 +170,10 @@ export default function App() {
     />
   ) : (
     <Login
-      onSwitchToSignup={(role) => { 
+      onSwitchToSignup={(role) => {
         setSignupRole(role);
-        setView("signup"); }}
+        setView("signup");
+      }}
       onSignedIn={(s) => setSession(s)}
     />
   );
