@@ -1,3 +1,12 @@
+/**
+ * AI-USAGE SUMMARY
+ * Tools: Claude Code (Opus 4.8)
+ * Overall AI Contribution: ~50%
+ * AI-Assisted Areas: Drafted the page shell (shared HealthNest nav + unread
+ *   badge) that hosts the shared MessagesView body.
+ * Human Contributions: Integration into the app routing/nav and verification.
+ * Notes: Validated via `npm run build`, jest, and manual testing.
+ */
 import { useState, useEffect, useRef } from "react";
 import { Bell, ChevronDown, LogOut, User } from "lucide-react";
 import { useMessages } from "./messages/MessagesProvider";

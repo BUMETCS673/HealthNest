@@ -1,3 +1,11 @@
+// AI-USAGE SUMMARY
+// Tools: Claude Code (Opus 4.8)
+// Overall AI Contribution: ~60%
+// AI-Assisted Areas: Provider-selection refactor to provider_id + nested
+//   providers (history vs directory dedupe) and the unread-messages nav badge.
+// Human Contributions: Business rules for "Your Doctors" vs new providers;
+//   applied/verified the changes and updated tests.
+// Notes: Validated via `npm run build`, jest, and manual testing.
 import { useState, useEffect, useRef } from "react";
 import {
   Bell,

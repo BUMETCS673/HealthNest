@@ -1,13 +1,21 @@
+/**
+ * AI-USAGE SUMMARY
+ * Tools: Claude Code (Opus 4.8)
+ * Overall AI Contribution: ~60%
+ * AI-Assisted Areas: Lazy, memoized Supabase browser client that fetches its
+ *   public url + anon key from the backend /config endpoint at runtime, plus
+ *   the setRealtimeAuth helper.
+ * Human Contributions: Decided to source config from the backend environment
+ *   (docker-compose) rather than a frontend .env so no Supabase keys ship in the
+ *   client bundle; chose lazy init so importing the module never builds a client
+ *   (keeps unit tests from crashing).
+ * Notes: Validated via `npm run build`, the jest suite, and manual Realtime testing.
+ */
 import { createClient } from "@supabase/supabase-js";
 
 const API_URL =
   import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:8000";
 
-// The Supabase URL + anon key are public, but the team keeps them in the
-// backend's docker-compose environment rather than a frontend .env. So the
-// browser fetches them at runtime from a public backend endpoint and builds
-// the Realtime client once (memoized). Nothing is created at import time, so
-// importing this module is always safe (e.g. in unit tests).
 let clientPromise = null;
 
 async function loadConfig() {

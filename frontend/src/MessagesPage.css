@@ -1,3 +1,14 @@
+/*
+ * AI-USAGE SUMMARY
+ * Tools: Claude Code (Opus 4.x)
+ * Overall AI Contribution: ~70%
+ * AI-Assisted Areas: Drafted the two-pane layout (contacts sidebar + thread +
+ *   composer), bubbles, and the unread nav badge.
+ * Human Contributions: Direction on the flex-fill layout fix so the shared card
+ *   sizes correctly in both the patient and provider shells.
+ * Notes: Verified visually and via `npm run build`.
+ */
+
 /* MessagesPage — contacts sidebar + thread pane + composer.
    The top nav reuses .ap-nav from AppointmentsPage.css. */
 

@@ -1,3 +1,12 @@
+// AI-USAGE SUMMARY
+// Tools: Claude Code (Opus 4.8)
+// Overall AI Contribution: ~65%
+// AI-Assisted Areas: Booking/reschedule rewrite to the {provider_id,
+//   availability_id} contract, slot filtering by provider_id, and nested
+//   provider display.
+// Human Contributions: Date-picker UX (week strip, jump-to-first-available),
+//   integration, and verification.
+// Notes: Validated via `npm run build`, jest, and manual booking/reschedule tests.
 import { useState, useEffect } from "react";
 import {
   X,

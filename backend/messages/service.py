@@ -1,3 +1,11 @@
+# AI-USAGE SUMMARY
+# Tools: Claude Code (Opus 4.8)
+# Overall AI Contribution: ~50%
+# AI-Assisted Areas: Relationship-gated send, contacts/thread/mark-read and
+#   unread-count queries, and the auth-id -> patients/providers id resolution.
+# Human Contributions: Standardized "active" on the status column, the UUID guard
+#   on get_thread, and the identity-mapping decisions.
+# Notes: Validated via py_compile and manual API testing.
 import uuid
 from datetime import datetime, timezone
 from fastapi import HTTPException, status

@@ -1,3 +1,15 @@
+/**
+ * AI-USAGE SUMMARY
+ * Tools: Claude Code (Opus 4.8)
+ * Overall AI Contribution: ~60%
+ * AI-Assisted Areas: Drafted the global left-side messaging drawer + floating
+ *   launcher (contacts ↔ thread ↔ composer, unread badge, "Open messages"
+ *   shortcut), mirroring the Pulse drawer pattern.
+ * Human Contributions: Requested the left-side placement and the open-full-page
+ *   shortcut; decided it reuses the MessagesProvider context so the drawer and
+ *   full Messages page stay in sync.
+ * Notes: Verified via `npm run build` and the jest suite.
+ */
 import { useEffect, useRef, useState } from "react";
 import {
   MessageSquare,

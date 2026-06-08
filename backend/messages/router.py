@@ -1,3 +1,10 @@
+# AI-USAGE SUMMARY
+# Tools: Claude Code (Opus 4.8)
+# Overall AI Contribution: ~50%
+# AI-Assisted Areas: FastAPI routes for send, inbox, contacts, thread, mark-read,
+#   and unread counts, wired to current_user_id.
+# Human Contributions: Reviewed the auth dependency wiring and response models.
+# Notes: Validated via py_compile and manual API testing.
 from fastapi import APIRouter, Depends, status
 from deps import current_user_id
 from .schemas import MessageCreate, MessageOut, ContactOut

@@ -1,3 +1,16 @@
+/**
+ * AI-USAGE SUMMARY
+ * Tools: Claude Code (Opus 4.8)
+ * Overall AI Contribution: ~60%
+ * AI-Assisted Areas: Drafted the messaging context — Realtime subscription,
+ *   unread-count tracking (live events + server reconciliation), contacts/thread
+ *   loading, and the drawer open/close state.
+ * Human Contributions: Owned the design decisions — backing the unread badge
+ *   with a server count rather than live events alone, clearing the active
+ *   conversation on leaving the view so off-screen messages still notify, and
+ *   keeping the Realtime token fresh. Ran the tests and manual two-window checks.
+ * Notes: Validated via `npm run build`, jest, and manual patient/provider testing.
+ */
 import {
   createContext,
   useCallback,

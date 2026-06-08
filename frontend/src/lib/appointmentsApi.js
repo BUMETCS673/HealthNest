@@ -1,3 +1,14 @@
+/**
+ * AI-USAGE SUMMARY
+ * Tools: Claude Code (Opus 4.8)
+ * Overall AI Contribution: ~65%
+ * AI-Assisted Areas: Endpoint methods for the new appointment contract,
+ *   apptToDisplayRow mapping to the nested schema, and the 401-refresh-and-retry
+ *   wrapper.
+ * Human Contributions: Verified the API surface against the backend; reviewed
+ *   and tested.
+ * Notes: Validated via `npm run build` and the jest suite.
+ */
 import { authApi } from "./authApi";
 
 const API_URL =

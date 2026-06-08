@@ -1,3 +1,12 @@
+// AI-USAGE SUMMARY
+// Tools: Claude Code (Opus 4.8)
+// Overall AI Contribution: ~60%
+// AI-Assisted Areas: Appointment-list refactor to the nested provider/availability
+//   schema (apptToDisplayRow mapping, isUpcoming/isPast helpers, status badges)
+//   and the unread-messages nav badge.
+// Human Contributions: Owned the data-shape decisions, applied and reviewed each
+//   change, and updated the Jest tests.
+// Notes: Validated via `npm run build`, the jest suite, and manual testing.
 import { useState, useEffect, useRef } from "react";
 import {
   Bell,

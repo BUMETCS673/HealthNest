@@ -1,3 +1,14 @@
+/**
+ * AI-USAGE SUMMARY
+ * Tools: Claude Code (Opus 4.8)
+ * Overall AI Contribution: ~60%
+ * AI-Assisted Areas: Drafted the shared messaging body (contacts sidebar, thread
+ *   bubbles, composer) reused by the patient page and the doctor dashboard.
+ * Human Contributions: Chose to extract this into a single shared component so
+ *   both surfaces stay identical; decided to clear the active conversation on
+ *   unmount so the unread badge behaves correctly off-screen.
+ * Notes: Verified via `npm run build` and manual testing in both shells.
+ */
 import { useEffect, useRef, useState } from "react";
 import { User, Send } from "lucide-react";
 import { useMessages } from "./MessagesProvider";
