@@ -75,9 +75,13 @@ export default function MessagesProvider({ session, children }) {
 
   useEffect(() => {
     if (!session?.access_token) return undefined;
-    loadContacts();
+
     queueMicrotask(() => {
-      refreshUnread();
+      void loadContacts();
+    });
+
+    queueMicrotask(() => {
+      void refreshUnread();
     });
 
     // Reconcile on tab focus and on a short interval, so the badge stays correct
