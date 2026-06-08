@@ -9,9 +9,9 @@
  */
 import { useState, useEffect, useRef } from "react";
 import { Bell, ChevronDown, LogOut, User } from "lucide-react";
-import { useMessages } from "./messages/MessagesProvider";
-import MessagesView from "./messages/MessagesView";
-import "./AppointmentsPage.css"; // reuse the shared .ap-nav top bar
+import { useMessages } from "./MessagesProvider";
+import MessagesView from "./MessagesView";
+import "../AppointmentsPage.css"; // reuse the shared .ap-nav top bar
 import "./MessagesPage.css";
 
 export default function MessagesPage({ user, onNavigate, onSignOut }) {

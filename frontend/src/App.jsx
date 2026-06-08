@@ -18,7 +18,7 @@ import BookingPage from "./BookingPage";
 import PulseProvider from "./pulse/PulseProvider";
 import PulseDrawer from "./pulse/PulseDrawer";
 import PulseWorkspace from "./pulse/PulseWorkspace";
-import MessagesPage from "./MessagesPage";
+import MessagesPage from "./messages/MessagesPage";
 import MessagesProvider from "./messages/MessagesProvider";
 import MessagesDrawer from "./messages/MessagesDrawer";
 import { authApi } from "./lib/authApi";
