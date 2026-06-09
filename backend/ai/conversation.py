@@ -21,20 +21,26 @@ MSG_TABLE = "ai_messages"
 
 def create_conversation(
     *,
-    patient_id: str,
     user_id: str,
     assistant_type: str,
     model: str,
     title: str | None = None,
+    patient_id: str | None = None,
+    provider_id: str | None = None,
 ) -> dict[str, Any]:
     row = {
         "id": str(uuid.uuid4()),
-        "patient_id": patient_id,
         "user_id": user_id,
         "assistant_type": assistant_type,
         "model": model,
         "title": title,
     }
+    if patient_id:
+        row["patient_id"] = patient_id
+
+    if provider_id:
+        row["provider_id"] = provider_id
+
     resp = get_supabase_admin().table(CONV_TABLE).insert(row).execute()
     if not resp.data:
         raise HTTPException(
@@ -44,20 +50,37 @@ def create_conversation(
     return resp.data[0]
 
 
-def list_conversations(*, patient_id: str, limit: int = 50) -> list[dict[str, Any]]:
-    resp = (
+def list_conversations(
+    *,
+    patient_id: str | None = None,
+    provider_id: str | None = None,
+    limit: int = 50,
+) -> list[dict[str, Any]]:
+    query = (
         get_supabase_admin()
         .table(CONV_TABLE)
         .select("id, title, started_at, closed_at, model")
-        .eq("patient_id", patient_id)
         .is_("deleted_at", None)
         .order("started_at", desc=True)
         .limit(limit)
-        .execute()
     )
+
+    if patient_id:
+        query = query.eq("patient_id", patient_id)
+    elif provider_id:
+        query = query.eq("provider_id", provider_id)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="patient_id or provider_id is required",
+        )
+
+    resp = query.execute()
+
     convs = resp.data or []
     if not convs:
         return []
+
     ids = [c["id"] for c in convs]
     msgs_resp = (
         get_supabase_admin()
@@ -68,21 +91,29 @@ def list_conversations(*, patient_id: str, limit: int = 50) -> list[dict[str, An
         .limit(limit * 6)
         .execute()
     )
+
     latest: dict[str, dict[str, Any]] = {}
     for m in msgs_resp.data or []:
         cid = m["conversation_id"]
         if cid not in latest and m["role"] in {"user", "assistant"}:
             latest[cid] = m
+
     for c in convs:
         m = latest.get(c["id"])
         c["last_message_at"] = m["created_at"] if m else None
         c["last_message_preview"] = (
             (m.get("content") or "")[:140] if m else None
         )
+
     return convs
 
 
-def fetch_conversation(*, conversation_id: str, patient_id: str) -> dict[str, Any]:
+def fetch_conversation(
+    *,
+    conversation_id: str,
+    patient_id: str | None = None,
+    provider_id: str | None = None,
+) -> dict[str, Any]:
 
     def _do() -> dict[str, Any]:
         resp = (
@@ -94,12 +125,34 @@ def fetch_conversation(*, conversation_id: str, patient_id: str) -> dict[str, An
             .limit(1)
             .execute()
         )
+
         rows = resp.data or []
-        if not rows or rows[0]["patient_id"] != patient_id:
+        if not rows:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="conversation not found"
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="conversation not found",
             )
+
         conv = rows[0]
+
+        if patient_id and conv.get("patient_id") != patient_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="conversation not found",
+            )
+
+        if provider_id and conv.get("provider_id") != provider_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="conversation not found",
+            )
+
+        if not patient_id and not provider_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="patient_id or provider_id is required",
+            )
+
         msgs_resp = (
             get_supabase_admin()
             .table(MSG_TABLE)
@@ -108,14 +161,25 @@ def fetch_conversation(*, conversation_id: str, patient_id: str) -> dict[str, An
             .order("created_at", desc=False)
             .execute()
         )
+
         conv["messages"] = msgs_resp.data or []
         return conv
 
     return with_admin_retry(_do)
 
 
-def delete_conversation(*, conversation_id: str, patient_id: str) -> None:
-    fetch_conversation(conversation_id=conversation_id, patient_id=patient_id)
+def delete_conversation(
+    *,
+    conversation_id: str,
+    patient_id: str | None = None,
+    provider_id: str | None = None,
+) -> None:
+    fetch_conversation(
+        conversation_id=conversation_id,
+        patient_id=patient_id,
+        provider_id=provider_id,
+    )
+
     get_supabase_admin().table(CONV_TABLE).update(
         {"deleted_at": "now()"}
     ).eq("id", conversation_id).execute()

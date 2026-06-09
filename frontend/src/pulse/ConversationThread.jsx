@@ -21,7 +21,13 @@ function findScroller(node) {
   return null;
 }
 
-export default function ConversationThread({ messages, streaming, streamingId, onNavigate }) {
+export default function ConversationThread({
+  messages,
+  streaming,
+  streamingId,
+  onNavigate,
+  welcomeMessage,
+}) {
   const endRef = useRef(null);
   const scrollerRef = useRef(null);
   const countRef = useRef(0);
@@ -36,7 +42,8 @@ export default function ConversationThread({ messages, streaming, streamingId, o
     const scroller = scrollerRef.current;
     if (!scroller) return undefined;
     const onScroll = () => {
-      const dist = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight;
+      const dist =
+        scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight;
       userScrolledUpRef.current = dist > STICK_THRESHOLD;
     };
     scroller.addEventListener("scroll", onScroll, { passive: true });
@@ -66,15 +73,19 @@ export default function ConversationThread({ messages, streaming, streamingId, o
 
   if (!messages?.length) {
     return (
-      <div className="pulse-thread pulse-thread--empty">
-        <div className="pulse-empty-card">
-          <div className="pulse-empty-icon">
+      <div className='pulse-thread pulse-thread--empty'>
+        <div className='pulse-empty-card'>
+          <div className='pulse-empty-icon'>
             <Activity size={22} strokeWidth={2.25} />
           </div>
-          <p className="pulse-empty-title">Hi, I'm Pulse.</p>
-          <p className="pulse-empty-sub">
-            Ask me about your upcoming appointments, lab results, or anything on
-            your care plan. I only see <em>your</em> records.
+          <p className='pulse-empty-title'>Hi, I'm Pulse.</p>
+          <p className='pulse-empty-sub'>
+            {welcomeMessage ?? (
+              <>
+                Ask me about your upcoming appointments, lab results, or
+                anything on your care plan. I only see <em>your</em> records.
+              </>
+            )}
           </p>
         </div>
       </div>
@@ -82,7 +93,7 @@ export default function ConversationThread({ messages, streaming, streamingId, o
   }
 
   return (
-    <div className="pulse-thread">
+    <div className='pulse-thread'>
       {messages.map((m) => (
         <MessageBubble
           key={m.id}
