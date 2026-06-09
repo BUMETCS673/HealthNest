@@ -1,3 +1,11 @@
+// AI-USAGE SUMMARY
+// Tools: Claude Code (Opus 4.8)
+// Overall AI Contribution: ~60%
+// AI-Assisted Areas: Provider-selection refactor to provider_id + nested
+//   providers (history vs directory dedupe) and the unread-messages nav badge.
+// Human Contributions: Business rules for "Your Doctors" vs new providers;
+//   applied/verified the changes and updated tests.
+// Notes: Validated via `npm run build`, jest, and manual testing.
 import { useState, useEffect, useRef } from "react";
 import {
   Bell,
@@ -9,6 +17,7 @@ import {
 } from "lucide-react";
 import { appointmentsApi, providersApi } from "../lib/appointmentsApi";
 import AppointmentModal from "../appointments/AppointmentModal";
+import { useMessages } from "../messages/MessagesProvider";
 import "./BookingPage.css";
 
 export default function BookingPage({
@@ -89,6 +98,8 @@ export default function BookingPage({
       .finally(() => setLoading(false));
   }, []);
 
+  const { unreadCount } = useMessages();
+
   const navLinks = [
     "Dashboard",
     "Appointments",
@@ -117,6 +128,9 @@ export default function BookingPage({
               }}
             >
               {link}
+              {link === "Messages" && unreadCount > 0 && (
+                <span className="mp-nav-badge">{unreadCount}</span>
+              )}
             </button>
           ))}
         </div>

@@ -6,17 +6,13 @@
  * Human Contributions: Replaced the bespoke `pulse-ws-top` header with the same `.ap-nav` markup AppointmentsPage uses so Pulse feels like a first-class HealthNest surface instead of a separate sub-app; the per-page "+ New chat" affordance lives in the sidebar (single source of truth) rather than the top bar.
  */
 import { useEffect, useRef, useState } from "react";
-import {
-  Bell,
-  ChevronDown,
-  LogOut,
-  User as UserIcon,
-} from "lucide-react";
+import { Bell, ChevronDown, LogOut, User as UserIcon } from "lucide-react";
 import { usePulse } from "./PulseProvider";
 import ConversationSidebar from "./ConversationSidebar";
 import ConversationThread from "./ConversationThread";
 import Composer from "./Composer";
 import { pulseApi } from "../lib/pulseApi";
+import { useMessages } from "../messages/MessagesProvider";
 import "../appointments/AppointmentsPage.css";
 import "./PulseWorkspace.css";
 
@@ -43,6 +39,7 @@ export default function PulseWorkspace({ user, onNavigate, onSignOut }) {
     refreshConversations,
   } = usePulse();
 
+  const { unreadCount } = useMessages();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const mountedRef = useRef(false);
@@ -55,7 +52,8 @@ export default function PulseWorkspace({ user, onNavigate, onSignOut }) {
   useEffect(() => {
     if (!menuOpen) return undefined;
     const onDocClick = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
+      if (menuRef.current && !menuRef.current.contains(e.target))
+        setMenuOpen(false);
     };
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
@@ -74,6 +72,7 @@ export default function PulseWorkspace({ user, onNavigate, onSignOut }) {
     if (link === "Dashboard") onNavigate?.("dashboard");
     else if (link === "Appointments") onNavigate?.("appointments");
     else if (link === "Records") onNavigate?.("labs");
+    else if (link === "Messages") onNavigate?.("messages");
     else if (link === "Pulse AI") onNavigate?.("pulse");
   };
 
@@ -91,6 +90,9 @@ export default function PulseWorkspace({ user, onNavigate, onSignOut }) {
               onClick={() => handleNavClick(link)}
             >
               {link}
+              {link === "Messages" && unreadCount > 0 && (
+                <span className="mp-nav-badge">{unreadCount}</span>
+              )}
             </button>
           ))}
         </div>
@@ -120,7 +122,10 @@ export default function PulseWorkspace({ user, onNavigate, onSignOut }) {
                 <button
                   type="button"
                   className="ap-user-menu-item"
-                  onClick={() => { setMenuOpen(false); onSignOut?.(); }}
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onSignOut?.();
+                  }}
                   role="menuitem"
                 >
                   <LogOut size={14} />

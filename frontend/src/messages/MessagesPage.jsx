@@ -1,21 +1,26 @@
+/**
+ * AI-USAGE SUMMARY
+ * Tools: Claude Code (Opus 4.8)
+ * Overall AI Contribution: ~50%
+ * AI-Assisted Areas: Drafted the page shell (shared HealthNest nav + unread
+ *   badge) that hosts the shared MessagesView body.
+ * Human Contributions: Integration into the app routing/nav and verification.
+ * Notes: Validated via `npm run build`, jest, and manual testing.
+ */
 import { useState, useEffect, useRef } from "react";
-import { Bell, ChevronDown, LogOut, User, Send } from "lucide-react";
-import { messagesApi } from "../lib/messagesApi";
+import { Bell, ChevronDown, LogOut, User } from "lucide-react";
+import { useMessages } from "./MessagesProvider";
+import MessagesView from "./MessagesView";
+import "../appointments/AppointmentsPage.css"; // reuse the shared .ap-nav top bar
 import "./MessagesPage.css";
 
 export default function MessagesPage({ user, onNavigate, onSignOut }) {
-  const [inbox, setInbox] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [recipientId, setRecipientId] = useState("");
-  const [body, setBody] = useState("");
-  const [sending, setSending] = useState(false);
-  const [error, setError] = useState("");
+  const { unreadCount } = useMessages();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
-  // same click-outside pattern as other pages
   useEffect(() => {
-    if (!menuOpen) return;
+    if (!menuOpen) return undefined;
     const handler = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target))
         setMenuOpen(false);
@@ -29,30 +34,6 @@ export default function MessagesPage({ user, onNavigate, onSignOut }) {
     user?.email ||
     "Patient";
 
-  useEffect(() => {
-    messagesApi
-      .getInbox()
-      .then(setInbox)
-      .catch(() => setInbox([]))
-      .finally(() => setLoading(false));
-  }, []);
-
-  const handleSend = async (e) => {
-    e.preventDefault();
-    if (!recipientId.trim() || !body.trim()) return;
-    setSending(true);
-    setError("");
-    try {
-      await messagesApi.sendMessage(recipientId.trim(), body.trim());
-      setBody("");
-      setRecipientId("");
-    } catch (err) {
-      setError(err.message || "Failed to send message.");
-    } finally {
-      setSending(false);
-    }
-  };
-
   const navLinks = [
     "Dashboard",
     "Appointments",
@@ -64,57 +45,73 @@ export default function MessagesPage({ user, onNavigate, onSignOut }) {
 
   return (
     <div className="mp-page">
-      {/* Nav — copy the ap-nav pattern exactly, changing class prefix to mp- */}
-      {/* ... nav JSX ... */}
+      {/* Top nav (shared .ap-nav styling) */}
+      <nav className="ap-nav">
+        <div className="ap-nav-left">
+          <span className="ap-logo">
+            <u>HealthNest</u>
+          </span>
+          {navLinks.map((link) => (
+            <button
+              key={link}
+              className={`ap-nav-link ${link === "Messages" ? "active" : ""}`}
+              onClick={() => {
+                if (link === "Dashboard") onNavigate?.("dashboard");
+                else if (link === "Appointments") onNavigate?.("appointments");
+                else if (link === "Messages") onNavigate?.("messages");
+                else if (link === "Pulse AI") onNavigate?.("pulse");
+              }}
+            >
+              {link}
+              {link === "Messages" && unreadCount > 0 && (
+                <span className="mp-nav-badge">{unreadCount}</span>
+              )}
+            </button>
+          ))}
+        </div>
+        <div className="ap-nav-right">
+          <button className="ap-icon-btn">
+            <Bell size={20} />
+          </button>
+          <div className="ap-user-wrap" ref={menuRef}>
+            <button
+              type="button"
+              className="ap-user"
+              onClick={() => setMenuOpen((o) => !o)}
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+            >
+              <div className="ap-avatar">
+                <User size={16} />
+              </div>
+              <div>
+                <span className="ap-user-name">{fullName}</span>
+                <span className="ap-user-role">Patient</span>
+              </div>
+              <ChevronDown size={16} />
+            </button>
+            {menuOpen && (
+              <div className="ap-user-menu" role="menu">
+                <button
+                  type="button"
+                  className="ap-user-menu-item"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onSignOut?.();
+                  }}
+                  role="menuitem"
+                >
+                  <LogOut size={14} />
+                  Sign out
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </nav>
 
       <main className="mp-main">
-        <h1 className="mp-title">Messages</h1>
-
-        {/* Compose form */}
-        <section className="mp-compose">
-          <h2 className="mp-section-title">New Message</h2>
-          <form onSubmit={handleSend} className="mp-form">
-            <input
-              className="mp-input"
-              placeholder="Recipient user ID"
-              value={recipientId}
-              onChange={(e) => setRecipientId(e.target.value)}
-            />
-            <textarea
-              className="mp-textarea"
-              placeholder="Write your message…"
-              rows={4}
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-            />
-            {error && <p className="mp-error">{error}</p>}
-            <button className="mp-send-btn" type="submit" disabled={sending}>
-              <Send size={16} /> {sending ? "Sending…" : "Send Message"}
-            </button>
-          </form>
-        </section>
-
-        {/* Inbox */}
-        <section className="mp-inbox">
-          <h2 className="mp-section-title">Inbox</h2>
-          {loading ? (
-            <p className="mp-loading">Loading…</p>
-          ) : inbox.length === 0 ? (
-            <p className="mp-empty">No messages yet.</p>
-          ) : (
-            <div className="mp-list">
-              {inbox.map((msg) => (
-                <div key={msg.id} className="mp-card">
-                  <p className="mp-card-from">From: {msg.sender_id}</p>
-                  <p className="mp-card-body">{msg.body}</p>
-                  <p className="mp-card-time">
-                    {new Date(msg.sent_at).toLocaleString()}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
+        <MessagesView myId={user?.id} />
       </main>
     </div>
   );

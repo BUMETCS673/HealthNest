@@ -19,6 +19,8 @@ import PulseProvider from "./pulse/PulseProvider";
 import PulseDrawer from "./pulse/PulseDrawer";
 import PulseWorkspace from "./pulse/PulseWorkspace";
 import MessagesPage from "./messages/MessagesPage";
+import MessagesProvider from "./messages/MessagesProvider";
+import MessagesDrawer from "./messages/MessagesDrawer";
 import { authApi } from "./lib/authApi";
 import DfaProvider from "./pulse/DfaProvider";
 import DfaDrawer from "./pulse/DfaDrawer";
@@ -75,6 +77,13 @@ export default function App() {
     const onPop = () => setPage(getPageFromPath());
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  // Proactively refresh the access token before it expires (the timer
+  // checks the stored session itself, so it's a no-op when signed out)
+  useEffect(() => {
+    authApi.startAutoRefresh();
+    return () => authApi.stopAutoRefresh();
   }, []);
 
   const handleSignOut = () => {
@@ -150,14 +159,28 @@ export default function App() {
       return <PatientDashboard {...sharedProps} pageData={pageData} />;
     })();
 
+    const signedInTree =
+      role === "provider" ? (
+        <DoctorDashboard user={session.user} onSignOut={handleSignOut} />
+      ) : (
+        <PulseProvider>
+          {patientPage}
+          <PulseDrawer
+            onOpenWorkspace={() => handleNavigate("pulse")}
+            onNavigate={handleNavigate}
+          />
+          <MessagesDrawer
+            myId={session.user?.id}
+            onOpenMessages={() => handleNavigate("messages")}
+            hideLauncher={page === "messages"}
+          />
+        </PulseProvider>
+      );
+
+    // Mount the messaging provider around the whole signed-in tree so the
+    // Realtime subscription + unread state are available on every page.
     return (
-      <PulseProvider>
-        {patientPage}
-        <PulseDrawer
-          onOpenWorkspace={() => handleNavigate("pulse")}
-          onNavigate={handleNavigate}
-        />
-      </PulseProvider>
+      <MessagesProvider session={session}>{signedInTree}</MessagesProvider>
     );
   }
 

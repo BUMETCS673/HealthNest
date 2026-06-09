@@ -24,6 +24,7 @@ import { labResultsApi } from "../lib/labResultsApi";
 import PatientLabResultsPage from "./PatientLabResultsPage";
 import LabResultDetail from "../labresults/LabResultDetail";
 import { usePulse } from "../pulse/PulseProvider";
+import { useMessages } from "../messages/MessagesProvider";
 import { authApi } from "../lib/authApi";
 
 function formatRole(role) {
@@ -168,7 +169,7 @@ export default function PatientDashboard({
   } else if (hour >= 12 && hour < 18) {
     greetingMes = "Good afternoon";
   }
-  const unreadMessages = 0; // will be replaced with db later
+  const { unreadCount: unreadMessages } = useMessages();
 
   const navOption = [
     "Dashboard",

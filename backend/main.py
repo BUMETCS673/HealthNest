@@ -51,3 +51,13 @@ app.include_router(messages_router)
 @app.get("/")
 def root():
     return {"message": "Backend running"}
+
+
+@app.get("/config")
+def public_config():
+    """Public browser config sourced from the backend environment
+    (docker-compose). Anon key only — never the service key."""
+    return {
+        "supabase_url": os.environ.get("SUPABASE_URL"),
+        "supabase_anon_key": os.environ.get("SUPABASE_KEY"),
+    }
