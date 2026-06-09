@@ -5,7 +5,7 @@
 // Human Contributions: Owned the data-source decisions (appointments + labs), the role-based gating, and the decision to wire ALL three Pulse entry points to the same drawer state so promotion to the full workspace is one click anywhere on the page.
 import { useEffect, useRef, useState } from "react";
 import "./PatientDashboard.css";
-import { appointmentsApi, apptToDisplayRow } from "./lib/appointmentsApi";
+import { appointmentsApi, apptToDisplayRow } from "../lib/appointmentsApi";
 import {
   Calendar,
   Pill,
@@ -20,12 +20,12 @@ import {
   ChevronDown,
   LogOut,
 } from "lucide-react";
-import { labResultsApi } from "./lib/labResultsApi";
+import { labResultsApi } from "../lib/labResultsApi";
 import PatientLabResultsPage from "./PatientLabResultsPage";
-import LabResultDetail from "./LabResultDetail";
-import { usePulse } from "./pulse/PulseProvider";
-import { useMessages } from "./messages/MessagesProvider";
-import { authApi } from "./lib/authApi";
+import LabResultDetail from "../labresults/LabResultDetail";
+import { usePulse } from "../pulse/PulseProvider";
+import { useMessages } from "../messages/MessagesProvider";
+import { authApi } from "../lib/authApi";
 
 function formatRole(role) {
   if (!role) return "Patient";

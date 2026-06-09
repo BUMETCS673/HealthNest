@@ -7,7 +7,7 @@
  */
 
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import Login from "../Login";
+import Login from "../loginsignup/Login";
 import { authApi } from "../lib/authApi";
 
 jest.mock("../lib/authApi", () => ({

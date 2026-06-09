@@ -39,11 +39,12 @@ import {
   MessageCircleQuestion,
   FlaskConical,
 } from "lucide-react";
-import LabResultsPage from "./LabResultsPage";
-import LabResultReview from "./LabResultReview";
-import { authApi } from "./lib/authApi";
-import { useMessages } from "./messages/MessagesProvider";
-import MessagesView from "./messages/MessagesView";
+import LabResultsPage from "../labresults/LabResultsPage";
+import LabResultReview from "../labresults/LabResultReview";
+import { authApi } from "../lib/authApi";
+import { useMessages } from "../messages/MessagesProvider";
+import MessagesView from "../messages/MessagesView";
+import { useDfa } from "../pulse/DfaProvider";
 
 // For specialty display/default setting
 function formatRole(role) {
@@ -294,8 +295,9 @@ function VisitOverviewDrawer({ visit, onClose, onOpenFullChart }) {
   );
 }
 
-export default function DoctorDashboard({ user, onSignOut }) {
+export default function DoctorDashboard({ user, onSignOut, onNavigate }) {
   const currentUser = getCurrUser(user);
+  const dfa = useDfa();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -480,7 +482,7 @@ export default function DoctorDashboard({ user, onSignOut }) {
               else if (option === "Patient Records") setView("labs");
               else if (option === "Messages") setView("messages");
               else if (option === "Schedule") setView("schedule");
-              else if (option === "Pulse AI") setView("pulse");
+              else if (option === "Pulse AI") onNavigate?.("dfa-pulse");
             };
 
             return (
@@ -1177,7 +1179,11 @@ export default function DoctorDashboard({ user, onSignOut }) {
       )}
 
       {/* ── Floating AI button ── */}
-      <button className="doc-pulse-fab" aria-label="Pulse AI">
+      <button
+        className="doc-pulse-fab"
+        aria-label="Pulse AI"
+        onClick={() => dfa.openDrawer()}
+      >
         <MessageCircleQuestion size={25} />
       </button>
     </div>

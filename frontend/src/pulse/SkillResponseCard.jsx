@@ -6,6 +6,7 @@
  * Human Contributions: Picked the dispatch shape (one component per skill name keyed by the backend `skill` string) so adding a new skill card is one import + one branch — keeps Pulse extensible without re-architecting the message renderer.
  */
 import AppointmentsCard from "./cards/AppointmentsCard";
+import BookAppointmentCard from "./cards/BookAppointmentCard";
 import LabResultsCard from "./cards/LabResultsCard";
 
 export default function SkillResponseCard({ skillOutput, onNavigate }) {
@@ -14,6 +15,13 @@ export default function SkillResponseCard({ skillOutput, onNavigate }) {
     case "get_appointments":
       return (
         <AppointmentsCard
+          payload={skillOutput.payload}
+          onNavigate={onNavigate}
+        />
+      );
+    case "book_appointment":
+      return (
+        <BookAppointmentCard
           payload={skillOutput.payload}
           onNavigate={onNavigate}
         />

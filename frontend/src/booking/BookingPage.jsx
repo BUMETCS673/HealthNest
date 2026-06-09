@@ -15,9 +15,9 @@ import {
   Search,
   User,
 } from "lucide-react";
-import { appointmentsApi, providersApi } from "./lib/appointmentsApi";
-import AppointmentModal from "./AppointmentModal";
-import { useMessages } from "./messages/MessagesProvider";
+import { appointmentsApi, providersApi } from "../lib/appointmentsApi";
+import AppointmentModal from "../appointments/AppointmentModal";
+import { useMessages } from "../messages/MessagesProvider";
 import "./BookingPage.css";
 
 export default function BookingPage({

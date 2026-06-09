@@ -297,6 +297,31 @@
   color: var(--black);
 }
 
+.login-bio {
+  width: 100%;
+  height: 44px;
+  background: var(--black);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: opacity 0.15s;
+  margin-top: 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.login-bio:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.login-bio:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ── Error ────────────────────────────────────────── */
 .login-error {
   font-size: 0.8rem;

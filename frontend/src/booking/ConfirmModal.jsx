@@ -7,7 +7,7 @@
  */
 import { useEffect } from "react";
 import { X, AlertTriangle } from "lucide-react";
-import "./labResults.css";
+import "../labresults/labResults.css";
 
 export default function ConfirmModal({
   open,

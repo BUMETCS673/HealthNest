@@ -15,7 +15,8 @@ import React from "react";
 import "@testing-library/jest-dom";
 import { render, screen, cleanup } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import DoctorDashboard from "../DoctorDashboard";
+import DoctorDashboard from "../doctor/DoctorDashboard";
+import DfaProvider from "../pulse/DfaProvider";
 
 afterEach(() => {
   cleanup();
@@ -33,8 +34,11 @@ const mockDoctorUser = {
 
 describe("DoctorDashboard", () => {
   test("renders the doctor dashboard navigation and greeting", () => {
-    render(<DoctorDashboard user={mockDoctorUser} />);
-
+    render(
+      <DfaProvider>
+        <DoctorDashboard user={mockDoctorUser} />
+      </DfaProvider>,
+    );
     expect(screen.getAllByText("HealthNest").length).toBeGreaterThan(0);
 
     expect(
@@ -58,7 +62,11 @@ describe("DoctorDashboard", () => {
   });
 
   test("shows the dashboard summary cards", () => {
-    render(<DoctorDashboard user={mockDoctorUser} />);
+    render(
+      <DfaProvider>
+        <DoctorDashboard user={mockDoctorUser} />
+      </DfaProvider>,
+    );
 
     expect(screen.getByText("Today's Patients")).toBeInTheDocument();
     expect(screen.getAllByText("Unsigned Encounters").length).toBeGreaterThan(
@@ -68,13 +76,21 @@ describe("DoctorDashboard", () => {
   });
 
   test("renders today's schedule section", () => {
-    render(<DoctorDashboard user={mockDoctorUser} />);
+    render(
+      <DfaProvider>
+        <DoctorDashboard user={mockDoctorUser} />
+      </DfaProvider>,
+    );
 
     expect(screen.getByText("Today's Schedule")).toBeInTheDocument();
   });
 
   test("renders AI pre-visit summaries section", () => {
-    render(<DoctorDashboard user={mockDoctorUser} />);
+    render(
+      <DfaProvider>
+        <DoctorDashboard user={mockDoctorUser} />
+      </DfaProvider>,
+    );
 
     expect(
       screen.getAllByText("AI Pre-Visit Summaries").length,
@@ -85,7 +101,11 @@ describe("DoctorDashboard", () => {
   });
 
   test("renders unsigned encounters and patient alerts sections", () => {
-    render(<DoctorDashboard user={mockDoctorUser} />);
+    render(
+      <DfaProvider>
+        <DoctorDashboard user={mockDoctorUser} />
+      </DfaProvider>,
+    );
 
     expect(screen.getAllByText("Unsigned Encounters").length).toBeGreaterThan(
       0,
@@ -100,7 +120,11 @@ describe("DoctorDashboard", () => {
     const user = userEvent.setup();
     const onSignOut = jest.fn();
 
-    render(<DoctorDashboard user={mockDoctorUser} onSignOut={onSignOut} />);
+    render(
+      <DfaProvider>
+        <DoctorDashboard user={mockDoctorUser} onSignOut={onSignOut} />
+      </DfaProvider>,
+    );
 
     const profileButton = screen
       .getAllByRole("button")
