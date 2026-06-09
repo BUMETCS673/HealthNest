@@ -243,7 +243,7 @@ export default function BookingPage({
 
       {selectedProvider && (
         <AppointmentModal
-          providerID={selectedProvider.id}
+          providerId={selectedProvider.id}
           providerName={selectedProvider.name}
           onClose={() => setSelectedProvider(null)}
           onBooked={() => {
