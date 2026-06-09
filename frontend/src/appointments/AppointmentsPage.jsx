@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { appointmentsApi, apptToDisplayRow } from "../lib/appointmentsApi";
 import AppointmentModal from "./AppointmentModal";
-import { useMessages } from "./messages/MessagesProvider";
+import { useMessages } from "../messages/MessagesProvider";
 import "./AppointmentsPage.css";
 
 const STATUS_META = {
