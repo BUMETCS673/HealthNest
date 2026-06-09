@@ -10,26 +10,7 @@
   flex-direction: column;
 }
 
-/* ── Nav ── */
-.bp-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 80px;
-  height: 56px;
-  background: #fff;
-  border-bottom: 1px solid #f2f2f1;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.bp-nav-left {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
+/* ── Footer brand logo (top nav now lives in the shared TopNav component) ── */
 .bp-logo {
   font-family: "Instrument Serif", Georgia, serif;
   font-style: italic;
@@ -41,120 +22,6 @@
   padding-right: 28px;
   border-right: 1px solid #f2f2f1;
   white-space: nowrap;
-}
-
-.bp-nav-link {
-  background: none;
-  border: none;
-  padding: 6px 14px;
-  font-size: 14px;
-  color: #71716e;
-  cursor: pointer;
-  border-radius: 6px;
-  font-family: inherit;
-  transition: background 0.15s, color 0.15s;
-}
-
-.bp-nav-link:hover:not(.active) { background: #f2f2f1; color: #111110; }
-
-.bp-nav-link.active {
-  background: #111110;
-  color: #fff;
-  font-weight: 500;
-}
-
-.bp-nav-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.bp-icon-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #71716e;
-  padding: 6px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-}
-
-.bp-icon-btn:hover { background: #f2f2f1; }
-
-.bp-user-wrap {
-  position: relative;
-}
-
-.bp-user {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  background: none;
-  border: none;
-  padding: 4px 6px;
-  border-radius: 8px;
-  font: inherit;
-  color: inherit;
-  text-align: left;
-}
-
-.bp-user:hover { background: #f3f3f0; }
-
-.bp-user-menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  min-width: 140px;
-  background: #fff;
-  border: 1px solid #f2f2f1;
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-  padding: 6px;
-  z-index: 150;
-}
-
-.bp-user-menu-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 8px 10px;
-  background: none;
-  border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  color: #111110;
-  cursor: pointer;
-  text-align: left;
-  font-family: inherit;
-}
-
-.bp-user-menu-item:hover { background: #f9f9f7; }
-
-.bp-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #e8f5e9;
-  color: #2d6a4f;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.bp-user-name {
-  font-size: 13px;
-  font-weight: 500;
-  color: #111110;
-  display: block;
-}
-
-.bp-user-role {
-  font-size: 11px;
-  color: #9c9c9b;
-  display: block;
 }
 
 /* ── Main ── */

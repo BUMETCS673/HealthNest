@@ -29,23 +29,6 @@
   flex-direction: column;
 }
 
-/* Unread count chip on the "Messages" nav link */
-.mp-nav-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 17px;
-  height: 17px;
-  margin-left: 6px;
-  padding: 0 5px;
-  border-radius: 9px;
-  background: #dc2626;
-  color: #fff;
-  font-size: 10.5px;
-  font-weight: 600;
-  vertical-align: middle;
-}
-
 /* ── Two-pane layout ───────────────────────────────────────── */
 .mp-layout {
   display: grid;

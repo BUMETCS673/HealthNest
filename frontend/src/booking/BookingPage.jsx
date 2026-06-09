@@ -6,18 +6,12 @@
 // Human Contributions: Business rules for "Your Doctors" vs new providers;
 //   applied/verified the changes and updated tests.
 // Notes: Validated via `npm run build`, jest, and manual testing.
-import { useState, useEffect, useRef } from "react";
-import {
-  Bell,
-  ChevronDown,
-  ChevronLeft,
-  LogOut,
-  Search,
-  User,
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { ChevronLeft, Search, User } from "lucide-react";
 import { appointmentsApi, providersApi } from "../lib/appointmentsApi";
 import AppointmentModal from "../appointments/AppointmentModal";
 import { useMessages } from "../messages/MessagesProvider";
+import TopNav from "../components/TopNav";
 import "./BookingPage.css";
 
 export default function BookingPage({
@@ -31,18 +25,6 @@ export default function BookingPage({
   const [showFindDoctor, setShowFindDoctor] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef(null);
-
-  useEffect(() => {
-    if (!menuOpen) return undefined;
-    const onDocClick = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target))
-        setMenuOpen(false);
-    };
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
-  }, [menuOpen]);
 
   const fullName =
     `${user?.user_metadata?.first_name || ""} ${user?.user_metadata?.last_name || ""}`.trim() ||
@@ -112,68 +94,23 @@ export default function BookingPage({
   return (
     <div className="bp-page">
       {/* Nav */}
-      <nav className="bp-nav">
-        <div className="bp-nav-left">
-          <span className="bp-logo">
-            <u>HealthNest</u>
-          </span>
-          {navLinks.map((link) => (
-            <button
-              key={link}
-              className={`bp-nav-link ${link === "Appointments" ? "active" : ""}`}
-              onClick={() => {
-                if (link === "Dashboard") onNavigate?.("dashboard");
-                if (link === "Appointments") onNavigate?.("appointments");
-                if (link === "Messages") onNavigate?.("messages");
-              }}
-            >
-              {link}
-              {link === "Messages" && unreadCount > 0 && (
-                <span className="mp-nav-badge">{unreadCount}</span>
-              )}
-            </button>
-          ))}
-        </div>
-        <div className="bp-nav-right">
-          <button className="bp-icon-btn">
-            <Bell size={20} />
-          </button>
-          <div className="bp-user-wrap" ref={menuRef}>
-            <button
-              type="button"
-              className="bp-user"
-              onClick={() => setMenuOpen((o) => !o)}
-              aria-haspopup="menu"
-              aria-expanded={menuOpen}
-            >
-              <div className="bp-avatar">
-                <User size={16} />
-              </div>
-              <div>
-                <span className="bp-user-name">{fullName}</span>
-                <span className="bp-user-role">Patient</span>
-              </div>
-              <ChevronDown size={16} />
-            </button>
-            {menuOpen && (
-              <div className="bp-user-menu" role="menu">
-                <button
-                  type="button"
-                  className="bp-user-menu-item"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    onSignOut?.();
-                  }}
-                  role="menuitem"
-                >
-                  <LogOut size={14} />
-                  Sign out
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
+      <TopNav
+        links={navLinks.map((l) =>
+          l === "Messages" ? { label: l, badge: unreadCount } : l,
+        )}
+        activeKey="Appointments"
+        onLogoClick={() => onNavigate?.("dashboard")}
+        onSelect={(label) => {
+          if (label === "Dashboard") onNavigate?.("dashboard");
+          else if (label === "Appointments") onNavigate?.("appointments");
+          else if (label === "Records") onNavigate?.("labs");
+          else if (label === "Pulse AI") onNavigate?.("pulse");
+          else if (label === "Messages") onNavigate?.("messages");
+        }}
+        userName={fullName}
+        userRole="Patient"
+        onSignOut={onSignOut}
+      />
 
       <main className="bp-main">
         <button

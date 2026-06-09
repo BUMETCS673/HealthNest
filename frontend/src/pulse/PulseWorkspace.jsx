@@ -5,14 +5,14 @@
  * AI-Assisted Areas: Drafted the workspace layout (sidebar + thread + composer) and the integration into the app's shared HealthNest top nav.
  * Human Contributions: Replaced the bespoke `pulse-ws-top` header with the same `.ap-nav` markup AppointmentsPage uses so Pulse feels like a first-class HealthNest surface instead of a separate sub-app; the per-page "+ New chat" affordance lives in the sidebar (single source of truth) rather than the top bar.
  */
-import { useEffect, useRef, useState } from "react";
-import { Bell, ChevronDown, LogOut, User as UserIcon } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { usePulse } from "./PulseProvider";
 import ConversationSidebar from "./ConversationSidebar";
 import ConversationThread from "./ConversationThread";
 import Composer from "./Composer";
 import { pulseApi } from "../lib/pulseApi";
 import { useMessages } from "../messages/MessagesProvider";
+import TopNav from "../components/TopNav";
 import "../appointments/AppointmentsPage.css";
 import "./PulseWorkspace.css";
 
@@ -40,24 +40,12 @@ export default function PulseWorkspace({ user, onNavigate, onSignOut }) {
   } = usePulse();
 
   const { unreadCount } = useMessages();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef(null);
   const mountedRef = useRef(false);
 
   const fullName =
     `${user?.user_metadata?.first_name || ""} ${user?.user_metadata?.last_name || ""}`.trim() ||
     user?.email ||
     "Patient";
-
-  useEffect(() => {
-    if (!menuOpen) return undefined;
-    const onDocClick = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target))
-        setMenuOpen(false);
-    };
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
-  }, [menuOpen]);
 
   useEffect(() => {
     if (mountedRef.current) return;
@@ -78,64 +66,17 @@ export default function PulseWorkspace({ user, onNavigate, onSignOut }) {
 
   return (
     <div className="ap-page">
-      <nav className="ap-nav">
-        <div className="ap-nav-left">
-          <span className="ap-logo">
-            <u>HealthNest</u>
-          </span>
-          {NAV_LINKS.map((link) => (
-            <button
-              key={link}
-              className={`ap-nav-link ${link === "Pulse AI" ? "active" : ""}`}
-              onClick={() => handleNavClick(link)}
-            >
-              {link}
-              {link === "Messages" && unreadCount > 0 && (
-                <span className="mp-nav-badge">{unreadCount}</span>
-              )}
-            </button>
-          ))}
-        </div>
-        <div className="ap-nav-right">
-          <button className="ap-icon-btn">
-            <Bell size={20} />
-          </button>
-          <div className="ap-user-wrap" ref={menuRef}>
-            <button
-              type="button"
-              className="ap-user"
-              onClick={() => setMenuOpen((o) => !o)}
-              aria-haspopup="menu"
-              aria-expanded={menuOpen}
-            >
-              <div className="ap-avatar">
-                <UserIcon size={16} />
-              </div>
-              <div>
-                <span className="ap-user-name">{fullName}</span>
-                <span className="ap-user-role">Patient</span>
-              </div>
-              <ChevronDown size={16} />
-            </button>
-            {menuOpen && (
-              <div className="ap-user-menu" role="menu">
-                <button
-                  type="button"
-                  className="ap-user-menu-item"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    onSignOut?.();
-                  }}
-                  role="menuitem"
-                >
-                  <LogOut size={14} />
-                  Sign out
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
+      <TopNav
+        links={NAV_LINKS.map((l) =>
+          l === "Messages" ? { label: l, badge: unreadCount } : l,
+        )}
+        activeKey="Pulse AI"
+        onLogoClick={() => onNavigate?.("dashboard")}
+        onSelect={handleNavClick}
+        userName={fullName}
+        userRole="Patient"
+        onSignOut={onSignOut}
+      />
 
       <div className="pulse-ws-grid">
         <ConversationSidebar

@@ -10,23 +10,7 @@
   flex-direction: column;
 }
 
-/* ── Nav ─────────────────────────────────────────── */
-.ap-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 80px;
-  height: 56px;
-  background: #fff;
-  border-bottom: 1px solid #f2f2f1;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.ap-nav-left  { display: flex; align-items: center; gap: 20px; }
-.ap-nav-right { display: flex; align-items: center; gap: 12px; }
-
+/* ── Footer brand logo (top nav now lives in the shared TopNav component) ── */
 .ap-logo {
   font-family: "Instrument Serif", Georgia, serif;
   font-style: italic;
@@ -38,105 +22,6 @@
   padding-right: 28px;
   border-right: 1px solid #f2f2f1;
 }
-
-.ap-nav-link {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 14px;
-  color: #71716e;
-  font-family: inherit;
-  transition: background 0.15s, color 0.15s;
-}
-
-.ap-nav-link.active {
-  background: #111110;
-  color: #fff;
-  font-weight: 500;
-}
-
-.ap-nav-link:hover:not(.active) {
-  background: #f2f2f1;
-  color: #111110;
-}
-
-.ap-icon-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 6px;
-  color: #71716e;
-}
-
-.ap-icon-btn:hover { background: #f2f2f1; }
-
-.ap-user-wrap {
-  position: relative;
-}
-
-.ap-user {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  background: none;
-  border: none;
-  padding: 4px 6px;
-  border-radius: 8px;
-  font: inherit;
-  color: inherit;
-  text-align: left;
-}
-
-.ap-user:hover { background: #f2f2f1; }
-
-.ap-user-menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  min-width: 140px;
-  background: #fff;
-  border: 1px solid #f2f2f1;
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-  padding: 6px;
-  z-index: 150;
-}
-
-.ap-user-menu-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 8px 10px;
-  background: none;
-  border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  color: #111110;
-  cursor: pointer;
-  text-align: left;
-  font-family: inherit;
-}
-
-.ap-user-menu-item:hover { background: #f9f9f7; }
-
-.ap-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #f2f2f1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #71716e;
-}
-
-.ap-user-name { font-size: 13px; font-weight: 500; color: #111110; display: block; }
-.ap-user-role { font-size: 11px; color: #9c9c9b; display: block; }
 
 /* ── Main ────────────────────────────────────────── */
 .ap-main {
