@@ -46,12 +46,23 @@ function getPageFromPath() {
   return PATH_TO_PAGE[window.location.pathname] ?? "dashboard";
 }
 
+const ACTIVE_ROLE_KEY = "healthnest.activeRole";
+
 export default function App() {
   const [view, setView] = useState("login");
   const [page, setPage] = useState(getPageFromPath);
   const [pageData, setPageData] = useState(null);
   const [session, setSession] = useState(() => authApi.getSession());
   const [signupRole, setSignupRole] = useState("patient");
+  const [activeRole, setActiveRole] = useState(() =>
+    localStorage.getItem(ACTIVE_ROLE_KEY)
+  );
+
+  const rememberRole = (role) => {
+    if (!role) return;
+    localStorage.setItem(ACTIVE_ROLE_KEY, role);
+    setActiveRole(role);
+  };
 
   // Strip Supabase tokens from the URL hash (left over from email confirmation redirects)
   useEffect(() => {
@@ -88,6 +99,8 @@ export default function App() {
 
   const handleSignOut = () => {
     authApi.signOut();
+    localStorage.removeItem(ACTIVE_ROLE_KEY);
+    setActiveRole(null);
     setSession(null);
     setPage("dashboard");
     setPageData(null);
@@ -108,6 +121,7 @@ export default function App() {
 
   if (session) {
     const role =
+      activeRole ??
       session.user?.user_metadata?.role ??
       session.user?.raw_user_meta_data?.role ??
       "patient";
@@ -190,7 +204,10 @@ export default function App() {
       key={signupRole}
       initialRole={signupRole}
       onSwitchToLogin={() => setView("login")}
-      onSignedUp={(s) => setSession(s)}
+      onSignedUp={(s, role) => {
+        rememberRole(role);
+        setSession(s);
+      }}
     />
   ) : (
     <Login
@@ -198,7 +215,10 @@ export default function App() {
         setSignupRole(role);
         setView("signup");
       }}
-      onSignedIn={(s) => setSession(s)}
+      onSignedIn={(s, role) => {
+        rememberRole(role);
+        setSession(s);
+      }}
     />
   );
 }

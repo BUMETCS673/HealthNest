@@ -122,10 +122,10 @@ export const authApi = {
     return data;
   },
 
-  async signIn({ email, password }) {
+  async signIn({ email, password, role }) {
     const data = await request("/auth/signin", {
       method: "POST",
-      body: { email, password },
+      body: role ? { email, password, role } : { email, password },
     });
     if (data.session) writeStoredSession(data.session);
     return data;

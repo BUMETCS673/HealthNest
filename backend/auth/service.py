@@ -260,6 +260,20 @@ def sign_up(payload: SignUpRequest) -> dict[str, Any]:
     return {"session": session, "user": user, "message": message}
 
 
+def _has_role_profile(user_id: str, role: str) -> bool:
+    table = "patients" if role == "patient" else "providers"
+    resp = (
+        get_supabase_admin()
+        .table(table)
+        .select("id")
+        .eq("user_id", user_id)
+        .is_("deleted_at", None)
+        .limit(1)
+        .execute()
+    )
+    return bool(resp.data)
+
+
 def sign_in(payload: SignInRequest) -> dict[str, Any]:
     try:
         result = get_supabase().auth.sign_in_with_password(
@@ -276,6 +290,23 @@ def sign_in(payload: SignInRequest) -> dict[str, Any]:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials.",
         )
+
+    user = _serialize_user(result.user) or session.get("user") or {}
+    if payload.role:
+        try:
+            allowed = _has_role_profile(user.get("id"), payload.role)
+        except Exception:
+            # Profile lookup unavailable — fall back to the role recorded at signup
+            allowed = (user.get("user_metadata") or {}).get("role") == payload.role
+        if not allowed:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=(
+                    f"No {payload.role} account exists for this email. "
+                    f"Select the correct account type or create a {payload.role} account."
+                ),
+            )
+
     return {"session": session, "user": _serialize_user(result.user)}
 
 
