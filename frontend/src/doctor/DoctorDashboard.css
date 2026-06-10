@@ -638,6 +638,12 @@
 }
 
 .doc-footer-link {
+  background: none;
+  border: none;
+  padding: 0;
+  display: block;
+  text-align: left;
+  font: inherit;
   font-size: 13px;
   color: #9c9c9b;
   margin-bottom: 8px;

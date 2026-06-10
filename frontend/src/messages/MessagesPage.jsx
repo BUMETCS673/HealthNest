@@ -11,6 +11,7 @@ import { useMessages } from "./MessagesProvider";
 import MessagesView from "./MessagesView";
 import TopNav from "../components/TopNav";
 import "./MessagesPage.css";
+import Footer from "../components/Footer";
 
 export default function MessagesPage({ user, onNavigate, onSignOut }) {
   const { unreadCount } = useMessages();
@@ -30,12 +31,12 @@ export default function MessagesPage({ user, onNavigate, onSignOut }) {
   ];
 
   return (
-    <div className="mp-page">
+    <div className='mp-page'>
       <TopNav
         links={navLinks.map((l) =>
           l === "Messages" ? { label: l, badge: unreadCount } : l,
         )}
-        activeKey="Messages"
+        activeKey='Messages'
         onLogoClick={() => onNavigate?.("dashboard")}
         onSelect={(label) => {
           if (label === "Dashboard") onNavigate?.("dashboard");
@@ -45,13 +46,22 @@ export default function MessagesPage({ user, onNavigate, onSignOut }) {
           else if (label === "Messages") onNavigate?.("messages");
         }}
         userName={fullName}
-        userRole="Patient"
+        userRole='Patient'
         onSignOut={onSignOut}
       />
 
-      <main className="mp-main">
+      <main className='mp-main'>
         <MessagesView myId={user?.id} />
       </main>
+      <Footer
+        role='patient'
+        onNavigate={(target) => {
+          if (target === "records") onNavigate?.("labs");
+          else if (target === "care-team")
+            window.alert("My Care Team page coming soon.");
+          else onNavigate?.(target);
+        }}
+      />
     </div>
   );
 }

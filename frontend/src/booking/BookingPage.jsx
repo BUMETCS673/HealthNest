@@ -13,6 +13,7 @@ import AppointmentModal from "../appointments/AppointmentModal";
 import { useMessages } from "../messages/MessagesProvider";
 import TopNav from "../components/TopNav";
 import "./BookingPage.css";
+import Footer from "../components/Footer";
 
 export default function BookingPage({
   user,
@@ -92,13 +93,13 @@ export default function BookingPage({
   ];
 
   return (
-    <div className="bp-page">
+    <div className='bp-page'>
       {/* Nav */}
       <TopNav
         links={navLinks.map((l) =>
           l === "Messages" ? { label: l, badge: unreadCount } : l,
         )}
-        activeKey="Appointments"
+        activeKey='Appointments'
         onLogoClick={() => onNavigate?.("dashboard")}
         onSelect={(label) => {
           if (label === "Dashboard") onNavigate?.("dashboard");
@@ -108,33 +109,32 @@ export default function BookingPage({
           else if (label === "Messages") onNavigate?.("messages");
         }}
         userName={fullName}
-        userRole="Patient"
+        userRole='Patient'
         onSignOut={onSignOut}
       />
 
-      <main className="bp-main">
+      <main className='bp-main'>
         <button
-          className="bp-back"
-          onClick={() => onNavigate?.("appointments")}
-        >
+          className='bp-back'
+          onClick={() => onNavigate?.("appointments")}>
           <ChevronLeft size={16} /> Back to Appointments
         </button>
 
-        <div className="bp-header">
-          <h1 className="bp-title">Book an Appointment</h1>
-          <p className="bp-sub">
+        <div className='bp-header'>
+          <h1 className='bp-title'>Book an Appointment</h1>
+          <p className='bp-sub'>
             Choose a provider to see their available times.
           </p>
         </div>
 
         {loading ? (
-          <div className="bp-loading">Loading…</div>
+          <div className='bp-loading'>Loading…</div>
         ) : (
           <>
             {myProviders.length > 0 && (
-              <section className="bp-section">
-                <h2 className="bp-section-title">Your Doctors</h2>
-                <div className="bp-grid">
+              <section className='bp-section'>
+                <h2 className='bp-section-title'>Your Doctors</h2>
+                <div className='bp-grid'>
                   {myProviders.map((p) => (
                     <ProviderCard
                       key={p.id}
@@ -146,24 +146,23 @@ export default function BookingPage({
               </section>
             )}
 
-            <section className="bp-section">
+            <section className='bp-section'>
               {!showFindDoctor ? (
                 <button
-                  className="bp-find-btn"
-                  onClick={() => setShowFindDoctor(true)}
-                >
+                  className='bp-find-btn'
+                  onClick={() => setShowFindDoctor(true)}>
                   <Search size={16} />
                   Find a New Doctor
                 </button>
               ) : (
                 <>
-                  <h2 className="bp-section-title">Find a New Doctor</h2>
+                  <h2 className='bp-section-title'>Find a New Doctor</h2>
                   {newProviders.length === 0 ? (
-                    <p className="bp-empty">
+                    <p className='bp-empty'>
                       No new providers available right now.
                     </p>
                   ) : (
-                    <div className="bp-grid">
+                    <div className='bp-grid'>
                       {newProviders.map((p) => (
                         <ProviderCard
                           key={p.id}
@@ -180,18 +179,6 @@ export default function BookingPage({
         )}
       </main>
 
-      <footer className="bp-footer">
-        <span className="bp-logo">
-          <u>HealthNest</u>
-        </span>
-        <p className="bp-footer-tag">
-          Coordinated care across clinics, built for patients and providers.
-        </p>
-      </footer>
-      <div className="bp-copyright">
-        © 2026 HealthNest Technologies, Inc. All rights reserved.
-      </div>
-
       {selectedProvider && (
         <AppointmentModal
           providerId={selectedProvider.id}
@@ -203,19 +190,20 @@ export default function BookingPage({
           }}
         />
       )}
+      <Footer role='patient' onNavigate={onNavigate} />
     </div>
   );
 }
 
 function ProviderCard({ provider, onClick }) {
   return (
-    <button className="bp-card" onClick={onClick}>
-      <div className="bp-card-avatar">
+    <button className='bp-card' onClick={onClick}>
+      <div className='bp-card-avatar'>
         <User size={28} />
       </div>
-      <p className="bp-card-name">{provider.name}</p>
+      <p className='bp-card-name'>{provider.name}</p>
       {provider.specialty && (
-        <span className="bp-card-badge">{provider.specialty}</span>
+        <span className='bp-card-badge'>{provider.specialty}</span>
       )}
     </button>
   );

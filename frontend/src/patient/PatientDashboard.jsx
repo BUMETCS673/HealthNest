@@ -22,6 +22,7 @@ import LabResultDetail from "../labresults/LabResultDetail";
 import { usePulse } from "../pulse/PulseProvider";
 import { useMessages } from "../messages/MessagesProvider";
 import TopNav from "../components/TopNav";
+import Footer from "../components/Footer";
 
 function formatRole(role) {
   if (!role) return "Patient";
@@ -77,12 +78,11 @@ function SummaryCard({ icon, label, value, detail, onClick }) {
   return (
     <div
       className={`summ-card${onClick ? " summ-card--clickable" : ""}`}
-      onClick={onClick}
-    >
-      <div className="summ-icon">{icon}</div>
-      <p className="summ-label">{label}</p>
-      <p className="summ-value">{value}</p>
-      {detail && <p className="summ-detail">{detail}</p>}
+      onClick={onClick}>
+      <div className='summ-icon'>{icon}</div>
+      <p className='summ-label'>{label}</p>
+      <p className='summ-value'>{value}</p>
+      {detail && <p className='summ-detail'>{detail}</p>}
     </div>
   );
 }
@@ -164,7 +164,7 @@ export default function PatientDashboard({
   ];
 
   return (
-    <div className="p-dash">
+    <div className='p-dash'>
       {/* Navigation bar */}
       <TopNav
         links={navOption.map((o) =>
@@ -185,7 +185,7 @@ export default function PatientDashboard({
       />
 
       {/* ── Main content ── */}
-      <main className="dash-main">
+      <main className='dash-main'>
         {view === "labs" && (
           <PatientLabResultsPage
             onBack={() => setView("home")}
@@ -204,26 +204,25 @@ export default function PatientDashboard({
         {view !== "home" ? null : (
           <>
             {/*  Header */}
-            <div className="dash-header">
+            <div className='dash-header'>
               <div>
-                <p className="dash-date">{dateFormat}</p>
-                <h1 className="dash-greeting">
+                <p className='dash-date'>{dateFormat}</p>
+                <h1 className='dash-greeting'>
                   {greetingMes}, {currentUser.firstName}
                 </h1>
               </div>
               <button
-                className="dash-book-btn"
-                onClick={() => onNavigate?.("booking")}
-              >
+                className='dash-book-btn'
+                onClick={() => onNavigate?.("booking")}>
                 <Plus size={16} /> Book Appointment
               </button>
             </div>
 
             {/* Top Four cards */}
-            <div className="dash-sumcard">
+            <div className='dash-sumcard'>
               <SummaryCard
                 icon={<Calendar size={16} />}
-                label="Next Appointment"
+                label='Next Appointment'
                 value={
                   upcomingAppoint[0]
                     ? `${upcomingAppoint[0].month} ${upcomingAppoint[0].day}`
@@ -238,98 +237,95 @@ export default function PatientDashboard({
               />
               <SummaryCard
                 icon={<Pill size={16} />}
-                label="Active Medications"
-                value="3"
-                detail="Refill due May 28"
+                label='Active Medications'
+                value='3'
+                detail='Refill due May 28'
               />
               <SummaryCard
                 icon={<Activity size={16} />}
-                label="Recent Labs"
-                value="4"
-                detail="1 result flagged"
+                label='Recent Labs'
+                value='4'
+                detail='1 result flagged'
                 onClick={() => setView("labs")}
               />
               <SummaryCard
                 icon={<FileText size={16} />}
-                label="Balance Due"
-                value="$142"
-                detail="Due Jun 1 · BCBS on file"
+                label='Balance Due'
+                value='$142'
+                detail='Due Jun 1 · BCBS on file'
               />
             </div>
 
             {/* ── Middle layout ── */}
-            <div className="dash-middle">
+            <div className='dash-middle'>
               {/* Upcoming Appointments */}
-              <div className="dash-card">
-                <div className="dash-card-header">
-                  <h3 className="dash-card-title">Upcoming Appointments</h3>
+              <div className='dash-card'>
+                <div className='dash-card-header'>
+                  <h3 className='dash-card-title'>Upcoming Appointments</h3>
                   <button
-                    className="dash-view-all"
-                    onClick={() => onNavigate?.("appointments")}
-                  >
+                    className='dash-view-all'
+                    onClick={() => onNavigate?.("appointments")}>
                     View all
                   </button>
                 </div>
                 {upcomingAppoint.length === 0 && (
-                  <p className="dash-appt-empty">No upcoming appointments.</p>
+                  <p className='dash-appt-empty'>No upcoming appointments.</p>
                 )}
                 {upcomingAppoint.map((appt) => (
                   <button
                     key={appt.id}
-                    className="dash-appt-row"
-                    onClick={() => onNavigate?.("appointments")}
-                  >
-                    <div className="dash-appt-date">
-                      <span className="dash-appt-month">{appt.month}</span>
-                      <span className="dash-appt-day">{appt.day}</span>
+                    className='dash-appt-row'
+                    onClick={() => onNavigate?.("appointments")}>
+                    <div className='dash-appt-date'>
+                      <span className='dash-appt-month'>{appt.month}</span>
+                      <span className='dash-appt-day'>{appt.day}</span>
                     </div>
 
-                    <div className="dash-appt-divider" />
+                    <div className='dash-appt-divider' />
 
-                    <div className="dash-appt-info">
-                      <p className="dash-appt-doctor">{appt.doctor}</p>
-                      <p className="dash-appt-specialty">{appt.specialty}</p>
+                    <div className='dash-appt-info'>
+                      <p className='dash-appt-doctor'>{appt.doctor}</p>
+                      <p className='dash-appt-specialty'>{appt.specialty}</p>
                     </div>
 
-                    <div className="dash-appt-time">
+                    <div className='dash-appt-time'>
                       <span>{appt.time}</span>
                       <Stethoscope size={14} />
                     </div>
 
-                    <ChevronRight size={16} className="dash-appt-arrow" />
+                    <ChevronRight size={16} className='dash-appt-arrow' />
                   </button>
                 ))}
               </div>
 
               {/* ── Right sidebar ── */}
-              <div className="dash-sidebar">
+              <div className='dash-sidebar'>
                 {/* Medications */}
-                <div className="dash-card">
-                  <div className="dash-card-header">
-                    <h3 className="dash-card-title">Active Medications</h3>
-                    <button className="dash-view-all">View all</button>
+                <div className='dash-card'>
+                  <div className='dash-card-header'>
+                    <h3 className='dash-card-title'>Active Medications</h3>
+                    <button className='dash-view-all'>View all</button>
                   </div>
                   {activeMed.map((med) => (
-                    <div key={med.name} className="dash-med-row">
+                    <div key={med.name} className='dash-med-row'>
                       <div>
-                        <p className="dash-med-name">{med.name}</p>
-                        <p className="dash-med-detail">
+                        <p className='dash-med-name'>{med.name}</p>
+                        <p className='dash-med-detail'>
                           {med.dose} · {med.frequency}
                         </p>
                       </div>
-                      <span className="dash-med-refill">{med.refillDue}</span>
+                      <span className='dash-med-refill'>{med.refillDue}</span>
                     </div>
                   ))}
                 </div>
 
                 {/* ── Labs ── */}
-                <div className="dash-card">
-                  <div className="dash-card-header">
-                    <h3 className="dash-card-title">Recent Labs</h3>
+                <div className='dash-card'>
+                  <div className='dash-card-header'>
+                    <h3 className='dash-card-title'>Recent Labs</h3>
                     <button
-                      className="dash-view-all"
-                      onClick={() => setView("labs")}
-                    >
+                      className='dash-view-all'
+                      onClick={() => setView("labs")}>
                       View all
                     </button>
                   </div>
@@ -345,9 +341,9 @@ export default function PatientDashboard({
                       /* flag lab result*/
                     }
                     return (
-                      <div key={lab.test} className="dash-lab-row">
-                        <div className="dash-lab-name-wrap">
-                          {lab.flag && <span className="dash-lab-dot"></span>}
+                      <div key={lab.test} className='dash-lab-row'>
+                        <div className='dash-lab-name-wrap'>
+                          {lab.flag && <span className='dash-lab-dot'></span>}
 
                           <p className={labNameClass}>{lab.test}</p>
                         </div>
@@ -361,23 +357,22 @@ export default function PatientDashboard({
             </div>
 
             {/* ── AI Banner ── */}
-            <div className="dash-ai-banner">
-              <div className="dash-ai-icon">
+            <div className='dash-ai-banner'>
+              <div className='dash-ai-icon'>
                 <MessageCircleQuestion size={22} />
               </div>
-              <div className="dash-ai-text">
-                <p className="dash-ai-title">
+              <div className='dash-ai-text'>
+                <p className='dash-ai-title'>
                   Pulse AI — built around your care
                 </p>
-                <p className="dash-ai-detail">
+                <p className='dash-ai-detail'>
                   Ask about your upcoming visit, medication interactions, lab
                   results, or anything on your mind.
                 </p>
               </div>
               <button
-                className="dash-ai-btn"
-                onClick={() => pulse.openDrawer()}
-              >
+                className='dash-ai-btn'
+                onClick={() => pulse.openDrawer()}>
                 <MessageCircleQuestion size={16} /> Ask Pulse
               </button>
             </div>
@@ -385,59 +380,26 @@ export default function PatientDashboard({
         )}
       </main>
 
-      {/* ── Footer ── */}
-      <footer className="dash-footer">
-        <div className="dash-footer-left">
-          <span className="dash-logo">
-            <u>HealthNest</u>
-          </span>
-          <p className="dash-footer-tag">
-            Coordinated care across clinics,
-            <br />
-            built for patients and providers.
-          </p>
-        </div>
-        <div className="dash-footer-links">
-          <div>
-            <p className="dash-footer-heading">PLATFORM</p>
-            {[
-              "Patient Portal",
-              "Provider Tools",
-              "AI Health Assistant",
-              "Appointment Scheduling",
-            ].map((l) => (
-              <p key={l} className="dash-footer-link">
-                {l}
-              </p>
-            ))}
-          </div>
-          <div>
-            <p className="dash-footer-heading">SUPPORT</p>
-            {[
-              "Help Center",
-              "Contact Us",
-              "Privacy Policy",
-              "Terms of Service",
-            ].map((l) => (
-              <p key={l} className="dash-footer-link">
-                {l}
-              </p>
-            ))}
-          </div>
-        </div>
-      </footer>
-      <div className="dash-copyright">
-        © 2026 HealthNest Technologies, Inc. All rights reserved.
-      </div>
       {!pulse.drawerOpen && (
         <button
-          className="dash-pulse-fab"
+          className='dash-pulse-fab'
           onClick={() => pulse.openDrawer()}
-          aria-label="Open Pulse AI"
-        >
+          aria-label='Open Pulse AI'>
           <MessageCircleQuestion size={25} />
         </button>
       )}
+      <Footer
+        role='patient'
+        onNavigate={(target) => {
+          if (target === "dashboard") setView("home");
+          else if (target === "records") setView("labs");
+          else if (target === "appointments") onNavigate?.("appointments");
+          else if (target === "messages") onNavigate?.("messages");
+          else if (target === "care-team")
+            window.alert("My Care Team page coming soon.");
+          else onNavigate?.(target);
+        }}
+      />
     </div>
   );
 }
