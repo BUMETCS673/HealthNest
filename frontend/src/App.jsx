@@ -15,6 +15,7 @@ import PatientDashboard from "./patient/PatientDashboard";
 import DoctorDashboard from "./doctor/DoctorDashboard";
 import AppointmentsPage from "./appointments/AppointmentsPage";
 import BookingPage from "./booking/BookingPage";
+import CareTeamPage from "./careteam/CareTeamPage";
 import PulseProvider from "./pulse/PulseProvider";
 import PulseDrawer from "./pulse/PulseDrawer";
 import PulseWorkspace from "./pulse/PulseWorkspace";
@@ -29,6 +30,7 @@ import DfaWorkspace from "./pulse/DfaWorkspace";
 const PATH_TO_PAGE = {
   "/appointments": "appointments",
   "/booking": "booking",
+  "/care-team": "care-team",
   "/pulse": "pulse",
   "/messages": "messages",
 };
@@ -37,6 +39,7 @@ const PAGE_TO_PATH = {
   dashboard: "/",
   appointments: "/appointments",
   booking: "/booking",
+  "care-team": "/care-team",
   pulse: "/pulse",
   messages: "/messages",
   "dfa-pulse": "/pulse",
@@ -147,7 +150,14 @@ export default function App() {
 
     const patientPage = (() => {
       if (page === "appointments") return <AppointmentsPage {...sharedProps} />;
-      if (page === "messages") return <MessagesPage {...sharedProps} />;
+      if (page === "care-team") return <CareTeamPage {...sharedProps} />;
+      if (page === "messages")
+        return (
+          <MessagesPage
+            {...sharedProps}
+            initialContactId={pageData?.openContactId}
+          />
+        );
       if (page === "booking") {
         return (
           <BookingPage

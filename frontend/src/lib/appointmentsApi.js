@@ -86,6 +86,11 @@ export const providersApi = {
   getProviders() {
     return request("/providers/");
   },
+
+  /** Fetch the signed-in patient's active care-team providers. */
+  getCareTeam() {
+    return request("/providers/care-team");
+  },
 };
 
 // ── Date / time helpers shared across components ──────────────
