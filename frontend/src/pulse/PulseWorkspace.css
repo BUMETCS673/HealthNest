@@ -1,10 +1,10 @@
 /* AI-USAGE SUMMARY
  * Tools: Opus 4.7
- * Notes: Workspace body sits below the shared HealthNest nav (now reused
- *  from AppointmentsPage.css via .ap-nav). The bespoke .pulse-ws-top header
- *  was removed — Pulse is just another HealthNest surface, not its own
- *  sub-app. The grid is sized to fill the rest of the viewport beneath the
- *  56px nav so the composer band always pins to the bottom edge. */
+ * Notes: Workspace body sits below the shared <TopNav> component. The
+ *  bespoke .pulse-ws-top header was removed — Pulse is just another
+ *  HealthNest surface, not its own sub-app. The grid is sized to fill the
+ *  rest of the viewport beneath the 56px nav so the composer band always
+ *  pins to the bottom edge. */
 
 .pulse-ws-grid {
   flex: 1;
@@ -12,7 +12,7 @@
   grid-template-columns: 260px 1fr;
   gap: 0;
   min-height: 0;
-  /* 56px nav height comes from .ap-nav. */
+  /* 56px nav height comes from the shared TopNav. */
   height: calc(100vh - 56px);
 }
 

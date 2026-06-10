@@ -10,7 +10,7 @@
  */
 
 /* MessagesPage — contacts sidebar + thread pane + composer.
-   The top nav reuses .ap-nav from AppointmentsPage.css. */
+   The top nav is the shared <TopNav> component. */
 
 .mp-page {
   min-height: 100vh;

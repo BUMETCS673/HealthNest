@@ -317,7 +317,6 @@
 
 /* ── Responsive ──────────────────────────────────── */
 @media (max-width: 768px) {
-  .ap-nav { padding: 0 1.5rem; }
   .ap-main { padding: 24px 1.5rem; }
   .ap-footer { padding: 20px 1.5rem; }
 
