@@ -104,6 +104,7 @@ export default function BookingPage({
         onSelect={(label) => {
           if (label === "Dashboard") onNavigate?.("dashboard");
           else if (label === "Appointments") onNavigate?.("appointments");
+          else if (label === "My Care Team") onNavigate?.("care-team");
           else if (label === "Records") onNavigate?.("labs");
           else if (label === "Pulse AI") onNavigate?.("pulse");
           else if (label === "Messages") onNavigate?.("messages");

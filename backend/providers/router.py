@@ -11,8 +11,8 @@ from typing import Any
  
 from fastapi import APIRouter, Depends, HTTPException, status
  
-from auth.deps import current_provider, current_user
-from .schemas import ProviderOut
+from auth.deps import current_provider, current_user, current_patient_id
+from .schemas import ProviderOut, CareTeamProvider
 from . import service
 from ai.skills.visit_overview_skill import VisitOverviewSkill
 from ai.skills.base import SkillContext
@@ -26,6 +26,12 @@ _visit_overview_skill = VisitOverviewSkill()
 def list_providers():
     """Return all providers."""
     return service.get_providers()
+
+
+@router.get("/care-team", response_model=list[CareTeamProvider])
+def list_care_team(patient_id: str = Depends(current_patient_id)):
+    """Return the authenticated patient's active care-team providers."""
+    return service.get_care_team(patient_id)
  
  
 @router.get("/visit-overviews")

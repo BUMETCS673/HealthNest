@@ -126,6 +126,7 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
         onSelect={(label) => {
           if (label === "Dashboard") onNavigate?.("dashboard");
           else if (label === "Appointments") onNavigate?.("appointments");
+          else if (label === "My Care Team") onNavigate?.("care-team");
           else if (label === "Records") onNavigate?.("labs");
           else if (label === "Pulse AI") onNavigate?.("pulse");
           else if (label === "Messages") onNavigate?.("messages");
@@ -296,8 +297,6 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
         role='patient'
         onNavigate={(target) => {
           if (target === "records") onNavigate?.("labs");
-          else if (target === "care-team")
-            window.alert("My Care Team page coming soon.");
           else onNavigate?.(target);
         }}
       />

@@ -17,3 +17,8 @@ class ProviderOut(BaseModel):
     title: str | None = None
     specialty: str | None = None
     status: str
+
+
+class CareTeamProvider(ProviderOut):
+    # The provider's auth user id, used by the UI to open their message thread.
+    user_id: str | None = None

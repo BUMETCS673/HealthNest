@@ -13,7 +13,12 @@ import TopNav from "../components/TopNav";
 import "./MessagesPage.css";
 import Footer from "../components/Footer";
 
-export default function MessagesPage({ user, onNavigate, onSignOut }) {
+export default function MessagesPage({
+  user,
+  onNavigate,
+  onSignOut,
+  initialContactId,
+}) {
   const { unreadCount } = useMessages();
 
   const fullName =
@@ -41,6 +46,7 @@ export default function MessagesPage({ user, onNavigate, onSignOut }) {
         onSelect={(label) => {
           if (label === "Dashboard") onNavigate?.("dashboard");
           else if (label === "Appointments") onNavigate?.("appointments");
+          else if (label === "My Care Team") onNavigate?.("care-team");
           else if (label === "Records") onNavigate?.("labs");
           else if (label === "Pulse AI") onNavigate?.("pulse");
           else if (label === "Messages") onNavigate?.("messages");
@@ -51,14 +57,12 @@ export default function MessagesPage({ user, onNavigate, onSignOut }) {
       />
 
       <main className='mp-main'>
-        <MessagesView myId={user?.id} />
+        <MessagesView myId={user?.id} initialContactId={initialContactId} />
       </main>
       <Footer
         role='patient'
         onNavigate={(target) => {
           if (target === "records") onNavigate?.("labs");
-          else if (target === "care-team")
-            window.alert("My Care Team page coming soon.");
           else onNavigate?.(target);
         }}
       />

@@ -176,6 +176,7 @@ export default function PatientDashboard({
           if (label === "Dashboard") setView("home");
           else if (label === "Records") setView("labs");
           else if (label === "Appointments") onNavigate?.("appointments");
+          else if (label === "My Care Team") onNavigate?.("care-team");
           else if (label === "Pulse AI") onNavigate?.("pulse");
           else if (label === "Messages") onNavigate?.("messages");
         }}
@@ -395,8 +396,6 @@ export default function PatientDashboard({
           else if (target === "records") setView("labs");
           else if (target === "appointments") onNavigate?.("appointments");
           else if (target === "messages") onNavigate?.("messages");
-          else if (target === "care-team")
-            window.alert("My Care Team page coming soon.");
           else onNavigate?.(target);
         }}
       />
