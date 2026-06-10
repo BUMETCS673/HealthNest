@@ -8,19 +8,13 @@
 //   change, and updated the Jest tests.
 // Notes: Validated via `npm run build`, the jest suite, and manual testing.
 import { useState, useEffect } from "react";
-import {
-  Calendar,
-  Clock,
-  Plus,
-  RefreshCw,
-  Stethoscope,
-  X,
-} from "lucide-react";
+import { Calendar, Clock, Plus, RefreshCw, Stethoscope, X } from "lucide-react";
 import { appointmentsApi, apptToDisplayRow } from "../lib/appointmentsApi";
 import AppointmentModal from "./AppointmentModal";
 import { useMessages } from "../messages/MessagesProvider";
 import TopNav from "../components/TopNav";
 import "./AppointmentsPage.css";
+import Footer from "../components/Footer";
 
 const STATUS_META = {
   pending: { label: "Pending", cls: "ap-status--pending" },
@@ -121,13 +115,13 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
   ];
 
   return (
-    <div className="ap-page">
+    <div className='ap-page'>
       {/* Nav bar */}
       <TopNav
         links={navLinks.map((l) =>
           l === "Messages" ? { label: l, badge: unreadCount } : l,
         )}
-        activeKey="Appointments"
+        activeKey='Appointments'
         onLogoClick={() => onNavigate?.("dashboard")}
         onSelect={(label) => {
           if (label === "Dashboard") onNavigate?.("dashboard");
@@ -137,37 +131,35 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
           else if (label === "Messages") onNavigate?.("messages");
         }}
         userName={fullName}
-        userRole="Patient"
+        userRole='Patient'
         onSignOut={onSignOut}
       />
 
       {/* Main content */}
-      <main className="ap-main">
+      <main className='ap-main'>
         {/* Page header */}
-        <div className="ap-header">
+        <div className='ap-header'>
           <div>
-            <h1 className="ap-title">My Appointments</h1>
-            <p className="ap-sub">{upcomingCount} upcoming</p>
+            <h1 className='ap-title'>My Appointments</h1>
+            <p className='ap-sub'>{upcomingCount} upcoming</p>
           </div>
           <button
-            className="ap-book-btn"
-            onClick={() => onNavigate?.("booking", { appointments })}
-          >
+            className='ap-book-btn'
+            onClick={() => onNavigate?.("booking", { appointments })}>
             <Plus size={16} /> Book Appointment
           </button>
         </div>
 
         {/* Tab selector */}
-        <div className="ap-tabs">
+        <div className='ap-tabs'>
           {TABS.map((tab) => (
             <button
               key={tab}
               className={`ap-tab ${activeTab === tab ? "active" : ""}`}
-              onClick={() => setActiveTab(tab)}
-            >
+              onClick={() => setActiveTab(tab)}>
               {tab}
               {tab === "Upcoming" && (
-                <span className="ap-tab-count">{upcomingCount}</span>
+                <span className='ap-tab-count'>{upcomingCount}</span>
               )}
             </button>
           ))}
@@ -175,9 +167,9 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
 
         {/* Appointment list */}
         {loading ? (
-          <div className="ap-loading">Loading appointments…</div>
+          <div className='ap-loading'>Loading appointments…</div>
         ) : filtered.length === 0 ? (
-          <div className="ap-empty">
+          <div className='ap-empty'>
             <Calendar size={40} />
             <p>
               {activeTab === "Upcoming"
@@ -186,39 +178,38 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
             </p>
             {activeTab === "Upcoming" && (
               <button
-                className="ap-book-btn"
-                onClick={() => onNavigate?.("booking", { appointments })}
-              >
+                className='ap-book-btn'
+                onClick={() => onNavigate?.("booking", { appointments })}>
                 <Plus size={16} /> Book your first appointment
               </button>
             )}
           </div>
         ) : (
-          <div className="ap-list">
+          <div className='ap-list'>
             {filtered.map((appt) => {
               const meta = STATUS_META[appt.status] || STATUS_META.scheduled;
               const canAct = ["scheduled", "pending"].includes(appt.status);
               return (
-                <div key={appt.id} className="ap-card">
+                <div key={appt.id} className='ap-card'>
                   {/* Date badge */}
-                  <div className="ap-card-date">
-                    <span className="ap-card-month">{appt.month}</span>
-                    <span className="ap-card-day">{appt.day}</span>
+                  <div className='ap-card-date'>
+                    <span className='ap-card-month'>{appt.month}</span>
+                    <span className='ap-card-day'>{appt.day}</span>
                   </div>
 
                   {/* Divider */}
-                  <div className="ap-card-divider" />
+                  <div className='ap-card-divider' />
 
                   {/* Info */}
-                  <div className="ap-card-info">
-                    <div className="ap-card-top">
-                      <p className="ap-card-doctor">{appt.doctor}</p>
+                  <div className='ap-card-info'>
+                    <div className='ap-card-top'>
+                      <p className='ap-card-doctor'>{appt.doctor}</p>
                       <span className={`ap-status ${meta.cls}`}>
                         {meta.label}
                       </span>
                     </div>
-                    <p className="ap-card-detail">{appt.specialty}</p>
-                    <p className="ap-card-time">
+                    <p className='ap-card-detail'>{appt.specialty}</p>
+                    <p className='ap-card-time'>
                       <Clock size={13} />
                       {appt.time}
                       {appt.specialty && (
@@ -232,50 +223,46 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
 
                   {/* Actions */}
                   {canAct && (
-                    <div className="ap-card-actions">
+                    <div className='ap-card-actions'>
                       {confirmCancelId === appt.id ? (
                         <>
-                          <span className="ap-cancel-prompt">
+                          <span className='ap-cancel-prompt'>
                             Cancel this appointment?
                           </span>
                           <button
-                            className="ap-action ap-action--cancel"
+                            className='ap-action ap-action--cancel'
                             onClick={() => handleCancel(appt.id)}
-                            disabled={cancelling === appt.id}
-                          >
+                            disabled={cancelling === appt.id}>
                             <X size={14} />
                             {cancelling === appt.id
                               ? "Cancelling…"
                               : "Yes, cancel"}
                           </button>
                           <button
-                            className="ap-action ap-action--reschedule"
-                            onClick={() => setConfirmCancelId(null)}
-                          >
+                            className='ap-action ap-action--reschedule'
+                            onClick={() => setConfirmCancelId(null)}>
                             Keep
                           </button>
                         </>
                       ) : (
                         <>
                           <button
-                            className="ap-action ap-action--reschedule"
-                            onClick={() => handleReschedule(appt)}
-                          >
+                            className='ap-action ap-action--reschedule'
+                            onClick={() => handleReschedule(appt)}>
                             <RefreshCw size={14} /> Reschedule
                           </button>
                           <button
-                            className="ap-action ap-action--cancel"
+                            className='ap-action ap-action--cancel'
                             onClick={() => {
                               setCancelError(null);
                               setConfirmCancelId(appt.id);
-                            }}
-                          >
+                            }}>
                             <X size={14} /> Cancel
                           </button>
                         </>
                       )}
                       {cancelError === appt.id && (
-                        <p className="ap-cancel-error">
+                        <p className='ap-cancel-error'>
                           Could not cancel. Please try again.
                         </p>
                       )}
@@ -287,19 +274,6 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
           </div>
         )}
       </main>
-
-      {/* Footer */}
-      <footer className="ap-footer">
-        <span className="ap-logo">
-          <u>HealthNest</u>
-        </span>
-        <p className="ap-footer-tag">
-          Coordinated care across clinics, built for patients and providers.
-        </p>
-      </footer>
-      <div className="ap-copyright">
-        © 2026 HealthNest Technologies, Inc. All rights reserved.
-      </div>
 
       {/* Reschedule modal */}
       {rescheduleId && (
@@ -318,6 +292,15 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
           }}
         />
       )}
+      <Footer
+        role='patient'
+        onNavigate={(target) => {
+          if (target === "records") onNavigate?.("labs");
+          else if (target === "care-team")
+            window.alert("My Care Team page coming soon.");
+          else onNavigate?.(target);
+        }}
+      />
     </div>
   );
 }
