@@ -7,22 +7,19 @@
 // Human Contributions: Owned the data-shape decisions, applied and reviewed each
 //   change, and updated the Jest tests.
 // Notes: Validated via `npm run build`, the jest suite, and manual testing.
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
-  Bell,
   Calendar,
-  ChevronDown,
   Clock,
-  LogOut,
   Plus,
   RefreshCw,
   Stethoscope,
-  User,
   X,
 } from "lucide-react";
 import { appointmentsApi, apptToDisplayRow } from "../lib/appointmentsApi";
 import AppointmentModal from "./AppointmentModal";
 import { useMessages } from "../messages/MessagesProvider";
+import TopNav from "../components/TopNav";
 import "./AppointmentsPage.css";
 
 const STATUS_META = {
@@ -44,19 +41,6 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
   const [confirmCancelId, setConfirmCancelId] = useState(null);
   const [cancelling, setCancelling] = useState(null);
   const [cancelError, setCancelError] = useState(null);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef(null);
-
-  useEffect(() => {
-    if (!menuOpen) return undefined;
-    const onDocClick = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target))
-        setMenuOpen(false);
-    };
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
-  }, [menuOpen]);
-
   const fullName =
     `${user?.user_metadata?.first_name || ""} ${user?.user_metadata?.last_name || ""}`.trim() ||
     user?.email ||
@@ -139,68 +123,23 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
   return (
     <div className="ap-page">
       {/* Nav bar */}
-      <nav className="ap-nav">
-        <div className="ap-nav-left">
-          <span className="ap-logo">
-            <u>HealthNest</u>
-          </span>
-          {navLinks.map((link) => (
-            <button
-              key={link}
-              className={`ap-nav-link ${link === "Appointments" ? "active" : ""}`}
-              onClick={() => {
-                if (link === "Dashboard") onNavigate?.("dashboard");
-                if (link === "Appointments") onNavigate?.("appointments");
-                if (link === "Messages") onNavigate?.("messages");
-              }}
-            >
-              {link}
-              {link === "Messages" && unreadCount > 0 && (
-                <span className="mp-nav-badge">{unreadCount}</span>
-              )}
-            </button>
-          ))}
-        </div>
-        <div className="ap-nav-right">
-          <button className="ap-icon-btn">
-            <Bell size={20} />
-          </button>
-          <div className="ap-user-wrap" ref={menuRef}>
-            <button
-              type="button"
-              className="ap-user"
-              onClick={() => setMenuOpen((o) => !o)}
-              aria-haspopup="menu"
-              aria-expanded={menuOpen}
-            >
-              <div className="ap-avatar">
-                <User size={16} />
-              </div>
-              <div>
-                <span className="ap-user-name">{fullName}</span>
-                <span className="ap-user-role">Patient</span>
-              </div>
-              <ChevronDown size={16} />
-            </button>
-            {menuOpen && (
-              <div className="ap-user-menu" role="menu">
-                <button
-                  type="button"
-                  className="ap-user-menu-item"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    onSignOut?.();
-                  }}
-                  role="menuitem"
-                >
-                  <LogOut size={14} />
-                  Sign out
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
+      <TopNav
+        links={navLinks.map((l) =>
+          l === "Messages" ? { label: l, badge: unreadCount } : l,
+        )}
+        activeKey="Appointments"
+        onLogoClick={() => onNavigate?.("dashboard")}
+        onSelect={(label) => {
+          if (label === "Dashboard") onNavigate?.("dashboard");
+          else if (label === "Appointments") onNavigate?.("appointments");
+          else if (label === "Records") onNavigate?.("labs");
+          else if (label === "Pulse AI") onNavigate?.("pulse");
+          else if (label === "Messages") onNavigate?.("messages");
+        }}
+        userName={fullName}
+        userRole="Patient"
+        onSignOut={onSignOut}
+      />
 
       {/* Main content */}
       <main className="ap-main">

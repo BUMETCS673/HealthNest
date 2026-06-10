@@ -132,6 +132,7 @@ export default function App() {
             user={session.user}
             onSignOut={handleSignOut}
             onNavigate={handleNavigate}
+            initialView={pageData?.providerView ?? "home"}
           />
         );
       })();

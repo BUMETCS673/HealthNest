@@ -8,12 +8,12 @@
  * Human Contributions: Verified nav links match DoctorDashboard, confirmed context
  * shape is compatible with reused sidebar/thread/composer components.
  */
-import { useEffect, useRef, useState } from "react";
-import { Bell, ChevronDown, LogOut, User as UserIcon } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { useDfa } from "./DfaProvider";
 import ConversationSidebar from "./ConversationSidebar";
 import ConversationThread from "./ConversationThread";
 import Composer from "./Composer";
+import TopNav from "../components/TopNav";
 import "../appointments/AppointmentsPage.css";
 import "./PulseWorkspace.css";
 
@@ -39,8 +39,6 @@ export default function DfaWorkspace({ user, onNavigate, onSignOut }) {
     refreshConversations,
   } = useDfa();
 
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef(null);
   const mountedRef = useRef(false);
 
   const fullName =
@@ -54,16 +52,6 @@ export default function DfaWorkspace({ user, onNavigate, onSignOut }) {
     "Provider";
 
   useEffect(() => {
-    if (!menuOpen) return undefined;
-    const onDocClick = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target))
-        setMenuOpen(false);
-    };
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
-  }, [menuOpen]);
-
-  useEffect(() => {
     if (mountedRef.current) return;
     mountedRef.current = true;
     refreshConversations();
@@ -73,66 +61,30 @@ export default function DfaWorkspace({ user, onNavigate, onSignOut }) {
   }, []);
 
   const handleNavClick = (link) => {
-    if (link === "Dashboard") onNavigate?.("dashboard");
-    else if (link === "Patient Records") onNavigate?.("labs");
-    else if (link === "Messages") onNavigate?.("messages");
+    // Provider sub-pages are internal `view` states inside DoctorDashboard, not
+    // App-level routes. Navigate back to the dashboard route and pass the target
+    // view so DoctorDashboard opens on it (it remounts on leaving Pulse).
+    if (link === "Dashboard") onNavigate?.("dashboard", { providerView: "home" });
+    else if (link === "Schedule")
+      onNavigate?.("dashboard", { providerView: "schedule" });
+    else if (link === "Patient Records")
+      onNavigate?.("dashboard", { providerView: "labs" });
+    else if (link === "Messages")
+      onNavigate?.("dashboard", { providerView: "messages" });
     else if (link === "Pulse AI") onNavigate?.("dfa-pulse");
   };
 
   return (
     <div className='ap-page'>
-      <nav className='ap-nav'>
-        <div className='ap-nav-left'>
-          <span className='ap-logo'>
-            <u>HealthNest</u>
-          </span>
-          {NAV_LINKS.map((link) => (
-            <button
-              key={link}
-              className={`ap-nav-link ${link === "Pulse AI" ? "active" : ""}`}
-              onClick={() => handleNavClick(link)}>
-              {link}
-            </button>
-          ))}
-        </div>
-        <div className='ap-nav-right'>
-          <button className='ap-icon-btn'>
-            <Bell size={20} />
-          </button>
-          <div className='ap-user-wrap' ref={menuRef}>
-            <button
-              type='button'
-              className='ap-user'
-              onClick={() => setMenuOpen((o) => !o)}
-              aria-haspopup='menu'
-              aria-expanded={menuOpen}>
-              <div className='ap-avatar'>
-                <UserIcon size={16} />
-              </div>
-              <div>
-                <span className='ap-user-name'>{fullName}</span>
-                <span className='ap-user-role'>{specialty}</span>
-              </div>
-              <ChevronDown size={16} />
-            </button>
-            {menuOpen && (
-              <div className='ap-user-menu' role='menu'>
-                <button
-                  type='button'
-                  className='ap-user-menu-item'
-                  onClick={() => {
-                    setMenuOpen(false);
-                    onSignOut?.();
-                  }}
-                  role='menuitem'>
-                  <LogOut size={14} />
-                  Sign out
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
+      <TopNav
+        links={NAV_LINKS}
+        activeKey="Pulse AI"
+        onLogoClick={() => onNavigate?.("dashboard", { providerView: "home" })}
+        onSelect={handleNavClick}
+        userName={fullName}
+        userRole={specialty}
+        onSignOut={onSignOut}
+      />
 
       <div className='pulse-ws-grid'>
         <ConversationSidebar

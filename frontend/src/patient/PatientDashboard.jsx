@@ -3,7 +3,7 @@
 // Overall AI Contribution: ~55%
 // AI-Assisted Areas: Original dashboard layout and summary cards (Claude Code); Opus 4.7 wired the Pulse AI entry points (top-nav button, banner CTA, floating FAB) into the new PulseProvider hooks.
 // Human Contributions: Owned the data-source decisions (appointments + labs), the role-based gating, and the decision to wire ALL three Pulse entry points to the same drawer state so promotion to the full workspace is one click anywhere on the page.
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import "./PatientDashboard.css";
 import { appointmentsApi, apptToDisplayRow } from "../lib/appointmentsApi";
 import {
@@ -15,17 +15,13 @@ import {
   Plus,
   MessageCircleQuestion,
   Stethoscope,
-  Bell,
-  User,
-  ChevronDown,
-  LogOut,
 } from "lucide-react";
 import { labResultsApi } from "../lib/labResultsApi";
 import PatientLabResultsPage from "./PatientLabResultsPage";
 import LabResultDetail from "../labresults/LabResultDetail";
 import { usePulse } from "../pulse/PulseProvider";
 import { useMessages } from "../messages/MessagesProvider";
-import { authApi } from "../lib/authApi";
+import TopNav from "../components/TopNav";
 
 function formatRole(role) {
   if (!role) return "Patient";
@@ -99,8 +95,6 @@ export default function PatientDashboard({
 }) {
   const currentUser = deriveCurrentUser(user);
   const pulse = usePulse();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef(null);
   const [upcomingAppoint, setUpcomingAppoint] = useState([]);
 
   useEffect(() => {
@@ -133,17 +127,6 @@ export default function PatientDashboard({
     () => pageData?.labResultId ?? null,
   );
   const [labRows, setLabRows] = useState([]);
-
-  useEffect(() => {
-    if (!menuOpen) return undefined;
-    const onDocClick = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
-  }, [menuOpen]);
 
   useEffect(() => {
     labResultsApi
@@ -183,112 +166,23 @@ export default function PatientDashboard({
   return (
     <div className="p-dash">
       {/* Navigation bar */}
-      <nav className="dash-nav">
-        {/* Left side includes logo and all navigation options */}
-        <div className="dash-nav-left">
-          <span className="dash-logo">
-            <u>HealthNest</u>
-          </span>
-
-          {navOption.map((option) => {
-            const isLabsView = view !== "home";
-            const isActive =
-              (option === "Records" && isLabsView) ||
-              (option === "Dashboard" && !isLabsView);
-            const buttonClass = isActive
-              ? "dash-nav-link active"
-              : "dash-nav-link";
-
-            const showMessageBadge =
-              option === "Messages" && unreadMessages > 0;
-
-            return (
-              <button
-                key={option}
-                className={buttonClass}
-                onClick={() => {
-                  if (option === "Dashboard") setView("home");
-                  else if (option === "Records") setView("labs");
-                  else if (option === "Appointments")
-                    onNavigate?.("appointments");
-                  else if (option === "Pulse AI") onNavigate?.("pulse");
-                  else if (option === "Messages") onNavigate?.("messages");
-                }}
-              >
-                {option}
-
-                {showMessageBadge && (
-                  <span className="dash-badge">{unreadMessages}</span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {/*right side includes notif bell + user profile*/}
-        <div className="dash-nav-right">
-          <button className="dash-icon-btn">
-            <Bell size={20} />
-          </button>
-          <div className="dash-user-wrap" ref={menuRef}>
-            <button
-              type="button"
-              className="dash-user"
-              onClick={() => setMenuOpen((open) => !open)}
-              aria-haspopup="menu"
-              aria-expanded={menuOpen}
-            >
-              <div className="dash-avatar">
-                <User size={16} />
-              </div>
-              <div className="dash-user-info">
-                <span className="dash-user-name">{currentUser.fullName}</span>
-                <span className="dash-user-role">{currentUser.role}</span>
-              </div>
-              <ChevronDown size={16} />
-            </button>
-            {menuOpen && (
-              <div className="dash-user-menu" role="menu">
-                <button
-                  type="button"
-                  className="dash-user-menu-item"
-                  onClick={async () => {
-                    setMenuOpen(false);
-                    try {
-                      const session = authApi.getSession();
-                      if (!session?.access_token) {
-                        alert("Passkey already enabled for this account.");
-                        return;
-                      }
-                      await authApi.enableBiometricLogin();
-                      alert("Biometric login enabled for this device.");
-                    } catch (e) {
-                      alert(
-                        "Unable to enable biometric login: " + (e.message || e),
-                      );
-                    }
-                  }}
-                  role="menuitem"
-                >
-                  Enable biometric login
-                </button>
-                <button
-                  type="button"
-                  className="dash-user-menu-item"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    onSignOut?.();
-                  }}
-                  role="menuitem"
-                >
-                  <LogOut size={14} />
-                  Sign out
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
+      <TopNav
+        links={navOption.map((o) =>
+          o === "Messages" ? { label: o, badge: unreadMessages } : o,
+        )}
+        activeKey={view === "home" ? "Dashboard" : "Records"}
+        onLogoClick={() => setView("home")}
+        onSelect={(label) => {
+          if (label === "Dashboard") setView("home");
+          else if (label === "Records") setView("labs");
+          else if (label === "Appointments") onNavigate?.("appointments");
+          else if (label === "Pulse AI") onNavigate?.("pulse");
+          else if (label === "Messages") onNavigate?.("messages");
+        }}
+        userName={currentUser.fullName}
+        userRole={currentUser.role}
+        onSignOut={onSignOut}
+      />
 
       {/* ── Main content ── */}
       <main className="dash-main">
@@ -353,6 +247,7 @@ export default function PatientDashboard({
                 label="Recent Labs"
                 value="4"
                 detail="1 result flagged"
+                onClick={() => setView("labs")}
               />
               <SummaryCard
                 icon={<FileText size={16} />}
@@ -431,7 +326,12 @@ export default function PatientDashboard({
                 <div className="dash-card">
                   <div className="dash-card-header">
                     <h3 className="dash-card-title">Recent Labs</h3>
-                    <button className="dash-view-all">View all</button>
+                    <button
+                      className="dash-view-all"
+                      onClick={() => setView("labs")}
+                    >
+                      View all
+                    </button>
                   </div>
                   {labResult.map((lab) => {
                     let labNameClass = "dash-lab-name";

@@ -7,33 +7,13 @@
  * Human Contributions: Workflow design (save vs release-with-implicit-patch), the manual-entry-required gating on release, the patient-name resolution wiring, and the decision to mirror server state into a local editable copy with explicit diffing rather than a controlled-from-server pattern.
  */
 
-/*
-AI-USAGE SUMMARY
-Tools: Opus 4.7
-Overall AI Contribution: ~20%
-AI-Assisted Areas: Added an "Enable biometric login" menu item to the account menu and wired it to `authApi.enableBiometricLogin` with basic alerts.
-Human Contributions: Kept existing dashboard structure and chose menu placement; verified non-blocking UX.
-*/
-
-import { useEffect, useRef, useState } from "react";
-/*
-AI-USAGE SUMMARY
-Model: ChatGPT-5
-Overall AI Contribution: ~10%
-AI-Assisted Areas: Added an "Enable biometric login" menu item to the account menu and wired it to `authApi.enableBiometricLogin` with basic alerts.
-Human Contributions: Kept existing dashboard structure and chose menu placement; verified non-blocking UX.
-*/
-
+import { useEffect, useState } from "react";
 import "./DoctorDashboard.css";
 import {
-  Bell,
-  ChevronDown,
-  LogOut,
   Search,
   FileSignature,
   MessageSquare,
   Users,
-  User,
   FileText,
   AlertCircle,
   MessageCircleQuestion,
@@ -45,6 +25,7 @@ import { authApi } from "../lib/authApi";
 import { useMessages } from "../messages/MessagesProvider";
 import MessagesView from "../messages/MessagesView";
 import { useDfa } from "../pulse/DfaProvider";
+import TopNav from "../components/TopNav";
 
 // For specialty display/default setting
 function formatRole(role) {
@@ -295,13 +276,16 @@ function VisitOverviewDrawer({ visit, onClose, onOpenFullChart }) {
   );
 }
 
-export default function DoctorDashboard({ user, onSignOut, onNavigate }) {
+export default function DoctorDashboard({
+  user,
+  onSignOut,
+  onNavigate,
+  initialView = "home",
+}) {
   const currentUser = getCurrUser(user);
   const dfa = useDfa();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef(null);
 
-  const [view, setView] = useState("home");
+  const [view, setView] = useState(initialView);
   const [activeLabId, setActiveLabId] = useState(null);
   const [selectedVisit, setSelectedVisit] = useState(null);
   const [selectedChart, setSelectedChart] = useState(null);
@@ -322,19 +306,6 @@ export default function DoctorDashboard({ user, onSignOut, onNavigate }) {
     };
   };
 
-  // closes the profile menu if the user clicks outside of it.
-  useEffect(() => {
-    if (!menuOpen) return undefined;
-
-    const onDocClick = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setMenuOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
-  }, [menuOpen]);
 
   useEffect(() => {
     const loadVisitOverviews = async () => {
@@ -454,130 +425,36 @@ export default function DoctorDashboard({ user, onSignOut, onNavigate }) {
   return (
     <div className="d-dash">
       {/* Navigation bar */}
-      <nav className="dash-nav">
-        <div className="dash-nav-left">
-          <span className="dash-logo">
-            <u>HealthNest</u>
-          </span>
-
-          {navOption.map((option) => {
-            const isActive =
-              (option === "Dashboard" && view === "home") ||
-              (option === "Patient Records" &&
-                (view === "labs" ||
-                  view === "lab-review" ||
-                  view === "full-chart")) ||
-              (option === "Messages" && view === "messages") ||
-              (option === "Schedule" && view === "schedule") ||
-              (option === "Pulse AI" && view === "pulse");
-            const buttonClass = isActive
-              ? "doc-nav-link active"
-              : "doc-nav-link";
-
-            const showMessageBadge =
-              option === "Messages" && unreadMessages > 0;
-
-            const onClick = () => {
-              if (option === "Dashboard") setView("home");
-              else if (option === "Patient Records") setView("labs");
-              else if (option === "Messages") setView("messages");
-              else if (option === "Schedule") setView("schedule");
-              else if (option === "Pulse AI") onNavigate?.("dfa-pulse");
-            };
-
-            return (
-              <button key={option} className={buttonClass} onClick={onClick}>
-                {option}
-
-                {showMessageBadge && (
-                  <span className="doc-badge">{unreadMessages}</span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="dash-nav-right">
-          <button className="doc-icon-btn" aria-label="Notifications">
-            <Bell size={20} />
-          </button>
-
-          <div className="doc-user-wrap" ref={menuRef}>
-            <button
-              type="button"
-              className="doc-user"
-              onClick={() => setMenuOpen((open) => !open)}
-              aria-haspopup="menu"
-              aria-expanded={menuOpen}
-            >
-              <div className="doc-avatar">{currentUser.initials}</div>
-
-              <div className="doc-user-info">
-                <span className="doc-user-name">{currentUser.firstName}</span>
-                <span className="doc-user-role">
-                  {currentUser.specialty || currentUser.role}
-                </span>
-              </div>
-
-              <ChevronDown size={16} />
-            </button>
-
-            {menuOpen && (
-              <div className="doc-user-menu" role="menu">
-                <button
-                  type="button"
-                  className="doc-user-menu-item"
-                  onClick={async () => {
-                    setMenuOpen(false);
-                    try {
-                      const session = authApi.getSession();
-                      if (!session?.access_token) {
-                        alert("Passkey already enabled for this account.");
-                        return;
-                      }
-                      await authApi.enableBiometricLogin();
-                      alert("Biometric login enabled for this device.");
-                    } catch (e) {
-                      alert(
-                        "Unable to enable biometric login: " + (e.message || e),
-                      );
-                    }
-                  }}
-                  role="menuitem"
-                >
-                  <User size={14} />
-                  Enable Biometric Login
-                </button>
-
-                <button
-                  type="button"
-                  className="doc-user-menu-item"
-                  onClick={() => {
-                    setMenuOpen(false);
-                  }}
-                  role="menuitem"
-                >
-                  <User size={14} />
-                  Account Settings
-                </button>
-
-                <button
-                  type="button"
-                  className="doc-user-menu-item"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    onSignOut();
-                  }}
-                  role="menuitem"
-                >
-                  <LogOut size={14} />
-                  Sign out
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
+      <TopNav
+        links={navOption.map((o) =>
+          o === "Messages" ? { label: o, badge: unreadMessages } : o,
+        )}
+        activeKey={
+          view === "home"
+            ? "Dashboard"
+            : view === "labs" ||
+                view === "lab-review" ||
+                view === "full-chart"
+              ? "Patient Records"
+              : view === "messages"
+                ? "Messages"
+                : view === "schedule"
+                  ? "Schedule"
+                  : null
+        }
+        onLogoClick={() => setView("home")}
+        onSelect={(label) => {
+          if (label === "Dashboard") setView("home");
+          else if (label === "Patient Records") setView("labs");
+          else if (label === "Messages") setView("messages");
+          else if (label === "Schedule") setView("schedule");
+          else if (label === "Pulse AI") onNavigate?.("dfa-pulse");
+        }}
+        userName={currentUser.firstName}
+        userRole={currentUser.specialty || currentUser.role}
+        userInitials={currentUser.initials}
+        onSignOut={onSignOut}
+      />
 
       {/* Main content */}
       <main
@@ -904,7 +781,10 @@ export default function DoctorDashboard({ user, onSignOut, onNavigate }) {
                   Lab Results
                 </button>
 
-                <button className="doc-action-btn doc-action-filled">
+                <button
+                  className="doc-action-btn doc-action-filled"
+                  onClick={() => setView("messages")}
+                >
                   <MessageSquare size={14} />
                   Inbox
                   {inboxCount > 0 && (
