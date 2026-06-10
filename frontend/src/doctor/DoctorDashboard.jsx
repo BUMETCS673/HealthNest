@@ -22,6 +22,11 @@ import {
 import LabResultsPage from "../labresults/LabResultsPage";
 import LabResultReview from "../labresults/LabResultReview";
 import { authApi } from "../lib/authApi";
+import {
+  patientsApi,
+  formatPatientName,
+  formatPatientSubtitle,
+} from "../lib/patientsApi";
 import { useMessages } from "../messages/MessagesProvider";
 import MessagesView from "../messages/MessagesView";
 import { useDfa } from "../pulse/DfaProvider";
@@ -293,6 +298,11 @@ export default function DoctorDashboard({
   const [visitOverviewItems, setVisitOverviewItems] = useState([]);
   const [visitOverviewError, setVisitOverviewError] = useState("");
   const [visitOverviewLoading, setVisitOverviewLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const getAuthHeaders = () => {
     const session = authApi.getSession();
@@ -420,6 +430,69 @@ export default function DoctorDashboard({
     setChartTab("overview");
     setSelectedVisit(null);
     setView("full-chart");
+  };
+
+  // Debounced quick patient lookup — searches the provider's own panel
+  // (the backend only returns patients with an active care relationship).
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (q.length < 2) {
+      setSearchResults([]);
+      setSearchLoading(false);
+      setSearchError("");
+      return;
+    }
+
+    let cancelled = false;
+    setSearchLoading(true);
+    setSearchError("");
+
+    const timer = setTimeout(async () => {
+      try {
+        const results = await patientsApi.search({ q, limit: 8 });
+        if (!cancelled) setSearchResults(results || []);
+      } catch (error) {
+        if (!cancelled) {
+          setSearchResults([]);
+          setSearchError(error.message || "Patient search failed.");
+        }
+      } finally {
+        if (!cancelled) setSearchLoading(false);
+      }
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [searchQuery]);
+
+  const openPatientChart = async (patientId) => {
+    setSearchLoading(true);
+    setSearchError("");
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/providers/patient-overview/${patientId}`,
+        {
+          headers: getAuthHeaders(),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Unable to load patient information.");
+      }
+
+      const data = await response.json();
+      setSearchQuery("");
+      setSearchResults([]);
+      setSearchOpen(false);
+      openFullChart(data);
+    } catch (error) {
+      setSearchError(error.message || "Unable to load patient information.");
+    } finally {
+      setSearchLoading(false);
+    }
   };
 
   return (
@@ -762,7 +835,57 @@ export default function DoctorDashboard({
               <div className="doc-header-actions">
                 <div className="doc-search">
                   <Search size={14} />
-                  <span>Quick patient lookup...</span> {/*search bar*/}
+                  <input
+                    type="text"
+                    className="doc-search-input"
+                    placeholder="Quick patient lookup..."
+                    aria-label="Quick patient lookup"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setSearchOpen(true);
+                    }}
+                    onFocus={() => setSearchOpen(true)}
+                    onBlur={() => setSearchOpen(false)}
+                  />
+
+                  {searchOpen && searchQuery.trim().length >= 2 && (
+                    <div className="doc-search-results">
+                      {searchLoading && (
+                        <p className="doc-search-status">Searching…</p>
+                      )}
+
+                      {!searchLoading && searchError && (
+                        <p className="doc-search-status">{searchError}</p>
+                      )}
+
+                      {!searchLoading &&
+                        !searchError &&
+                        searchResults.length === 0 && (
+                          <p className="doc-search-status">
+                            No matching patients.
+                          </p>
+                        )}
+
+                      {!searchLoading &&
+                        searchResults.map((patient) => (
+                          <button
+                            type="button"
+                            key={patient.id}
+                            className="doc-search-result"
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => openPatientChart(patient.id)}
+                          >
+                            <span className="doc-search-result-name">
+                              {formatPatientName(patient)}
+                            </span>
+                            <span className="doc-search-result-sub">
+                              {formatPatientSubtitle(patient)}
+                            </span>
+                          </button>
+                        ))}
+                    </div>
+                  )}
                 </div>
 
                 <button className="doc-action-btn">

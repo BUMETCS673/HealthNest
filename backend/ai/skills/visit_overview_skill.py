@@ -208,14 +208,12 @@ class VisitOverviewSkill(AISkill):
         #     )
 
         # Pull the data sections. Each section degrades gracefully if empty.
-        recent_history = _fetch_recent_history(admin, patient_id)
-        active_problems = _fetch_active_problems(admin, patient_id)
-        medications = _fetch_medications(admin, patient_id)
-        labs = _fetch_recent_labs(admin, patient_id)
-        open_issues = _fetch_open_issues(admin, patient_id)
-        missing_sections = _find_missing_sections(
-            recent_history, active_problems, medications, labs, open_issues
-        )
+        sections = build_patient_sections(admin, patient_id)
+        recent_history = sections["recentHistory"]
+        active_problems = sections["activeProblems"]
+        medications = sections["medications"]
+        labs = sections["labs"]
+        missing_sections = sections["missingSections"]
 
         patient_name = " ".join(
             p for p in (
@@ -242,7 +240,7 @@ class VisitOverviewSkill(AISkill):
             "activeProblems": active_problems,
             "medications": medications,
             "labs": labs,
-            "openIssues": open_issues,
+            "openIssues": sections["openIssues"],
             "missingSections": missing_sections,
         }
 
@@ -258,6 +256,28 @@ class VisitOverviewSkill(AISkill):
             summary=" ".join(summary_parts),
             payload={"visit": visit},
         )
+
+
+def build_patient_sections(admin: Any, patient_id: str) -> dict[str, Any]:
+    """Chart sections for one patient, shaped for the frontend full-chart view.
+
+    Shared by the DFA visit-overview detail op and the providers
+    patient-overview endpoint (Quick Patient Lookup)."""
+    recent_history = _fetch_recent_history(admin, patient_id)
+    active_problems = _fetch_active_problems(admin, patient_id)
+    medications = _fetch_medications(admin, patient_id)
+    labs = _fetch_recent_labs(admin, patient_id)
+    open_issues = _fetch_open_issues(admin, patient_id)
+    return {
+        "recentHistory": recent_history,
+        "activeProblems": active_problems,
+        "medications": medications,
+        "labs": labs,
+        "openIssues": open_issues,
+        "missingSections": _find_missing_sections(
+            recent_history, active_problems, medications, labs, open_issues
+        ),
+    }
 
 
 # ── Data fetchers ───
