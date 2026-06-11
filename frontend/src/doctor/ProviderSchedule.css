@@ -1,0 +1,1162 @@
+/*
+AI-USAGE SUMMARY
+Tools: Claude Code (Opus 4.8)
+Overall AI Contribution: ~85%
+AI-Assisted Areas: Styling for the provider Schedule view — toolbar + view
+  toggle, date navigation, Day/Week/Month calendar layouts, the shared
+  Office-Hours / Add-Appointment modal (.sm-*), the tall day-view appointment
+  panel (.apanel-*) with full-width actions, and the Office Hours click-and-drag
+  week grid (.oh-*).
+Human Contributions: Visual direction (match the provider dashboard) and
+  verification.
+Notes: Validated visually and via `npm run build`.
+*/
+
+.ps-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Toolbar ── */
+.ps-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.ps-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ps-title {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: 30px;
+  font-weight: 300;
+  color: #111110;
+}
+
+.ps-viewtoggle {
+  display: inline-flex;
+  background: #f2f2f1;
+  border-radius: 8px;
+  padding: 2px;
+}
+
+.ps-vt {
+  border: none;
+  background: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #71716e;
+  cursor: pointer;
+}
+
+.ps-vt.active {
+  background: #fff;
+  color: #111110;
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.ps-toolbar-right {
+  display: flex;
+  gap: 8px;
+}
+
+.ps-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border: 1px solid #e5e5e3;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+  font-family: inherit;
+  color: #111110;
+  cursor: pointer;
+}
+
+.ps-action:hover {
+  border-color: #111110;
+}
+
+.ps-action--filled {
+  background: #111110;
+  color: #fff;
+  border-color: #111110;
+}
+
+.ps-action--filled:hover {
+  background: #2a2a2a;
+}
+
+/* ── Date nav ── */
+.ps-datenav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ps-nav-btn,
+.ps-today-btn {
+  border: 1px solid #e5e5e3;
+  background: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #111110;
+  font-family: inherit;
+}
+
+.ps-nav-btn {
+  padding: 6px;
+  display: inline-flex;
+}
+
+.ps-today-btn {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.ps-nav-btn:hover,
+.ps-today-btn:hover {
+  border-color: #111110;
+}
+
+.ps-period {
+  margin-left: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #111110;
+}
+
+.ps-body {
+  background: #fff;
+  border: 1px solid #f2f2f1;
+  border-radius: 12px;
+  padding: 20px;
+  min-height: 320px;
+}
+
+.ps-muted {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #9c9c9b;
+}
+
+/* ── Day view ── */
+.ps-day-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111110;
+  margin-bottom: 16px;
+}
+
+.ps-day-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.ps-col-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #9c9c9b;
+  margin-bottom: 10px;
+}
+
+.ps-appt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #f2f2f1;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.ps-appt-time {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111110;
+  min-width: 70px;
+}
+
+.ps-appt-info {
+  flex: 1;
+}
+
+.ps-appt-patient {
+  font-size: 14px;
+  color: #111110;
+}
+
+.ps-appt-notes {
+  font-size: 12px;
+  color: #9c9c9b;
+}
+
+.ps-appt-status {
+  font-size: 11px;
+  text-transform: capitalize;
+  padding: 3px 8px;
+  border-radius: 10px;
+  background: #f2f2f1;
+  color: #71716e;
+}
+
+.ps-status--scheduled {
+  background: #e7f2ec;
+  color: #1f7a4d;
+}
+
+.ps-status--cancelled {
+  background: #f7e7e7;
+  color: #b3261e;
+}
+
+.ps-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ps-slot {
+  padding: 5px 10px;
+  border: 1px solid #e5e5e3;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #111110;
+}
+
+/* ── Week view ── */
+.ps-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.ps-week-col {
+  border: 1px solid #f2f2f1;
+  border-radius: 8px;
+  overflow: hidden;
+  min-height: 200px;
+}
+
+.ps-week-head {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px;
+  background: #f9f9f7;
+  border: none;
+  border-bottom: 1px solid #f2f2f1;
+  cursor: pointer;
+}
+
+.ps-week-head.today {
+  background: #111110;
+}
+
+.ps-week-head.today .ps-week-dow,
+.ps-week-head.today .ps-week-num {
+  color: #fff;
+}
+
+.ps-week-dow {
+  font-size: 11px;
+  color: #9c9c9b;
+}
+
+.ps-week-num {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111110;
+}
+
+.ps-week-body {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ps-week-appt {
+  display: flex;
+  flex-direction: column;
+  background: #e7f2ec;
+  border-radius: 6px;
+  padding: 4px 6px;
+}
+
+.ps-week-time {
+  font-size: 11px;
+  font-weight: 600;
+  color: #1f7a4d;
+}
+
+.ps-week-name {
+  font-size: 12px;
+  color: #111110;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ps-week-open {
+  font-size: 11px;
+  color: #71716e;
+}
+
+.ps-week-empty {
+  font-size: 13px;
+  color: #d8d8d6;
+  text-align: center;
+}
+
+/* ── Month view ── */
+.ps-month-dows {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 6px;
+}
+
+.ps-month-dow {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9c9c9b;
+  text-align: center;
+}
+
+.ps-month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: 84px;
+  gap: 4px;
+}
+
+.ps-month-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 6px;
+  border: 1px solid #f2f2f1;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+}
+
+.ps-month-cell:hover {
+  border-color: #111110;
+}
+
+.ps-month-cell.dim {
+  background: #fafafa;
+}
+
+.ps-month-cell.dim .ps-month-num {
+  color: #c8c8c6;
+}
+
+.ps-month-cell.today .ps-month-num {
+  background: #111110;
+  color: #fff;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ps-month-num {
+  font-size: 13px;
+  font-weight: 500;
+  color: #111110;
+}
+
+.ps-month-count {
+  font-size: 11px;
+  background: #e7f2ec;
+  color: #1f7a4d;
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+
+/* ── Shared modal (.sm-*) ── */
+.sm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 20px;
+}
+
+.sm-modal {
+  background: #fff;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 440px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.sm-modal--wide {
+  max-width: 560px;
+}
+
+/* ── Office Hours week grid ── */
+.oh-grid {
+  border: 1px solid #e5e5e3;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.oh-head,
+.oh-row {
+  display: grid;
+  grid-template-columns: 52px repeat(7, 1fr);
+}
+
+.oh-head {
+  background: #faf9f8;
+  border-bottom: 1px solid #e5e5e3;
+}
+
+.oh-day {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #111110;
+  padding: 8px 0;
+}
+
+.oh-body {
+  max-height: 360px;
+  overflow-y: auto;
+  user-select: none;
+}
+
+.oh-time {
+  font-size: 10px;
+  color: #71716e;
+  text-align: right;
+  padding-right: 6px;
+  line-height: 19px;
+  white-space: nowrap;
+}
+
+.oh-cell {
+  height: 19px;
+  border-left: 1px solid #f2f2f1;
+  border-bottom: 1px solid #f7f7f6;
+  cursor: pointer;
+}
+
+.oh-cell:hover {
+  background: #eef3ee;
+}
+
+.oh-cell.on {
+  background: #cfe3d0;
+}
+
+.oh-cell.on:hover {
+  background: #bfd9c1;
+}
+
+.sm-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.sm-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111110;
+}
+
+.sm-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #71716e;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.sm-close:hover {
+  background: #f2f2f1;
+}
+
+.sm-tabs {
+  display: inline-flex;
+  background: #f2f2f1;
+  border-radius: 8px;
+  padding: 2px;
+  margin-bottom: 14px;
+}
+
+.sm-tab {
+  border: none;
+  background: none;
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #71716e;
+  cursor: pointer;
+}
+
+.sm-tab.active {
+  background: #fff;
+  color: #111110;
+  font-weight: 500;
+}
+
+.sm-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sm-hint {
+  font-size: 12px;
+  color: #9c9c9b;
+}
+
+.sm-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #71716e;
+}
+
+.sm-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #e5e5e3;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #111110;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.sm-input:focus {
+  outline: none;
+  border-color: #111110;
+}
+
+.sm-textarea {
+  resize: vertical;
+}
+
+.sm-row {
+  display: flex;
+  gap: 12px;
+}
+
+.sm-row > div {
+  flex: 1;
+}
+
+.sm-weekdays {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sm-weekday {
+  padding: 6px 10px;
+  border: 1px solid #e5e5e3;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  color: #71716e;
+}
+
+.sm-weekday.active {
+  background: #111110;
+  color: #fff;
+  border-color: #111110;
+}
+
+.sm-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #111110;
+  cursor: pointer;
+}
+
+.sm-error {
+  font-size: 13px;
+  color: #c2410c;
+}
+
+.sm-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 10px 14px;
+  background: #111110;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.sm-submit:hover:not(:disabled) {
+  background: #2a2a2a;
+}
+
+.sm-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sm-rules {
+  margin-top: 16px;
+  border-top: 1px solid #f2f2f1;
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sm-rule {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #111110;
+  padding: 6px 8px;
+  background: #f9f9f7;
+  border-radius: 6px;
+}
+
+.sm-rule-del {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9c9c9b;
+  padding: 2px;
+}
+
+.sm-rule-del:hover {
+  color: #c2410c;
+}
+
+/* ── Slot actions menu (week view) ── */
+.sm-modal--narrow {
+  max-width: 320px;
+}
+
+.sm-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.sm-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid #e5e5e3;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+  font-family: inherit;
+  color: #111110;
+  cursor: pointer;
+}
+
+.sm-action-btn:hover {
+  border-color: #111110;
+}
+
+.sm-action-btn--primary {
+  background: #111110;
+  border-color: #111110;
+  color: #fff;
+}
+
+.sm-action-btn--primary:hover {
+  background: #2a2a2a;
+}
+
+.sm-action-btn--danger:hover {
+  border-color: #c2410c;
+  color: #c2410c;
+}
+
+/* ── Confirm dialog ── */
+.sm-confirm-msg {
+  font-size: 14px;
+  color: #71716e;
+  line-height: 1.5;
+  margin-top: 6px;
+}
+
+.sm-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.sm-ghost-btn,
+.sm-solid-btn {
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.sm-ghost-btn {
+  background: #fff;
+  border: 1px solid #e5e5e3;
+  color: #111110;
+}
+
+.sm-ghost-btn:hover:not(:disabled) {
+  border-color: #111110;
+}
+
+.sm-solid-btn {
+  background: #111110;
+  border: 1px solid #111110;
+  color: #fff;
+}
+
+.sm-solid-btn:hover:not(:disabled) {
+  background: #2a2a2a;
+}
+
+.sm-solid-btn--danger {
+  background: #c2410c;
+  border-color: #c2410c;
+}
+
+.sm-solid-btn--danger:hover:not(:disabled) {
+  background: #a8370a;
+}
+
+.sm-ghost-btn:disabled,
+.sm-solid-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Day view: grid + side panel ── */
+.ps-day-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 600px) 1fr;
+  gap: 16px;
+}
+
+.ps-day-add {
+  max-width: 440px;
+}
+
+.ps-day-panel {
+  border: 1px solid #f2f2f1;
+  border-radius: 10px;
+  padding: 16px;
+  align-self: start;
+}
+
+.ps-panel-empty {
+  font-size: 13px;
+  color: #9c9c9b;
+}
+
+.ps-panel-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111110;
+  margin-bottom: 10px;
+}
+
+/* ── Appointment details card ── */
+.ad-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ad-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.ad-info-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.ad-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #f2f2f1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #71716e;
+  flex-shrink: 0;
+}
+
+.ad-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111110;
+}
+
+.ad-status {
+  font-size: 11px;
+  text-transform: capitalize;
+  padding: 3px 8px;
+  border-radius: 10px;
+}
+
+.ad-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ad-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #111110;
+}
+
+.ad-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Wide layout (day-view panel): horizontal, actions pushed to the right */
+.ad-card--wide {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ad-card--wide .ad-info {
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+}
+
+.ad-card--wide .ad-actions {
+  flex-shrink: 0;
+}
+
+/* ── Day-view appointment panel (tall, fills the right side) ── */
+.apanel {
+  display: flex;
+  flex-direction: column;
+  min-height: 528px;
+  gap: 16px;
+}
+
+.apanel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.apanel-head-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.apanel-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #f2f2f1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #71716e;
+}
+
+.apanel-name {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111110;
+}
+
+.apanel-status {
+  font-size: 12px;
+  text-transform: capitalize;
+  padding: 3px 10px;
+  border-radius: 10px;
+}
+
+.apanel-when {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  text-align: right;
+}
+
+.apanel-when-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #111110;
+}
+
+.apanel-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 16px;
+  border-top: 1px solid #f2f2f1;
+}
+
+.apanel-detail {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  color: #111110;
+}
+
+.apanel-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.apanel-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 14px;
+  border: 1px solid #e5e5e3;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+  font-family: inherit;
+  color: #111110;
+  cursor: pointer;
+}
+
+.apanel-btn:hover {
+  border-color: #111110;
+}
+
+.apanel-btn--danger:hover {
+  border-color: #c2410c;
+  color: #c2410c;
+}
+
+.ad-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid #e5e5e3;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+  font-family: inherit;
+  color: #111110;
+  cursor: pointer;
+}
+
+.ad-btn:hover {
+  border-color: #111110;
+}
+
+.ad-btn--danger:hover {
+  border-color: #c2410c;
+  color: #c2410c;
+}
+
+/* ── Week grid ── */
+.wg {
+  display: flex;
+  flex-direction: column;
+}
+
+.wg-head {
+  display: grid;
+  grid-template-columns: 76px repeat(7, 1fr);
+}
+
+.wg-corner {
+  border-right: 1px solid #f2f2f1;
+}
+
+.wg-day-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px;
+}
+
+.wg-day-head.today {
+  background: #111110;
+  border-radius: 8px 8px 0 0;
+}
+
+.wg-day-head.today .wg-dow,
+.wg-day-head.today .wg-num {
+  color: #fff;
+}
+
+.wg-dow {
+  font-size: 11px;
+  color: #9c9c9b;
+}
+
+.wg-num {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111110;
+}
+
+.wg-body {
+  position: relative; /* rows' offsetTop is measured from here (scroll-to-now) */
+  max-height: 560px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid #f2f2f1;
+  border-radius: 10px;
+}
+
+.wg-row {
+  display: grid;
+  grid-template-columns: 76px repeat(7, 1fr);
+  border-bottom: 1px solid #f6f6f4;
+  min-height: 38px;
+}
+
+.wg-row:last-child {
+  border-bottom: none;
+}
+
+.wg-time {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 8px;
+  font-size: 11px;
+  color: #9c9c9b;
+  border-right: 1px solid #f6f6f4;
+}
+
+.wg-cell {
+  border: none;
+  border-left: 1px solid #f6f6f4;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c8c8c6;
+  padding: 2px;
+}
+
+.wg-cell.empty.past {
+  cursor: default;
+}
+
+.wg-cell:not(.booked):not(.past):hover {
+  background: #eef0ef;
+  color: #111110;
+}
+
+.wg-cell.open {
+  background: #f3f8f5;
+  color: #1f7a4d;
+}
+
+.wg-cell.blocked {
+  background: repeating-linear-gradient(
+    45deg,
+    #f4f4f3,
+    #f4f4f3 5px,
+    #ececea 5px,
+    #ececea 10px
+  );
+}
+
+.wg-cell.booked {
+  background: #e7f2ec;
+  color: #111110;
+  justify-content: flex-start;
+  padding: 2px 6px;
+}
+
+.wg-cell.booked:hover {
+  background: #dcecdf;
+}
+
+.wg-cell-name {
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wg-cell.past {
+  opacity: 0.4;
+}
+
+@media (max-width: 720px) {
+  .ps-day-layout {
+    grid-template-columns: 1fr;
+  }
+}

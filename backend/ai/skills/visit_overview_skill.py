@@ -101,14 +101,12 @@ class VisitOverviewSkill(AISkill):
 
         resp = (
             admin.table("appointments")
-            .select("id, appointment_date, appointment_time, status, notes, patient_id")
-            .eq("appointment_date", today_str)
+            .select("id, status, notes, patient_id, provider_availability(available_date, available_time)")
             .eq("status", "scheduled")
-            .order("appointment_time")
             .limit(_MAX_LISTED)
             .execute()
         )
-        rows = resp.data or []
+        rows = [r for r in (resp.data or []) if (r.get("provider_availability") or {}).get("available_date") == today_str]
 
         appointments = []
         for r in rows:
@@ -130,12 +128,13 @@ class VisitOverviewSkill(AISkill):
                         mrn = pat.get("mrn")
                 except Exception:
                     pass
+            avail = r.get("provider_availability") or {}
             appointments.append({
                 "id": r.get("id"),
                 "patientName": name,
                 "mrn": mrn,
-                "time": r.get("appointment_time"),
-                "date": r.get("appointment_date"),
+                "time": avail.get("available_time") or r.get("appointment_time"),
+                "date": avail.get("available_date"),
                 "notes": r.get("notes"),
             })
 
@@ -156,7 +155,7 @@ class VisitOverviewSkill(AISkill):
         appt_resp = (
             admin.table("appointments")
             .select(
-                "id, appointment_date, appointment_time, status, notes, patient_id"
+                "id, status, notes, patient_id, provider_availability(available_date, available_time)"
             )
             .eq("id", appointment_id)
             .limit(1)
@@ -222,6 +221,7 @@ class VisitOverviewSkill(AISkill):
             ) if p
         )
 
+        appt_avail = appt.get("provider_availability") or {}
         visit = {
             "patient": {
                 "id": patient_id,
@@ -232,8 +232,8 @@ class VisitOverviewSkill(AISkill):
             },
             "appointment": {
                 "id": appt["id"],
-                "time": appt.get("appointment_time"),
-                "date": appt.get("appointment_date"),
+                "time": appt_avail.get("available_time") or appt.get("appointment_time"),
+                "date": appt_avail.get("available_date"),
                 "visitType": appt.get("notes") or "Visit",
             },
             "recentHistory": recent_history,
@@ -287,8 +287,9 @@ def _fetch_recent_history(admin: Any, patient_id: str) -> list[dict[str, Any]]:
     try:
         resp = (
             admin.table("encounters")
-            .select("id, encounter_date, encounter_type, summary, provider_id")
+            .select("id, encounter_date, encounter_type, summary, provider_id, signed_at")
             .eq("patient_id", patient_id)
+            .filter("signed_at", "not.is", "null")
             .order("encounter_date", desc=True)
             .limit(5)
             .execute()

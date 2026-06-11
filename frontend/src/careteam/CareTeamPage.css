@@ -1,0 +1,182 @@
+/*
+AI-USAGE SUMMARY
+Tools: Claude Code (Opus 4.8)
+Overall AI Contribution: ~85%
+AI-Assisted Areas: Styling for the My Care Team page — page shell, header,
+  provider card grid, quick-action buttons, loading and empty states.
+Human Contributions: Visual direction (match the existing HealthNest surfaces).
+Notes: Validated visually and via `npm run build`.
+*/
+
+.ct-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f9f9f7;
+}
+
+.ct-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 36px 80px;
+}
+
+.ct-header {
+  margin-bottom: 28px;
+}
+
+.ct-title {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: 34px;
+  font-weight: 300;
+  color: #111110;
+  letter-spacing: -0.5px;
+}
+
+.ct-sub {
+  font-size: 14px;
+  color: #71716e;
+  margin-top: 4px;
+}
+
+.ct-loading {
+  color: #71716e;
+  font-size: 14px;
+  padding: 40px 0;
+}
+
+/* ── Empty state ── */
+.ct-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 64px 20px;
+  color: #9c9c9b;
+  text-align: center;
+}
+
+.ct-empty p {
+  font-size: 15px;
+  color: #71716e;
+}
+
+.ct-empty-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #111110;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.ct-empty-btn:hover {
+  background: #2a2a2a;
+}
+
+/* ── Provider grid ── */
+.ct-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.ct-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: #fff;
+  border: 1px solid #f2f2f1;
+  border-radius: 12px;
+  padding: 24px 20px;
+  transition: border-color 0.2s;
+}
+
+.ct-card:hover {
+  border-color: #d8d8d6;
+}
+
+.ct-card-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #f2f2f1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #71716e;
+  margin-bottom: 12px;
+}
+
+.ct-card-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: #111110;
+}
+
+.ct-card-badge {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #71716e;
+  background: #f2f2f1;
+  padding: 3px 10px;
+  border-radius: 10px;
+}
+
+.ct-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 18px;
+  width: 100%;
+}
+
+.ct-action {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.ct-action--ghost {
+  background: #fff;
+  border: 1px solid #e5e5e3;
+  color: #111110;
+}
+
+.ct-action--ghost:hover {
+  border-color: #111110;
+}
+
+.ct-action--filled {
+  background: #111110;
+  border: 1px solid #111110;
+  color: #fff;
+}
+
+.ct-action--filled:hover {
+  background: #2a2a2a;
+}
+
+@media (max-width: 768px) {
+  .ct-main {
+    padding: 24px 1.5rem;
+  }
+}

@@ -21,6 +21,8 @@ import LabResultDetail from "../labresults/LabResultDetail";
 import { usePulse } from "../pulse/PulseProvider";
 import { useMessages } from "../messages/MessagesProvider";
 import TopNav from "../components/TopNav";
+import Footer from "../components/Footer";
+import { authApi } from "../lib/authApi";
 
 function formatRole(role) {
   if (!role) return "Patient";
@@ -100,6 +102,234 @@ function SummaryCard({ icon, label, value, detail, onClick }) {
   return <div className="summ-card">{body}</div>;
 }
 
+function AccountSettings({ user, currentUser, onBack }) {
+  // ── Display name edit ──
+  const [editingName, setEditingName] = useState(false);
+  const [nameValue, setNameValue] = useState(currentUser.fullName);
+  const [nameSaving, setNameSaving] = useState(false);
+  const [nameMsg, setNameMsg] = useState("");
+
+  const handleSaveName = async () => {
+    if (!nameValue.trim()) return;
+    setNameSaving(true);
+    setNameMsg("");
+    try {
+      const parts = nameValue.trim().split(" ");
+      const first = parts[0] || "";
+      const last = parts.slice(1).join(" ") || "";
+      await authApi.updateProfile({ first_name: first, last_name: last });
+      setNameMsg("Name updated.");
+      setEditingName(false);
+    } catch (e) {
+      setNameMsg("Could not update name: " + (e.message || e));
+    } finally {
+      setNameSaving(false);
+    }
+  };
+
+  // ── Password change ──
+  const [pwOpen, setPwOpen] = useState(false);
+  const [pw, setPw] = useState({ current: "", next: "", confirm: "" });
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwMsg, setPwMsg] = useState("");
+
+  const handleChangePassword = async () => {
+    setPwMsg("");
+    if (!pw.current || !pw.next || !pw.confirm) {
+      setPwMsg("Please fill in all password fields.");
+      return;
+    }
+    if (pw.next !== pw.confirm) {
+      setPwMsg("New passwords do not match.");
+      return;
+    }
+    if (pw.next.length < 6) {
+      setPwMsg("Password must be at least 6 characters.");
+      return;
+    }
+    setPwSaving(true);
+    try {
+      await authApi.updatePassword(pw.current, pw.next);
+      setPwMsg("Password updated successfully.");
+      setPwOpen(false);
+      setPw({ current: "", next: "", confirm: "" });
+    } catch (e) {
+      setPwMsg("Could not update password: " + (e.message || e));
+    } finally {
+      setPwSaving(false);
+    }
+  };
+
+  // ── Biometric ──
+  const [authBusy, setAuthBusy] = useState(false);
+  const [authMsg, setAuthMsg] = useState("");
+
+  const handleEnableBiometric = async () => {
+    setAuthBusy(true);
+    setAuthMsg("");
+    try {
+      await authApi.enableBiometricLogin();
+      setAuthMsg("Biometric login enabled for this device.");
+    } catch (e) {
+      setAuthMsg("Unable to enable biometric login: " + (e.message || e));
+    } finally {
+      setAuthBusy(false);
+    }
+  };
+
+  return (
+    <section className='acct-page'>
+      <div className='acct-header'>
+        <h3 className='acct-title'>Account Settings</h3>
+        <button className='dash-view-all' onClick={onBack}>
+          Back to dashboard
+        </button>
+      </div>
+
+      {/* ── Profile ── */}
+      <div className='acct-section'>
+        <p className='acct-section-label'>Profile</p>
+
+        <div className='acct-row'>
+          <span className='acct-row-key'>Name</span>
+          {editingName ? (
+            <div className='acct-inline-edit'>
+              <input
+                className='acct-input'
+                value={nameValue}
+                onChange={(e) => setNameValue(e.target.value)}
+                autoFocus
+              />
+              <div className='acct-inline-actions'>
+                <button
+                  className='acct-btn-primary'
+                  onClick={handleSaveName}
+                  disabled={nameSaving}>
+                  {nameSaving ? "Saving…" : "Save"}
+                </button>
+                <button
+                  className='acct-btn-ghost'
+                  onClick={() => {
+                    setEditingName(false);
+                    setNameValue(currentUser.fullName);
+                    setNameMsg("");
+                  }}>
+                  Cancel
+                </button>
+              </div>
+              {nameMsg && <p className='acct-msg'>{nameMsg}</p>}
+            </div>
+          ) : (
+            <div className='acct-row-value-wrap'>
+              <span className='acct-row-value'>{currentUser.fullName}</span>
+              <button
+                className='acct-edit-link'
+                onClick={() => setEditingName(true)}>
+                Edit
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className='acct-row'>
+          <span className='acct-row-key'>Role</span>
+          <span className='acct-row-value'>{currentUser.role}</span>
+        </div>
+
+        <div className='acct-row'>
+          <span className='acct-row-key'>Email</span>
+          <span className='acct-row-value'>
+            {user?.email || "Not available"}
+          </span>
+        </div>
+      </div>
+
+      {/* ── Password ── */}
+      <div className='acct-section'>
+        <p className='acct-section-label'>Password</p>
+        {!pwOpen ? (
+          <button
+            className='acct-btn-outline'
+            onClick={() => {
+              setPwOpen(true);
+              setPwMsg("");
+            }}>
+            Change password
+          </button>
+        ) : (
+          <div className='acct-pw-form'>
+            <div className='acct-field'>
+              <label className='acct-field-label'>Current password</label>
+              <input
+                className='acct-input'
+                type='password'
+                value={pw.current}
+                onChange={(e) =>
+                  setPw((p) => ({ ...p, current: e.target.value }))
+                }
+              />
+            </div>
+            <div className='acct-field'>
+              <label className='acct-field-label'>New password</label>
+              <input
+                className='acct-input'
+                type='password'
+                value={pw.next}
+                onChange={(e) => setPw((p) => ({ ...p, next: e.target.value }))}
+              />
+            </div>
+            <div className='acct-field'>
+              <label className='acct-field-label'>Confirm new password</label>
+              <input
+                className='acct-input'
+                type='password'
+                value={pw.confirm}
+                onChange={(e) =>
+                  setPw((p) => ({ ...p, confirm: e.target.value }))
+                }
+              />
+            </div>
+            {pwMsg && <p className='acct-msg'>{pwMsg}</p>}
+            <div className='acct-inline-actions'>
+              <button
+                className='acct-btn-primary'
+                onClick={handleChangePassword}
+                disabled={pwSaving}>
+                {pwSaving ? "Updating…" : "Update password"}
+              </button>
+              <button
+                className='acct-btn-ghost'
+                onClick={() => {
+                  setPwOpen(false);
+                  setPw({ current: "", next: "", confirm: "" });
+                  setPwMsg("");
+                }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Authentication ── */}
+      <div className='acct-section'>
+        <p className='acct-section-label'>Authentication</p>
+        <p className='acct-section-desc'>
+          Enable biometric/passkey login for faster sign-in on supported
+          devices.
+        </p>
+        <button
+          className='acct-btn-primary'
+          onClick={handleEnableBiometric}
+          disabled={authBusy}>
+          {authBusy ? "Setting up…" : "Enable biometric login"}
+        </button>
+        {authMsg && <p className='acct-msg'>{authMsg}</p>}
+      </div>
+    </section>
+  );
+}
+
 export default function PatientDashboard({
   user,
   onNavigate,
@@ -158,13 +388,10 @@ export default function PatientDashboard({
     day: "numeric",
   });
   const hour = today.getHours();
-
   let greetingMes = "Good evening";
-  if (hour >= 6 && hour < 12) {
-    greetingMes = "Good morning";
-  } else if (hour >= 12 && hour < 18) {
-    greetingMes = "Good afternoon";
-  }
+  if (hour >= 6 && hour < 12) greetingMes = "Good morning";
+  else if (hour >= 12 && hour < 18) greetingMes = "Good afternoon";
+
   const { unreadCount: unreadMessages } = useMessages();
 
   const navOption = [
@@ -177,28 +404,42 @@ export default function PatientDashboard({
   ];
 
   return (
-    <div className="p-dash">
-      {/* Navigation bar */}
+    <div className='p-dash'>
       <TopNav
         links={navOption.map((o) =>
           o === "Messages" ? { label: o, badge: unreadMessages } : o,
         )}
-        activeKey={view === "home" ? "Dashboard" : "Records"}
+        activeKey={
+          view === "home"
+            ? "Dashboard"
+            : view === "labs" || view === "lab-detail"
+              ? "Records"
+              : null
+        }
         onLogoClick={() => setView("home")}
         onSelect={(label) => {
           if (label === "Dashboard") setView("home");
           else if (label === "Records") setView("labs");
           else if (label === "Appointments") onNavigate?.("appointments");
+          else if (label === "My Care Team") onNavigate?.("care-team");
           else if (label === "Pulse AI") onNavigate?.("pulse");
           else if (label === "Messages") onNavigate?.("messages");
         }}
         userName={currentUser.fullName}
         userRole={currentUser.role}
+        onAccountSettings={() => setView("account-settings")}
         onSignOut={onSignOut}
       />
 
-      {/* ── Main content ── */}
-      <main className="dash-main">
+      <main className='dash-main'>
+        {view === "account-settings" && (
+          <AccountSettings
+            user={user}
+            currentUser={currentUser}
+            onBack={() => setView("home")}
+          />
+        )}
+
         {view === "labs" && (
           <PatientLabResultsPage
             onBack={() => setView("home")}
@@ -208,35 +449,34 @@ export default function PatientDashboard({
             }}
           />
         )}
+
         {view === "lab-detail" && activeLabId && (
           <LabResultDetail
             labResultId={activeLabId}
             onBack={() => setView("labs")}
           />
         )}
+
         {view !== "home" ? null : (
           <>
-            {/*  Header */}
-            <div className="dash-header">
+            <div className='dash-header'>
               <div>
-                <p className="dash-date">{dateFormat}</p>
-                <h1 className="dash-greeting">
+                <p className='dash-date'>{dateFormat}</p>
+                <h1 className='dash-greeting'>
                   {greetingMes}, {currentUser.firstName}
                 </h1>
               </div>
               <button
-                className="dash-book-btn"
-                onClick={() => onNavigate?.("booking")}
-              >
+                className='dash-book-btn'
+                onClick={() => onNavigate?.("booking")}>
                 <Plus size={16} /> Book Appointment
               </button>
             </div>
 
-            {/* Top Four cards */}
-            <div className="dash-sumcard">
+            <div className='dash-sumcard'>
               <SummaryCard
                 icon={<Calendar size={16} />}
-                label="Next Appointment"
+                label='Next Appointment'
                 value={
                   upcomingAppoint[0]
                     ? `${upcomingAppoint[0].month} ${upcomingAppoint[0].day}`
@@ -277,21 +517,18 @@ export default function PatientDashboard({
               />
             </div>
 
-            {/* ── Middle layout ── */}
-            <div className="dash-middle">
-              {/* Upcoming Appointments */}
-              <div className="dash-card">
-                <div className="dash-card-header">
-                  <h3 className="dash-card-title">Upcoming Appointments</h3>
+            <div className='dash-middle'>
+              <div className='dash-card'>
+                <div className='dash-card-header'>
+                  <h3 className='dash-card-title'>Upcoming Appointments</h3>
                   <button
-                    className="dash-view-all"
-                    onClick={() => onNavigate?.("appointments")}
-                  >
+                    className='dash-view-all'
+                    onClick={() => onNavigate?.("appointments")}>
                     View all
                   </button>
                 </div>
                 {upcomingAppoint.length === 0 && (
-                  <p className="dash-appt-empty">No upcoming appointments.</p>
+                  <p className='dash-appt-empty'>No upcoming appointments.</p>
                 )}
                 {upcomingAppoint.map((appt) => (
                   <button
@@ -308,101 +545,89 @@ export default function PatientDashboard({
                       <span className="dash-appt-month">{appt.month}</span>
                       <span className="dash-appt-day">{appt.day}</span>
                     </div>
-
-                    <div className="dash-appt-divider" />
-
-                    <div className="dash-appt-info">
-                      <p className="dash-appt-doctor">{appt.doctor}</p>
-                      <p className="dash-appt-specialty">{appt.specialty}</p>
+                    <div className='dash-appt-divider' />
+                    <div className='dash-appt-info'>
+                      <p className='dash-appt-doctor'>{appt.doctor}</p>
+                      <p className='dash-appt-specialty'>{appt.specialty}</p>
                     </div>
-
-                    <div className="dash-appt-time">
+                    <div className='dash-appt-time'>
                       <span>{appt.time}</span>
                       <Stethoscope size={14} />
                     </div>
-
-                    <ChevronRight size={16} className="dash-appt-arrow" />
+                    <ChevronRight size={16} className='dash-appt-arrow' />
                   </button>
                 ))}
               </div>
 
-              {/* ── Right sidebar ── */}
-              <div className="dash-sidebar">
-                {/* Medications */}
-                <div className="dash-card">
-                  <div className="dash-card-header">
-                    <h3 className="dash-card-title">Active Medications</h3>
-                    <button className="dash-view-all">View all</button>
+              <div className='dash-sidebar'>
+                <div className='dash-card'>
+                  <div className='dash-card-header'>
+                    <h3 className='dash-card-title'>Active Medications</h3>
+                    <button className='dash-view-all'>View all</button>
                   </div>
                   {activeMed.map((med) => (
-                    <div key={med.name} className="dash-med-row">
+                    <div key={med.name} className='dash-med-row'>
                       <div>
-                        <p className="dash-med-name">{med.name}</p>
-                        <p className="dash-med-detail">
+                        <p className='dash-med-name'>{med.name}</p>
+                        <p className='dash-med-detail'>
                           {med.dose} · {med.frequency}
                         </p>
                       </div>
-                      <span className="dash-med-refill">{med.refillDue}</span>
+                      <span className='dash-med-refill'>{med.refillDue}</span>
                     </div>
                   ))}
                 </div>
 
-                {/* ── Labs ── */}
-                <div className="dash-card">
-                  <div className="dash-card-header">
-                    <h3 className="dash-card-title">Recent Labs</h3>
+                <div className='dash-card'>
+                  <div className='dash-card-header'>
+                    <h3 className='dash-card-title'>Recent Labs</h3>
                     <button
-                      className="dash-view-all"
-                      onClick={() => setView("labs")}
-                    >
+                      className='dash-view-all'
+                      onClick={() => setView("labs")}>
                       View all
                     </button>
                   </div>
-                  {labResult.map((lab) => {
-                    let labNameClass = "dash-lab-name";
-                    let labStatusClass = "dash-lab-status";
-
-                    if (lab.flag) {
-                      labNameClass = "dash-lab-name flagged";
-                      labStatusClass = "dash-lab-status flagged";
-                    }
-                    {
-                      /* flag lab result*/
-                    }
-                    return (
-                      <div key={lab.test} className="dash-lab-row">
-                        <div className="dash-lab-name-wrap">
-                          {lab.flag && <span className="dash-lab-dot"></span>}
-
-                          <p className={labNameClass}>{lab.test}</p>
-                        </div>
-
-                        <span className={labStatusClass}>{lab.result}</span>
+                  {labResult.map((lab) => (
+                    <div key={lab.test} className='dash-lab-row'>
+                      <div className='dash-lab-name-wrap'>
+                        {lab.flag && <span className='dash-lab-dot'></span>}
+                        <p
+                          className={
+                            lab.flag ? "dash-lab-name flagged" : "dash-lab-name"
+                          }>
+                          {lab.test}
+                        </p>
                       </div>
-                    );
-                  })}
+                      <span
+                        className={
+                          lab.flag
+                            ? "dash-lab-status flagged"
+                            : "dash-lab-status"
+                        }>
+                        {lab.result}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
 
-            {/* ── AI Banner ── */}
-            <div className="dash-ai-banner">
-              <div className="dash-ai-icon">
+            <div className='dash-ai-banner'>
+              <div className='dash-ai-icon'>
                 <MessageCircleQuestion size={22} />
               </div>
-              <div className="dash-ai-text">
-                <p className="dash-ai-title">
+              <div className='dash-ai-text'>
+                <p className='dash-ai-title'>
                   Pulse AI — built around your care
                 </p>
-                <p className="dash-ai-detail">
+                <p className='dash-ai-detail'>
                   Ask about your upcoming visit, medication interactions, lab
                   results, or anything on your mind.
                 </p>
               </div>
               <button
-                className="dash-ai-btn"
-                onClick={() => pulse.openDrawer()}
-              >
+                className='dash-ai-btn'
+                onClick={() => pulse.openDrawer()}>
                 <MessageCircleQuestion size={16} /> Ask Pulse
               </button>
             </div>
@@ -410,54 +635,16 @@ export default function PatientDashboard({
         )}
       </main>
 
-      {/* ── Footer ── */}
-      <footer className="dash-footer">
-        <div className="dash-footer-left">
-          <button
-            type="button"
-            className="dash-logo"
-            onClick={() => setView("home")}
-          >
-            <u>HealthNest</u>
-          </button>
-          <p className="dash-footer-tag">
-            Coordinated care across clinics,
-            <br />
-            built for patients and providers.
-          </p>
-        </div>
-        <div className="dash-footer-links">
-          <div>
-            <p className="dash-footer-heading">PLATFORM</p>
-            {[
-              "Patient Portal",
-              "Provider Tools",
-              "AI Health Assistant",
-              "Appointment Scheduling",
-            ].map((l) => (
-              <p key={l} className="dash-footer-link">
-                {l}
-              </p>
-            ))}
-          </div>
-          <div>
-            <p className="dash-footer-heading">SUPPORT</p>
-            {[
-              "Help Center",
-              "Contact Us",
-              "Privacy Policy",
-              "Terms of Service",
-            ].map((l) => (
-              <p key={l} className="dash-footer-link">
-                {l}
-              </p>
-            ))}
-          </div>
-        </div>
-      </footer>
-      <div className="dash-copyright">
-        © 2026 HealthNest Technologies, Inc. All rights reserved.
-      </div>
+      <Footer
+        role="patient"
+        onNavigate={(target) => {
+          if (target === "dashboard") setView("home");
+          else if (target === "records") setView("labs");
+          else if (target === "appointments") onNavigate?.("appointments");
+          else if (target === "messages") onNavigate?.("messages");
+          else onNavigate?.(target);
+        }}
+      />
     </div>
   );
 }

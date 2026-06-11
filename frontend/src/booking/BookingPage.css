@@ -199,10 +199,3 @@
   padding: 0.6rem;
 }
 
-/* Footer logo doubles as a link back to the dashboard. */
-button.bp-logo {
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-}

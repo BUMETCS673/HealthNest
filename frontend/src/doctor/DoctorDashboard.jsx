@@ -1,4 +1,3 @@
-/*
 /**
  * AI-USAGE SUMMARY
  * Tools: Opus 4.7
@@ -7,7 +6,7 @@
  * Human Contributions: Workflow design (save vs release-with-implicit-patch), the manual-entry-required gating on release, the patient-name resolution wiring, and the decision to mirror server state into a local editable copy with explicit diffing rather than a controlled-from-server pattern.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import "./DoctorDashboard.css";
 import {
   Search,
@@ -30,8 +29,11 @@ import {
 import { labResultsApi } from "../lib/labResultsApi";
 import { useMessages } from "../messages/MessagesProvider";
 import MessagesView from "../messages/MessagesView";
+import ProviderSchedule from "./ProviderSchedule";
+import TodayScheduleCard from "./TodayScheduleCard";
 import { useDfa } from "../pulse/DfaProvider";
 import TopNav from "../components/TopNav";
+import Footer from "../components/Footer";
 
 // For specialty display/default setting
 function formatRole(role) {
@@ -110,22 +112,376 @@ function formatChartTime(value) {
   return String(value).split(":").slice(0, 2).join(":");
 }
 
+function AccountSettings({ user, currentUser, onBack }) {
+  const [editingName, setEditingName] = useState(false);
+  const [displayName, setDisplayName] = useState(currentUser.fullName);
+  const [nameValue, setNameValue] = useState(currentUser.fullName);
+  const [nameSaving, setNameSaving] = useState(false);
+  const [nameMsg, setNameMsg] = useState("");
+
+  const [editingSpecialty, setEditingSpecialty] = useState(false);
+  const [displaySpecialty, setDisplaySpecialty] = useState(
+    currentUser.specialty || "",
+  );
+  const [specialtyValue, setSpecialtyValue] = useState(
+    currentUser.specialty || "",
+  );
+  const [specialtySaving, setSpecialtySaving] = useState(false);
+  const [specialtyMsg, setSpecialtyMsg] = useState("");
+
+  const [pwOpen, setPwOpen] = useState(false);
+  const [pw, setPw] = useState({ current: "", next: "", confirm: "" });
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwMsg, setPwMsg] = useState("");
+
+  const [authBusy, setAuthBusy] = useState(false);
+  const [authMsg, setAuthMsg] = useState("");
+
+  const handleSaveName = async () => {
+    if (!nameValue.trim()) return;
+    setNameSaving(true);
+    setNameMsg("");
+    try {
+      const parts = nameValue.trim().split(" ");
+      const first = parts[0] || "";
+      const last = parts.slice(1).join(" ") || "";
+      await authApi.updateProfile({ first_name: first, last_name: last });
+      setDisplayName(nameValue.trim());
+      setNameMsg("Name updated.");
+      setEditingName(false);
+    } catch (e) {
+      setNameMsg("Could not update name: " + (e.message || e));
+    } finally {
+      setNameSaving(false);
+    }
+  };
+
+  const handleSaveSpecialty = async () => {
+    setSpecialtySaving(true);
+    setSpecialtyMsg("");
+    try {
+      const parts = displayName.trim().split(" ");
+      await authApi.updateProfile({
+        first_name: parts[0] || "",
+        last_name: parts.slice(1).join(" ") || "",
+        specialty: specialtyValue.trim(),
+      });
+      setDisplaySpecialty(specialtyValue.trim());
+      setSpecialtyMsg("Specialty updated.");
+      setEditingSpecialty(false);
+    } catch (e) {
+      setSpecialtyMsg("Could not update specialty: " + (e.message || e));
+    } finally {
+      setSpecialtySaving(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    setPwMsg("");
+    if (!pw.current || !pw.next || !pw.confirm) {
+      setPwMsg("Please fill in all password fields.");
+      return;
+    }
+    if (pw.next !== pw.confirm) {
+      setPwMsg("New passwords do not match.");
+      return;
+    }
+    if (pw.next.length < 6) {
+      setPwMsg("Password must be at least 6 characters.");
+      return;
+    }
+    setPwSaving(true);
+    try {
+      await authApi.updatePassword(pw.current, pw.next);
+      setPwMsg("Password updated successfully.");
+      setPwOpen(false);
+      setPw({ current: "", next: "", confirm: "" });
+    } catch (e) {
+      setPwMsg("Could not update password: " + (e.message || e));
+    } finally {
+      setPwSaving(false);
+    }
+  };
+
+  const handleEnableBiometric = async () => {
+    setAuthBusy(true);
+    setAuthMsg("");
+    try {
+      await authApi.enableBiometricLogin();
+      setAuthMsg("Biometric login enabled for this device.");
+    } catch (e) {
+      setAuthMsg("Unable to enable biometric login: " + (e.message || e));
+    } finally {
+      setAuthBusy(false);
+    }
+  };
+
+  return (
+    <section className="acct-page">
+      <div className="acct-header">
+        <h3 className="acct-title">Account Settings</h3>
+        <button className="dash-view-all" onClick={onBack}>
+          Back to dashboard
+        </button>
+      </div>
+
+      <div className="acct-section">
+        <p className="acct-section-label">Profile</p>
+
+        <div className="acct-row">
+          <span className="acct-row-key">Name</span>
+          {editingName ? (
+            <div className="acct-inline-edit">
+              <input
+                className="acct-input"
+                value={nameValue}
+                onChange={(e) => setNameValue(e.target.value)}
+                autoFocus
+              />
+              <div className="acct-inline-actions">
+                <button
+                  className="acct-btn-primary"
+                  onClick={handleSaveName}
+                  disabled={nameSaving}
+                >
+                  {nameSaving ? "Saving…" : "Save"}
+                </button>
+                <button
+                  className="acct-btn-ghost"
+                  onClick={() => {
+                    setEditingName(false);
+                    setNameValue(displayName);
+                    setNameMsg("");
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+              {nameMsg && <p className="acct-msg">{nameMsg}</p>}
+            </div>
+          ) : (
+            <div className="acct-row-value-wrap">
+              <span className="acct-row-value">{displayName}</span>
+              <button
+                className="acct-edit-link"
+                onClick={() => setEditingName(true)}
+              >
+                Edit
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="acct-row">
+          <span className="acct-row-key">Role</span>
+          <span className="acct-row-value">{currentUser.role}</span>
+        </div>
+
+        <div className="acct-row">
+          <span className="acct-row-key">Specialty</span>
+          {editingSpecialty ? (
+            <div className="acct-inline-edit">
+              <input
+                className="acct-input"
+                value={specialtyValue}
+                onChange={(e) => setSpecialtyValue(e.target.value)}
+                autoFocus
+              />
+              <div className="acct-inline-actions">
+                <button
+                  className="acct-btn-primary"
+                  onClick={handleSaveSpecialty}
+                  disabled={specialtySaving}
+                >
+                  {specialtySaving ? "Saving…" : "Save"}
+                </button>
+                <button
+                  className="acct-btn-ghost"
+                  onClick={() => {
+                    setEditingSpecialty(false);
+                    setSpecialtyValue(displaySpecialty);
+                    setSpecialtyMsg("");
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+              {specialtyMsg && <p className="acct-msg">{specialtyMsg}</p>}
+            </div>
+          ) : (
+            <div className="acct-row-value-wrap">
+              <span className="acct-row-value">
+                {displaySpecialty || "Not set"}
+              </span>
+              <button
+                className="acct-edit-link"
+                onClick={() => setEditingSpecialty(true)}
+              >
+                Edit
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="acct-row">
+          <span className="acct-row-key">Email</span>
+          <span className="acct-row-value">
+            {user?.email || "Not available"}
+          </span>
+        </div>
+      </div>
+
+      <div className="acct-section">
+        <p className="acct-section-label">Password</p>
+        {!pwOpen ? (
+          <button
+            className="acct-btn-outline"
+            onClick={() => {
+              setPwOpen(true);
+              setPwMsg("");
+            }}
+          >
+            Change password
+          </button>
+        ) : (
+          <div className="acct-pw-form">
+            <div className="acct-field">
+              <label className="acct-field-label">Current password</label>
+              <input
+                className="acct-input"
+                type="password"
+                value={pw.current}
+                onChange={(e) =>
+                  setPw((p) => ({ ...p, current: e.target.value }))
+                }
+              />
+            </div>
+            <div className="acct-field">
+              <label className="acct-field-label">New password</label>
+              <input
+                className="acct-input"
+                type="password"
+                value={pw.next}
+                onChange={(e) => setPw((p) => ({ ...p, next: e.target.value }))}
+              />
+            </div>
+            <div className="acct-field">
+              <label className="acct-field-label">Confirm new password</label>
+              <input
+                className="acct-input"
+                type="password"
+                value={pw.confirm}
+                onChange={(e) =>
+                  setPw((p) => ({ ...p, confirm: e.target.value }))
+                }
+              />
+            </div>
+            {pwMsg && <p className="acct-msg">{pwMsg}</p>}
+            <div className="acct-inline-actions">
+              <button
+                className="acct-btn-primary"
+                onClick={handleChangePassword}
+                disabled={pwSaving}
+              >
+                {pwSaving ? "Updating…" : "Update password"}
+              </button>
+              <button
+                className="acct-btn-ghost"
+                onClick={() => {
+                  setPwOpen(false);
+                  setPw({ current: "", next: "", confirm: "" });
+                  setPwMsg("");
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="acct-section">
+        <p className="acct-section-label">Authentication</p>
+        <p className="acct-section-desc">
+          Enable biometric/passkey login for faster sign-in on supported
+          devices.
+        </p>
+        <button
+          className="acct-btn-primary"
+          onClick={handleEnableBiometric}
+          disabled={authBusy}
+        >
+          {authBusy ? "Setting up…" : "Enable biometric login"}
+        </button>
+        {authMsg && <p className="acct-msg">{authMsg}</p>}
+      </div>
+    </section>
+  );
+}
+
 // Temp data until backend data connect
 
 const patientAlerts = [];
 
-const unsignEn = [];
-
-function VisitOverviewDrawer({ visit, onClose, onOpenFullChart }) {
+function VisitOverviewDrawer({
+  visit,
+  onClose,
+  onOpenFullChart,
+  onSaveEncounterDraft,
+  onSignEncounterNote,
+}) {
   const patient = visit.patient || {};
   const appointment = visit.appointment || {};
 
+  const [encounterNote, setEncounterNote] = useState("");
+  const [noteSaving, setNoteSaving] = useState(false);
+  const [noteMessage, setNoteMessage] = useState("");
   const recentHistory = visit.recentHistory || [];
   const activeProblems = visit.activeProblems || [];
   const medications = visit.medications || [];
   const labs = visit.labs || [];
   const openIssues = visit.openIssues || [];
   const missingSections = visit.missingSections || [];
+
+  const handleSaveDraft = async () => {
+    if (!encounterNote.trim()) {
+      setNoteMessage("Please enter a note before saving.");
+      return;
+    }
+
+    setNoteSaving(true);
+    setNoteMessage("");
+
+    try {
+      await onSaveEncounterDraft(visit, encounterNote);
+      setNoteMessage("Draft saved to Unsigned Encounters.");
+      setEncounterNote("");
+    } catch (error) {
+      setNoteMessage(error.message || "Unable to save draft.");
+    } finally {
+      setNoteSaving(false);
+    }
+  };
+
+  const handleSignNote = async () => {
+    if (!encounterNote.trim()) {
+      setNoteMessage("Please enter a note before signing.");
+      return;
+    }
+
+    setNoteSaving(true);
+    setNoteMessage("");
+
+    try {
+      await onSignEncounterNote(visit, encounterNote);
+      setNoteMessage("Encounter note signed.");
+      setEncounterNote("");
+    } catch (error) {
+      setNoteMessage(error.message || "Unable to sign note.");
+    } finally {
+      setNoteSaving(false);
+    }
+  };
 
   return (
     <div className="visit-overview-backdrop">
@@ -275,6 +631,42 @@ function VisitOverviewDrawer({ visit, onClose, onOpenFullChart }) {
           </div>
         </section>
 
+        <section className="visit-overview-section">
+          <h3>Encounter Note</h3>
+          <p className="visit-overview-meta">
+            Draft a note for this visit. Saved drafts appear in Unsigned
+            Encounters.
+          </p>
+
+          <textarea
+            className="visit-note-textarea"
+            placeholder="Write encounter note..."
+            value={encounterNote}
+            onChange={(e) => setEncounterNote(e.target.value)}
+          />
+
+          <div className="visit-note-actions">
+            <button
+              type="button"
+              className="doc-btn-review"
+              onClick={handleSaveDraft}
+              disabled={noteSaving}
+            >
+              {noteSaving ? "Saving..." : "Save Draft"}
+            </button>
+
+            <button
+              type="button"
+              className="doc-btn-sign"
+              onClick={handleSignNote}
+              disabled={noteSaving}
+            >
+              {noteSaving ? "Signing..." : "Sign Note"}
+            </button>
+            {noteMessage && <p className="acct-msg">{noteMessage}</p>}
+          </div>
+        </section>
+
         {missingSections.length > 0 && (
           <section className="visit-overview-section">
             <h3>Missing Information</h3>
@@ -315,6 +707,24 @@ export default function DoctorDashboard({
   const dfa = useDfa();
 
   const [view, setView] = useState(initialView);
+
+  // Keep the visible view in sync with the URL-derived initialView (browser
+  // back/forward, returning from the Pulse workspace). Adjusting state during
+  // render is React's recommended alternative to a syncing effect here.
+  const [syncedView, setSyncedView] = useState(initialView);
+  if (initialView !== syncedView) {
+    setSyncedView(initialView);
+    setView(initialView);
+  }
+
+  // Opening a patient's message thread from the schedule (Message action).
+  const [messageContactId, setMessageContactId] = useState(null);
+  const messagePatient = (appt) => {
+    setMessageContactId(appt?.patient_user_id ?? null);
+    setView("messages");
+    onNavigate?.("messages");
+  };
+
   const [activeLabId, setActiveLabId] = useState(null);
   const [selectedVisit, setSelectedVisit] = useState(null);
   const [selectedChart, setSelectedChart] = useState(null);
@@ -331,8 +741,13 @@ export default function DoctorDashboard({
   const [chartLabsError, setChartLabsError] = useState("");
   // Where lab-review should return to: the lab queue or a patient's chart.
   const [labReviewFrom, setLabReviewFrom] = useState("labs");
-  // Conversation to open when entering Messages from a patient chart.
-  const [messageContactId, setMessageContactId] = useState(null);
+  const [unsignedEncounters, setUnsignedEncounters] = useState([]);
+  const [unsignedEncounterError, setUnsignedEncounterError] = useState("");
+  const [unsignedEncounterLoading, setUnsignedEncounterLoading] =
+    useState(false);
+  const [signingEncounterId, setSigningEncounterId] = useState(null);
+  const [selectedUnsignedEncounter, setSelectedUnsignedEncounter] =
+    useState(null);
 
   const getAuthHeaders = () => {
     const session = authApi.getSession();
@@ -345,7 +760,6 @@ export default function DoctorDashboard({
       Authorization: `Bearer ${session.access_token}`,
     };
   };
-
 
   useEffect(() => {
     const loadVisitOverviews = async () => {
@@ -375,6 +789,103 @@ export default function DoctorDashboard({
     loadVisitOverviews();
   }, []);
 
+  const loadUnsignedEncounters = async () => {
+    setUnsignedEncounterLoading(true);
+    setUnsignedEncounterError("");
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/providers/unsigned-encounters`,
+        {
+          headers: getAuthHeaders(),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Unable to load unsigned encounters.");
+      }
+
+      const data = await response.json();
+      setUnsignedEncounters(data);
+    } catch (error) {
+      setUnsignedEncounterError(
+        error.message || "Unable to load unsigned encounters.",
+      );
+    } finally {
+      setUnsignedEncounterLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      loadUnsignedEncounters();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  const handleSignEncounter = async (encounterId) => {
+    setSigningEncounterId(encounterId);
+    setUnsignedEncounterError("");
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/providers/unsigned-encounters/${encounterId}/sign`,
+        {
+          method: "PATCH",
+          headers: getAuthHeaders(),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Unable to sign encounter.");
+      }
+
+      setUnsignedEncounters((current) =>
+        current.filter((encounter) => encounter.id !== encounterId),
+      );
+    } catch (error) {
+      setUnsignedEncounterError(error.message || "Unable to sign encounter.");
+    } finally {
+      setSigningEncounterId(null);
+    }
+  };
+
+  const saveEncounterNote = async (visit, noteText, shouldSign = false) => {
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL}/providers/encounter-notes`,
+      {
+        method: "POST",
+        headers: {
+          ...getAuthHeaders(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          patientId: visit.patient?.id,
+          encounterType: visit.appointment?.visitType || "Visit Note",
+          summary: noteText,
+          signed: shouldSign,
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error("Unable to save encounter note.");
+    }
+
+    await loadUnsignedEncounters();
+
+    return response.json();
+  };
+
+  const handleSaveEncounterDraft = async (visit, noteText) => {
+    return saveEncounterNote(visit, noteText, false);
+  };
+
+  const handleSignEncounterNote = async (visit, noteText) => {
+    return saveEncounterNote(visit, noteText, true);
+  };
+
   const today = new Date();
 
   const dateFormat = today.toLocaleDateString("en-US", {
@@ -400,7 +911,8 @@ export default function DoctorDashboard({
 
   //dashboard counts
   const { unreadCount: unreadMessages } = useMessages();
-  const signNotesCount = 0;
+  const unsignedEncountersRef = useRef(null);
+  const signNotesCount = unsignedEncounters.length;
   const inboxCount = 0;
 
   const todayPatientsCount = visitOverviewItems.length;
@@ -409,9 +921,9 @@ export default function DoctorDashboard({
 
   const pendingPatientCount = visitOverviewItems.length;
 
-  const unsignEnCount = unsignEn.length;
+  const unsignEnCount = unsignedEncounters.length;
 
-  const urgentEncounterCount = unsignEn.filter((encounter) => {
+  const urgentEncounterCount = unsignedEncounters.filter((encounter) => {
     return encounter.urgent;
   }).length;
 
@@ -556,9 +1068,7 @@ export default function DoctorDashboard({
         activeKey={
           view === "home"
             ? "Dashboard"
-            : view === "labs" ||
-                view === "lab-review" ||
-                view === "full-chart"
+            : view === "labs" || view === "lab-review" || view === "full-chart"
               ? "Patient Records"
               : view === "messages"
                 ? "Messages"
@@ -566,19 +1076,33 @@ export default function DoctorDashboard({
                   ? "Schedule"
                   : null
         }
-        onLogoClick={() => setView("home")}
+        onLogoClick={() => {
+          setView("home");
+          onNavigate?.("dashboard");
+        }}
         onSelect={(label) => {
-          if (label === "Dashboard") setView("home");
-          else if (label === "Patient Records") setView("labs");
-          else if (label === "Messages") {
+          // Set the view immediately (resets any drill-down) and update the URL.
+          if (label === "Dashboard") {
+            setView("home");
+            onNavigate?.("dashboard");
+          } else if (label === "Patient Records") {
+            setView("labs");
+            onNavigate?.("patient-records");
+          } else if (label === "Messages") {
             setMessageContactId(null);
             setView("messages");
-          } else if (label === "Schedule") setView("schedule");
-          else if (label === "Pulse AI") onNavigate?.("dfa-pulse");
+            onNavigate?.("messages");
+          } else if (label === "Schedule") {
+            setView("schedule");
+            onNavigate?.("schedule");
+          } else if (label === "Pulse AI") {
+            onNavigate?.("dfa-pulse");
+          }
         }}
         userName={currentUser.firstName}
         userRole={currentUser.specialty || currentUser.role}
         userInitials={currentUser.initials}
+        onAccountSettings={() => setView("account-settings")}
         onSignOut={onSignOut}
       />
 
@@ -599,6 +1123,13 @@ export default function DoctorDashboard({
 
         {view === "messages" && (
           <MessagesView myId={user?.id} initialContactId={messageContactId} />
+        )}
+        {view === "account-settings" && (
+          <AccountSettings
+            user={user}
+            currentUser={currentUser}
+            onBack={() => setView("home")}
+          />
         )}
 
         {view === "full-chart" && selectedChart && (
@@ -953,6 +1484,10 @@ export default function DoctorDashboard({
             onBack={() => setView(labReviewFrom)}
           />
         )}
+        {view === "schedule" && (
+          <ProviderSchedule onMessagePatient={messagePatient} />
+        )}
+
         {view !== "home" ? null : (
           <>
             {/* Header */}
@@ -1020,7 +1555,15 @@ export default function DoctorDashboard({
                   )}
                 </div>
 
-                <button className="doc-action-btn">
+                <button
+                  className="doc-action-btn"
+                  onClick={() => {
+                    loadUnsignedEncounters();
+                    unsignedEncountersRef.current?.scrollIntoView({
+                      behavior: "smooth",
+                    });
+                  }}
+                >
                   <FileSignature size={14} />
                   Sign Notes
                   {signNotesCount > 0 && (
@@ -1104,41 +1647,14 @@ export default function DoctorDashboard({
 
             {/* Dashboard body */}
             <div className="doc-grid">
-              {/* Today's schedule */}
-              <div className="doc-card doc-schedule-card">
-                <div className="doc-card-header">
-                  <h3 className="doc-card-title">Today's Schedule</h3>
-                  <span className="doc-date-badge">{badgeDateFormat}</span>
-                </div>
-
-                {visitOverviewLoading && (
-                  <p className="visit-overview-empty">
-                    Loading visit overview...
-                  </p>
-                )}
-
-                {visitOverviewError && (
-                  <p className="visit-overview-empty">{visitOverviewError}</p>
-                )}
-
-                {visitOverviewItems.map((appt, index) => (
-                  <div
-                    key={appt.id || appt.name}
-                    className={`doc-sched-row${index === 0 ? " now" : ""} clickable`}
-                    onClick={() => openVisitOverview(appt.id)}
-                  >
-                    <span className="doc-sched-time">{appt.time || "TBD"}</span>
-                    <span className="doc-sched-dot"></span>
-
-                    <div className="doc-sched-info">
-                      <p className="doc-sched-name">{appt.name}</p>
-                      <p className="doc-sched-type">{appt.type}</p>
-                    </div>
-
-                    {index === 0 && <span className="doc-now-badge">Now</span>}
-                  </div>
-                ))}
-              </div>
+              {/* Today's schedule — hours-of-the-day grid (scrolled to now) */}
+              <TodayScheduleCard
+                onOpenSchedule={() => {
+                  setView("schedule");
+                  onNavigate?.("schedule");
+                }}
+                onMessagePatient={messagePatient}
+              />
 
               {/* Middle section for AI summaries and notes */}
               <div className="doc-col-main">
@@ -1190,7 +1706,7 @@ export default function DoctorDashboard({
                   ))}
                 </div>
 
-                <div className="doc-card">
+                <div className="doc-card" ref={unsignedEncountersRef}>
                   <div className="doc-card-header">
                     <div>
                       <h3 className="doc-card-title">Unsigned Encounters</h3>
@@ -1204,8 +1720,28 @@ export default function DoctorDashboard({
                     </span>
                   </div>
 
-                  {unsignEn.map((encounter) => (
-                    <div key={encounter.name} className="doc-encounter-row">
+                  {unsignedEncounterLoading && (
+                    <p className="visit-overview-empty">
+                      Loading unsigned encounters...
+                    </p>
+                  )}
+
+                  {unsignedEncounterError && (
+                    <p className="visit-overview-empty">
+                      {unsignedEncounterError}
+                    </p>
+                  )}
+
+                  {!unsignedEncounterLoading &&
+                    !unsignedEncounterError &&
+                    unsignedEncounters.length === 0 && (
+                      <p className="visit-overview-empty">
+                        No unsigned encounters pending.
+                      </p>
+                    )}
+
+                  {unsignedEncounters.map((encounter) => (
+                    <div key={encounter.id} className="doc-encounter-row">
                       <div className="doc-encounter-info">
                         <p className="doc-encounter-name">
                           {encounter.name}
@@ -1221,8 +1757,23 @@ export default function DoctorDashboard({
                       </div>
 
                       <div className="doc-encounter-actions">
-                        <button className="doc-btn-review">Review</button>
-                        <button className="doc-btn-sign">Sign</button>
+                        <button
+                          className="doc-btn-review"
+                          onClick={() =>
+                            setSelectedUnsignedEncounter(encounter)
+                          }
+                        >
+                          Review
+                        </button>
+                        <button
+                          className="doc-btn-sign"
+                          onClick={() => handleSignEncounter(encounter.id)}
+                          disabled={signingEncounterId === encounter.id}
+                        >
+                          {signingEncounterId === encounter.id
+                            ? "Signing..."
+                            : "Sign"}
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -1254,66 +1805,75 @@ export default function DoctorDashboard({
         )}
       </main>
 
-      {/* ── Footer ── */}
-      <footer className="doc-footer">
-        <div className="doc-footer-left">
-          <button
-            type="button"
-            className="dash-logo"
-            onClick={() => setView("home")}
+      {selectedUnsignedEncounter && (
+        <div className="visit-overview-backdrop">
+          <aside
+            className="visit-overview-drawer"
+            aria-label="Unsigned encounter review"
           >
-            <u>HealthNest</u>
-          </button>
+            <div className="visit-overview-header">
+              <div>
+                <h2>{selectedUnsignedEncounter.name}</h2>
+                <p className="visit-overview-meta">
+                  {selectedUnsignedEncounter.detail}
+                </p>
+              </div>
 
-          <p className="doc-footer-tag">
-            Coordinated care across clinics,
-            <br />
-            built for patients and providers.
-          </p>
-        </div>
+              <button
+                type="button"
+                className="visit-overview-close"
+                onClick={() => setSelectedUnsignedEncounter(null)}
+                aria-label="Close unsigned encounter review"
+              >
+                ×
+              </button>
+            </div>
 
-        <div className="doc-footer-links">
-          <div>
-            <p className="doc-footer-heading">PLATFORM</p>
-
-            {[
-              "Patient Portal",
-              "Provider Tools",
-              "AI Health Assistant",
-              "Appointment Scheduling",
-            ].map((link) => (
-              <p key={link} className="doc-footer-link">
-                {link}
+            <section className="visit-overview-section">
+              <h3>Encounter Summary</h3>
+              <p>
+                {selectedUnsignedEncounter.summary ||
+                  "No summary available for this encounter."}
               </p>
-            ))}
-          </div>
+            </section>
 
-          <div>
-            <p className="doc-footer-heading">SUPPORT</p>
-
-            {[
-              "Help Center",
-              "Contact Us",
-              "Privacy Policy",
-              "Terms of Service",
-            ].map((link) => (
-              <p key={link} className="doc-footer-link">
-                {link}
+            <div className="visit-overview-actions">
+              <p className="visit-overview-source">
+                Unsigned encounter pending provider signature
               </p>
-            ))}
-          </div>
-        </div>
-      </footer>
 
-      <div className="doc-copyright">
-        © 2026 HealthNest Technologies, Inc. All rights reserved.
-      </div>
+              <div className="visit-overview-action-buttons">
+                <button
+                  type="button"
+                  className="doc-btn-review"
+                  onClick={() => setSelectedUnsignedEncounter(null)}
+                >
+                  Close
+                </button>
+
+                <button
+                  type="button"
+                  className="doc-btn-sign"
+                  onClick={() => {
+                    handleSignEncounter(selectedUnsignedEncounter.id);
+                    setSelectedUnsignedEncounter(null);
+                  }}
+                >
+                  Sign
+                </button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      )}
 
       {selectedVisit && (
         <VisitOverviewDrawer
           visit={selectedVisit}
           onClose={() => setSelectedVisit(null)}
           onOpenFullChart={(visit) => openPatientChart(visit.patient?.id)}
+          onSaveEncounterDraft={handleSaveEncounterDraft}
+          onSignEncounterNote={handleSignEncounterNote}
         />
       )}
 
@@ -1325,6 +1885,16 @@ export default function DoctorDashboard({
       >
         <MessageCircleQuestion size={25} />
       </button>
+      <Footer
+        role="provider"
+        onNavigate={(target) => {
+          if (target === "dashboard") setView("home");
+          else if (target === "schedule") setView("schedule");
+          else if (target === "patient-records") setView("labs");
+          else if (target === "messages") setView("messages");
+          else onNavigate?.(target);
+        }}
+      />
     </div>
   );
 }

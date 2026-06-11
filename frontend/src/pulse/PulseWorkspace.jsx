@@ -59,6 +59,7 @@ export default function PulseWorkspace({ user, onNavigate, onSignOut }) {
   const handleNavClick = (link) => {
     if (link === "Dashboard") onNavigate?.("dashboard");
     else if (link === "Appointments") onNavigate?.("appointments");
+    else if (link === "My Care Team") onNavigate?.("care-team");
     else if (link === "Records") onNavigate?.("labs");
     else if (link === "Messages") onNavigate?.("messages");
     else if (link === "Pulse AI") onNavigate?.("pulse");

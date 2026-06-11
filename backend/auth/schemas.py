@@ -68,3 +68,12 @@ class BiometricLoginFinishRequest(BaseModel):
 class BiometricOptionsResponse(BaseModel):
     # The frontend expects a JSON-serializable options object for navigator.credentials
     options: dict[str, Any]
+
+class UpdateProfileRequest(BaseModel):
+    first_name: str
+    last_name: str
+    specialty: str | None = None
+
+class UpdatePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=6)

@@ -38,7 +38,8 @@ export default function MessagesView({ myId, initialContactId = null }) {
   }, [loadContacts]);
 
   // Deep-link support: open straight into a conversation (e.g. the Message
-  // button on a patient's chart). The thread loads even before contacts do.
+  // button on a patient's chart or the care team page). The thread loads
+  // even before contacts do.
   useEffect(() => {
     if (initialContactId) openThread?.(initialContactId);
   }, [initialContactId, openThread]);

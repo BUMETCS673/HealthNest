@@ -22,6 +22,7 @@ import { appointmentsApi, apptToDisplayRow } from "../lib/appointmentsApi";
 import AppointmentModal from "./AppointmentModal";
 import { useMessages } from "../messages/MessagesProvider";
 import TopNav from "../components/TopNav";
+import Footer from "../components/Footer";
 import "./AppointmentsPage.css";
 import "./AppointmentDetailPage.css";
 
@@ -301,21 +302,13 @@ export default function AppointmentDetailPage({
         )}
       </main>
 
-      <footer className="ap-footer">
-        <button
-          type="button"
-          className="ap-logo"
-          onClick={() => onNavigate?.("dashboard")}
-        >
-          <u>HealthNest</u>
-        </button>
-        <p className="ap-footer-tag">
-          Coordinated care across clinics, built for patients and providers.
-        </p>
-      </footer>
-      <div className="ap-copyright">
-        © 2026 HealthNest Technologies, Inc. All rights reserved.
-      </div>
+      <Footer
+        role="patient"
+        onNavigate={(target) => {
+          if (target === "records") onNavigate?.("labs");
+          else onNavigate?.(target);
+        }}
+      />
 
       {reschedule && appt && (
         <AppointmentModal

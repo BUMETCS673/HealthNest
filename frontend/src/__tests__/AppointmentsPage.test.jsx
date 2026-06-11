@@ -164,7 +164,7 @@ describe("AppointmentsPage", () => {
       expect(screen.getByText("Emily Park")).toBeInTheDocument();
     });
 
-    fireEvent.click(container.querySelector("footer .ap-logo"));
+    fireEvent.click(container.querySelector("footer .dash-logo"));
 
     expect(onNavigate).toHaveBeenCalledWith("dashboard");
   });

@@ -121,3 +121,28 @@ def get_patient_overview(provider_id: str, patient_id: str) -> dict[str, Any]:
         "appointments": appointments,
         **build_patient_sections(admin, patient_id),
     }
+
+
+def get_care_team(patient_id: str) -> list[dict[str, Any]]:
+    """Return the providers the given patient has an active relationship with."""
+    admin = get_supabase_admin()
+    rels = (
+        admin.table("patient_provider_relationships")
+        .select("provider_id")
+        .eq("patient_id", patient_id)
+        .eq("status", "active")
+        .execute()
+    )
+    provider_ids = [r["provider_id"] for r in (rels.data or [])]
+    if not provider_ids:
+        return []
+
+    result = (
+        admin.table("providers")
+        .select("id, user_id, first_name, last_name, title, specialty, status")
+        .in_("id", provider_ids)
+        .is_("deleted_at", "null")
+        .order("last_name")
+        .execute()
+    )
+    return result.data
