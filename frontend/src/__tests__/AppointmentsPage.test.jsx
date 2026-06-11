@@ -11,6 +11,9 @@ jest.mock("../lib/appointmentsApi", () => ({
     getAppointments: jest.fn(),
     cancelAppointment: jest.fn(),
   },
+  providersApi: {
+    getCareTeam: jest.fn(() => Promise.resolve([])),
+  },
   apptToDisplayRow: jest.fn((appt) => ({
     id: appt.id,
     month:

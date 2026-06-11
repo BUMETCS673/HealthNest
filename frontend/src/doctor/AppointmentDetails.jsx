@@ -1,14 +1,24 @@
 // AI-USAGE SUMMARY
 // Tools: Claude Code (Opus 4.8)
 // Overall AI Contribution: ~85%
-// AI-Assisted Areas: The compact provider appointment-details card (#SCRUM-77) —
-//   patient, date, time, status, and notes with Message / Cancel actions. Used
-//   by the details modal (week view + dashboard popups); the day-view side panel
-//   now uses the dedicated AppointmentPanel instead.
-// Human Contributions: Layout choices and verification.
+// AI-Assisted Areas: The shared appointment-details card (#SCRUM-77) — avatar,
+//   name/subtitle, status, date, time, and notes with optional Message /
+//   Reschedule / Cancel actions. Used by the provider details modal (patient as
+//   the headline) and the patient details modal (provider name + specialty as
+//   name/subtitle), so it carries its own portable stylesheet.
+// Human Contributions: Reuse direction and verification.
 // Notes: Validated via `npm run build` and jest.
-import { Calendar, Clock, User, FileText, MessageSquare, X } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  User,
+  FileText,
+  MessageSquare,
+  RefreshCw,
+  X,
+} from "lucide-react";
 import { formatApptTime } from "../lib/appointmentsApi";
+import "./AppointmentDetails.css";
 
 function fmtDate(d) {
   return d
@@ -24,7 +34,10 @@ export default function AppointmentDetails({
   appt,
   onCancel,
   onMessage,
+  onReschedule,
   wide = false,
+  name,
+  subtitle,
 }) {
   if (!appt) return null;
   return (
@@ -34,8 +47,9 @@ export default function AppointmentDetails({
           <User size={22} />
         </div>
         <div className="ad-info-text">
-          <p className="ad-name">{appt.patient_name || "Patient"}</p>
-          <span className={`ad-status ds-status--${appt.status}`}>
+          <p className="ad-name">{name ?? appt.patient_name ?? "Patient"}</p>
+          {subtitle && <p className="ad-subtitle">{subtitle}</p>}
+          <span className={`ad-status ad-status--${appt.status}`}>
             {appt.status}
           </span>
 
@@ -55,11 +69,16 @@ export default function AppointmentDetails({
         </div>
       </div>
 
-      {(onMessage || onCancel) && (
+      {(onMessage || onReschedule || onCancel) && (
         <div className="ad-actions">
           {onMessage && (
             <button className="ad-btn" onClick={() => onMessage(appt)}>
               <MessageSquare size={14} /> Message
+            </button>
+          )}
+          {onReschedule && (
+            <button className="ad-btn" onClick={() => onReschedule(appt)}>
+              <RefreshCw size={14} /> Reschedule
             </button>
           )}
           {onCancel && (

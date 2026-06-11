@@ -676,6 +676,7 @@ export default function DoctorDashboard({
 }) {
   const currentUser = getCurrUser(user);
   const dfa = useDfa();
+  const { unreadCount: unreadMessages, openThread, openDrawer } = useMessages();
 
   const [view, setView] = useState(initialView);
 
@@ -688,12 +689,14 @@ export default function DoctorDashboard({
     setView(initialView);
   }
 
-  // Opening a patient's message thread from the schedule (Message action).
-  const [messageContactId, setMessageContactId] = useState(null);
+  // Opening a patient's message thread from the schedule (Message action):
+  // open the global messaging drawer to that conversation instead of leaving
+  // the current page for the full Messages view.
   const messagePatient = (appt) => {
-    setMessageContactId(appt?.patient_user_id ?? null);
-    setView("messages");
-    onNavigate?.("messages");
+    const contactId = appt?.patient_user_id;
+    if (!contactId) return;
+    openThread(contactId);
+    openDrawer();
   };
 
   const [activeLabId, setActiveLabId] = useState(null);
@@ -872,7 +875,6 @@ export default function DoctorDashboard({
   }
 
   //dashboard counts
-  const { unreadCount: unreadMessages } = useMessages();
   const unsignedEncountersRef = useRef(null);
   const signNotesCount = unsignedEncounters.length;
   const inboxCount = 0;
@@ -967,7 +969,6 @@ export default function DoctorDashboard({
             setView("labs");
             onNavigate?.("patient-records");
           } else if (label === "Messages") {
-            setMessageContactId(null);
             setView("messages");
             onNavigate?.("messages");
           } else if (label === "Schedule") {
@@ -998,9 +999,7 @@ export default function DoctorDashboard({
           />
         )}
 
-        {view === "messages" && (
-          <MessagesView myId={user?.id} initialContactId={messageContactId} />
-        )}
+        {view === "messages" && <MessagesView myId={user?.id} />}
         {view === "account-settings" && (
           <AccountSettings
             user={user}

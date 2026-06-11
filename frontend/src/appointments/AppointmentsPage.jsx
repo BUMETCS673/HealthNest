@@ -8,9 +8,22 @@
 //   change, and updated the Jest tests.
 // Notes: Validated via `npm run build`, the jest suite, and manual testing.
 import { useState, useEffect } from "react";
-import { Calendar, Clock, Plus, RefreshCw, Stethoscope, X } from "lucide-react";
-import { appointmentsApi, apptToDisplayRow } from "../lib/appointmentsApi";
+import {
+  Calendar,
+  Clock,
+  MessageSquare,
+  Plus,
+  RefreshCw,
+  Stethoscope,
+  X,
+} from "lucide-react";
+import {
+  appointmentsApi,
+  apptToDisplayRow,
+  providersApi,
+} from "../lib/appointmentsApi";
 import AppointmentModal from "./AppointmentModal";
+import AppointmentDetailModal from "./AppointmentDetailModal";
 import { useMessages } from "../messages/MessagesProvider";
 import TopNav from "../components/TopNav";
 import "./AppointmentsPage.css";
@@ -35,6 +48,8 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
   const [confirmCancelId, setConfirmCancelId] = useState(null);
   const [cancelling, setCancelling] = useState(null);
   const [cancelError, setCancelError] = useState(null);
+  const [detailAppt, setDetailAppt] = useState(null);
+  const [providerUserMap, setProviderUserMap] = useState({});
   const fullName =
     `${user?.user_metadata?.first_name || ""} ${user?.user_metadata?.last_name || ""}`.trim() ||
     user?.email ||
@@ -50,6 +65,21 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
 
   useEffect(() => {
     fetchAppointments();
+  }, []);
+
+  // Map provider_id → the provider's auth user id, so messaging opens the right
+  // conversation even before the appointment payload carries the provider id.
+  useEffect(() => {
+    providersApi
+      .getCareTeam()
+      .then((team) => {
+        const map = {};
+        for (const p of team || []) {
+          if (p.id && p.user_id) map[p.id] = p.user_id;
+        }
+        setProviderUserMap(map);
+      })
+      .catch(() => {});
   }, []);
 
   const today = new Date();
@@ -103,7 +133,17 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
     });
   };
 
-  const { unreadCount } = useMessages();
+  const { unreadCount, openThread, openDrawer } = useMessages();
+
+  // Message the appointment's provider via the global messaging drawer (same
+  // pattern as the provider side's "Message" action). If the provider's id
+  // isn't on the appointment yet, still open the drawer to the contact list.
+  const messageProvider = (appt) => {
+    setDetailAppt(null);
+    const uid = appt?.providerUserId || providerUserMap[appt?.raw?.provider_id];
+    if (uid) openThread(uid);
+    openDrawer();
+  };
 
   const navLinks = [
     "Dashboard",
@@ -201,8 +241,16 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
                   {/* Divider */}
                   <div className='ap-card-divider' />
 
-                  {/* Info */}
-                  <div className='ap-card-info'>
+                  {/* Info — click to see details */}
+                  <div
+                    className='ap-card-info ap-card-info--clickable'
+                    role='button'
+                    tabIndex={0}
+                    onClick={() => setDetailAppt(appt)}
+                    onKeyDown={(e) =>
+                      (e.key === "Enter" || e.key === " ") &&
+                      setDetailAppt(appt)
+                    }>
                     <div className='ap-card-top'>
                       <p className='ap-card-doctor'>{appt.doctor}</p>
                       <span className={`ap-status ${meta.cls}`}>
@@ -223,9 +271,14 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
                   </div>
 
                   {/* Actions */}
-                  {canAct && (
-                    <div className='ap-card-actions'>
-                      {confirmCancelId === appt.id ? (
+                  <div className='ap-card-actions'>
+                    <button
+                      className='ap-action ap-action--reschedule'
+                      onClick={() => messageProvider(appt)}>
+                      <MessageSquare size={14} /> Message
+                    </button>
+                    {canAct &&
+                      (confirmCancelId === appt.id ? (
                         <>
                           <span className='ap-cancel-prompt'>
                             Cancel this appointment?
@@ -261,20 +314,44 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
                             <X size={14} /> Cancel
                           </button>
                         </>
-                      )}
-                      {cancelError === appt.id && (
-                        <p className='ap-cancel-error'>
-                          Could not cancel. Please try again.
-                        </p>
-                      )}
-                    </div>
-                  )}
+                      ))}
+                    {cancelError === appt.id && (
+                      <p className='ap-cancel-error'>
+                        Could not cancel. Please try again.
+                      </p>
+                    )}
+                  </div>
                 </div>
               );
             })}
           </div>
         )}
       </main>
+
+      {/* Appointment details modal */}
+      {detailAppt && (
+        <AppointmentDetailModal
+          appt={detailAppt}
+          onClose={() => setDetailAppt(null)}
+          onMessage={messageProvider}
+          onReschedule={
+            ["scheduled", "pending"].includes(detailAppt.status)
+              ? (a) => {
+                  setDetailAppt(null);
+                  handleReschedule(a);
+                }
+              : undefined
+          }
+          onCancel={
+            ["scheduled", "pending"].includes(detailAppt.status)
+              ? (a) => {
+                  setDetailAppt(null);
+                  handleCancel(a.id);
+                }
+              : undefined
+          }
+        />
+      )}
 
       {/* Reschedule modal */}
       {rescheduleId && (

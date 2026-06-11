@@ -9,12 +9,16 @@
 
 from typing import Any
 
-from auth.client import get_supabase, get_supabase_admin
+from auth.client import get_supabase_admin
 
 
 def get_providers() -> list[dict[str, Any]]:
+    # Use the admin (service-role) client like the rest of this module:
+    # row-level security blocks the anon client from reading `providers`, so the
+    # anon client returns an empty directory and the booking page shows no
+    # providers to choose from.
     result = (
-        get_supabase()
+        get_supabase_admin()
         .table("providers")
         .select("id, first_name, last_name, title, specialty, status")
         .eq("status", "active")
