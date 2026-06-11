@@ -33,6 +33,9 @@ const PATH_TO_PAGE = {
   "/care-team": "care-team",
   "/pulse": "pulse",
   "/messages": "messages",
+  // provider routes
+  "/schedule": "schedule",
+  "/patient-records": "patient-records",
 };
 
 const PAGE_TO_PATH = {
@@ -43,6 +46,17 @@ const PAGE_TO_PATH = {
   pulse: "/pulse",
   messages: "/messages",
   "dfa-pulse": "/pulse",
+  // provider routes
+  schedule: "/schedule",
+  "patient-records": "/patient-records",
+};
+
+// Provider top-level pages → the DoctorDashboard internal view they open.
+const PROVIDER_PAGE_TO_VIEW = {
+  dashboard: "home",
+  schedule: "schedule",
+  "patient-records": "labs",
+  messages: "messages",
 };
 
 function getPageFromPath() {
@@ -135,7 +149,9 @@ export default function App() {
             user={session.user}
             onSignOut={handleSignOut}
             onNavigate={handleNavigate}
-            initialView={pageData?.providerView ?? "home"}
+            initialView={
+              PROVIDER_PAGE_TO_VIEW[page] ?? pageData?.providerView ?? "home"
+            }
           />
         );
       })();

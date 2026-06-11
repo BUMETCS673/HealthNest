@@ -24,6 +24,8 @@ import LabResultReview from "../labresults/LabResultReview";
 import { authApi } from "../lib/authApi";
 import { useMessages } from "../messages/MessagesProvider";
 import MessagesView from "../messages/MessagesView";
+import ProviderSchedule from "./ProviderSchedule";
+import TodayScheduleCard from "./TodayScheduleCard";
 import { useDfa } from "../pulse/DfaProvider";
 import TopNav from "../components/TopNav";
 import Footer from "../components/Footer";
@@ -285,6 +287,24 @@ export default function DoctorDashboard({
   const dfa = useDfa();
 
   const [view, setView] = useState(initialView);
+
+  // Keep the visible view in sync with the URL-derived initialView (browser
+  // back/forward, returning from the Pulse workspace). Adjusting state during
+  // render is React's recommended alternative to a syncing effect here.
+  const [syncedView, setSyncedView] = useState(initialView);
+  if (initialView !== syncedView) {
+    setSyncedView(initialView);
+    setView(initialView);
+  }
+
+  // Opening a patient's message thread from the schedule (Message action).
+  const [messageContactId, setMessageContactId] = useState(null);
+  const messagePatient = (appt) => {
+    setMessageContactId(appt?.patient_user_id ?? null);
+    setView("messages");
+    onNavigate?.("messages");
+  };
+
   const [activeLabId, setActiveLabId] = useState(null);
   const [selectedVisit, setSelectedVisit] = useState(null);
   const [selectedChart, setSelectedChart] = useState(null);
@@ -438,13 +458,28 @@ export default function DoctorDashboard({
                   ? "Schedule"
                   : null
         }
-        onLogoClick={() => setView("home")}
+        onLogoClick={() => {
+          setView("home");
+          onNavigate?.("dashboard");
+        }}
         onSelect={(label) => {
-          if (label === "Dashboard") setView("home");
-          else if (label === "Patient Records") setView("labs");
-          else if (label === "Messages") setView("messages");
-          else if (label === "Schedule") setView("schedule");
-          else if (label === "Pulse AI") onNavigate?.("dfa-pulse");
+          // Set the view immediately (resets any drill-down) and update the URL.
+          if (label === "Dashboard") {
+            setView("home");
+            onNavigate?.("dashboard");
+          } else if (label === "Patient Records") {
+            setView("labs");
+            onNavigate?.("patient-records");
+          } else if (label === "Messages") {
+            setMessageContactId(null);
+            setView("messages");
+            onNavigate?.("messages");
+          } else if (label === "Schedule") {
+            setView("schedule");
+            onNavigate?.("schedule");
+          } else if (label === "Pulse AI") {
+            onNavigate?.("dfa-pulse");
+          }
         }}
         userName={currentUser.firstName}
         userRole={currentUser.specialty || currentUser.role}
@@ -465,7 +500,9 @@ export default function DoctorDashboard({
           />
         )}
 
-        {view === "messages" && <MessagesView myId={user?.id} />}
+        {view === "messages" && (
+          <MessagesView myId={user?.id} initialContactId={messageContactId} />
+        )}
 
         {view === "full-chart" && selectedChart && (
           <div className='patient-record-page'>
@@ -736,6 +773,10 @@ export default function DoctorDashboard({
             onBack={() => setView("labs")}
           />
         )}
+        {view === "schedule" && (
+          <ProviderSchedule onMessagePatient={messagePatient} />
+        )}
+
         {view !== "home" ? null : (
           <>
             {/* Header */}
@@ -835,40 +876,14 @@ export default function DoctorDashboard({
 
             {/* Dashboard body */}
             <div className='doc-grid'>
-              {/* Today's schedule */}
-              <div className='doc-card doc-schedule-card'>
-                <div className='doc-card-header'>
-                  <h3 className='doc-card-title'>Today's Schedule</h3>
-                  <span className='doc-date-badge'>{badgeDateFormat}</span>
-                </div>
-
-                {visitOverviewLoading && (
-                  <p className='visit-overview-empty'>
-                    Loading visit overview...
-                  </p>
-                )}
-
-                {visitOverviewError && (
-                  <p className='visit-overview-empty'>{visitOverviewError}</p>
-                )}
-
-                {visitOverviewItems.map((appt, index) => (
-                  <div
-                    key={appt.id || appt.name}
-                    className={`doc-sched-row${index === 0 ? " now" : ""} clickable`}
-                    onClick={() => openVisitOverview(appt.id)}>
-                    <span className='doc-sched-time'>{appt.time || "TBD"}</span>
-                    <span className='doc-sched-dot'></span>
-
-                    <div className='doc-sched-info'>
-                      <p className='doc-sched-name'>{appt.name}</p>
-                      <p className='doc-sched-type'>{appt.type}</p>
-                    </div>
-
-                    {index === 0 && <span className='doc-now-badge'>Now</span>}
-                  </div>
-                ))}
-              </div>
+              {/* Today's schedule — hours-of-the-day grid (scrolled to now) */}
+              <TodayScheduleCard
+                onOpenSchedule={() => {
+                  setView("schedule");
+                  onNavigate?.("schedule");
+                }}
+                onMessagePatient={messagePatient}
+              />
 
               {/* Middle section for AI summaries and notes */}
               <div className='doc-col-main'>

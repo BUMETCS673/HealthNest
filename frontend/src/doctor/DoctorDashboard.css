@@ -265,6 +265,22 @@
   top: 80px;
 }
 
+/* Clickable Today's Schedule card — same hover as the patient dashboard cards.
+   Hover is driven by JS (the .hovered class) so it can be suppressed while the
+   cursor is inside the inner scrolling grid. */
+.today-card {
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.today-card.hovered {
+  border-color: #111110;
+}
+
+.today-card-grid {
+  cursor: default;
+}
+
 .doc-sched-row {
   display: grid;
   grid-template-columns: 62px 9px 1fr auto;
