@@ -10,7 +10,6 @@ import {
   Calendar,
   Pill,
   Activity,
-  FileText,
   ChevronRight,
   Plus,
   MessageCircleQuestion,
@@ -74,17 +73,31 @@ function summarizeForCard(rows) {
 }
 
 function SummaryCard({ icon, label, value, detail, onClick }) {
-  return (
-    <div
-      className={`summ-card${onClick ? " summ-card--clickable" : ""}`}
-      onClick={onClick}
-    >
+  const body = (
+    <>
       <div className="summ-icon">{icon}</div>
       <p className="summ-label">{label}</p>
       <p className="summ-value">{value}</p>
       {detail && <p className="summ-detail">{detail}</p>}
-    </div>
+    </>
   );
+
+  // Clickable cards are real buttons (keyboard + screen-reader friendly)
+  // with a corner chevron hinting they navigate somewhere.
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        className="summ-card summ-card--clickable"
+        onClick={onClick}
+      >
+        {body}
+        <ChevronRight size={15} className="summ-arrow" />
+      </button>
+    );
+  }
+
+  return <div className="summ-card">{body}</div>;
 }
 
 export default function PatientDashboard({
@@ -243,24 +256,24 @@ export default function PatientDashboard({
                     : onNavigate?.("appointments")
                 }
               />
+              {/* Medications are still demo data (no meds backend yet);
+                  the soonest refill in that list is Metformin's. */}
               <SummaryCard
                 icon={<Pill size={16} />}
                 label="Active Medications"
-                value="3"
-                detail="Refill due May 28"
+                value={String(activeMed.length)}
+                detail={`Next refill ${activeMed[1].refillDue}`}
               />
               <SummaryCard
                 icon={<Activity size={16} />}
                 label="Recent Labs"
-                value="4"
-                detail="1 result flagged"
+                value={String(labRows.length)}
+                detail={
+                  labResult[0]
+                    ? `Latest: ${labResult[0].test} · ${labResult[0].result}`
+                    : "No results yet"
+                }
                 onClick={() => setView("labs")}
-              />
-              <SummaryCard
-                icon={<FileText size={16} />}
-                label="Balance Due"
-                value="$142"
-                detail="Due Jun 1 · BCBS on file"
               />
             </div>
 

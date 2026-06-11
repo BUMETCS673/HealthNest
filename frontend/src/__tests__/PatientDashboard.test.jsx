@@ -85,6 +85,17 @@ describe("PatientDashboard", () => {
     expect(onSignOut).toHaveBeenCalledTimes(1);
   });
 
+  test("billing card is gone, leaving the three summary cards", () => {
+    renderPatientDashboard();
+
+    expect(screen.queryByText("Balance Due")).not.toBeInTheDocument();
+    expect(screen.queryByText("$142")).not.toBeInTheDocument();
+    expect(screen.getByText("Next Appointment")).toBeInTheDocument();
+    // Also appear as the sidebar card titles, hence getAllByText.
+    expect(screen.getAllByText("Active Medications").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Recent Labs").length).toBeGreaterThan(0);
+  });
+
   test("upcoming appointment row opens that appointment's detail page", async () => {
     const onNavigate = jest.fn();
     appointmentsApi.getAppointments.mockResolvedValue([
