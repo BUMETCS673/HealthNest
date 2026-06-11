@@ -481,3 +481,211 @@
   background: #2a2a2a;
   transform: scale(1.07);
 }
+
+/* ── Account Settings page ── */
+.acct-page {
+  background: #fff;
+  border: 1px solid #f2f2f1;
+  border-radius: 12px;
+  padding: 28px 32px;
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+.acct-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.acct-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #111110;
+}
+
+/* ── Sections ── */
+.acct-section {
+  padding: 24px 0;
+  border-top: 1px solid #f2f2f1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.acct-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #9c9c9b;
+  margin-bottom: 2px;
+}
+
+.acct-section-desc {
+  font-size: 13px;
+  color: #71716e;
+  line-height: 1.5;
+  margin-top: -6px;
+}
+
+/* ── Profile rows ── */
+.acct-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  min-height: 28px;
+}
+
+.acct-row-key {
+  font-size: 13px;
+  color: #9c9c9b;
+  min-width: 60px;
+  padding-top: 2px;
+}
+
+.acct-row-value-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.acct-row-value {
+  font-size: 14px;
+  color: #111110;
+}
+
+.acct-edit-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+  color: #9c9c9b;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.acct-edit-link:hover {
+  color: #111110;
+}
+
+/* ── Inline edit ── */
+.acct-inline-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.acct-input {
+  width: 100%;
+  max-width: 320px;
+  padding: 9px 12px;
+  border: 1px solid #e8e8e7;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #111110;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.acct-input:focus {
+  border-color: #111110;
+}
+
+.acct-inline-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ── Password form ── */
+.acct-pw-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 320px;
+}
+
+.acct-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.acct-field-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #71716e;
+}
+
+/* ── Buttons ── */
+.acct-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  background: #111110;
+  color: #fff;
+  border: none;
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.acct-btn-primary:hover:not(:disabled) {
+  background: #2a2a2a;
+}
+
+.acct-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.acct-btn-ghost {
+  background: none;
+  border: none;
+  padding: 9px 4px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #9c9c9b;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.acct-btn-ghost:hover {
+  color: #111110;
+}
+
+.acct-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  background: #fff;
+  color: #111110;
+  border: 1px solid #e8e8e7;
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  align-self: flex-start;
+}
+
+.acct-btn-outline:hover {
+  border-color: #111110;
+}
+
+/* ── Status / feedback message ── */
+.acct-msg {
+  font-size: 13px;
+  color: #71716e;
+  line-height: 1.5;
+}

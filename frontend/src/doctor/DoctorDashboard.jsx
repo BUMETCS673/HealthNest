@@ -1,4 +1,3 @@
-/*
 /**
  * AI-USAGE SUMMARY
  * Tools: Opus 4.7
@@ -80,6 +79,232 @@ function getCurrUser(user) {
     role,
     initials,
   };
+}
+
+function AccountSettings({ user, currentUser, onBack }) {
+  const [editingName, setEditingName] = useState(false);
+  const [displayName, setDisplayName] = useState(currentUser.fullName);
+  const [nameValue, setNameValue] = useState(currentUser.fullName);
+  const [nameSaving, setNameSaving] = useState(false);
+  const [nameMsg, setNameMsg] = useState("");
+
+  const [editingSpecialty, setEditingSpecialty] = useState(false);
+  const [displaySpecialty, setDisplaySpecialty] = useState(currentUser.specialty || "");
+  const [specialtyValue, setSpecialtyValue] = useState(currentUser.specialty || "");
+  const [specialtySaving, setSpecialtySaving] = useState(false);
+  const [specialtyMsg, setSpecialtyMsg] = useState("");
+
+  const [pwOpen, setPwOpen] = useState(false);
+  const [pw, setPw] = useState({ current: "", next: "", confirm: "" });
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwMsg, setPwMsg] = useState("");
+
+  const [authBusy, setAuthBusy] = useState(false);
+  const [authMsg, setAuthMsg] = useState("");
+
+  const handleSaveName = async () => {
+    if (!nameValue.trim()) return;
+    setNameSaving(true);
+    setNameMsg("");
+    try {
+      const parts = nameValue.trim().split(" ");
+      const first = parts[0] || "";
+      const last = parts.slice(1).join(" ") || "";
+      await authApi.updateProfile({ first_name: first, last_name: last });
+      setDisplayName(nameValue.trim());
+      setNameMsg("Name updated.");
+      setEditingName(false);
+    } catch (e) {
+      setNameMsg("Could not update name: " + (e.message || e));
+    } finally {
+      setNameSaving(false);
+    }
+  };
+
+  const handleSaveSpecialty = async () => {
+    setSpecialtySaving(true);
+    setSpecialtyMsg("");
+    try {
+      const parts = displayName.trim().split(" ");
+      await authApi.updateProfile({
+        first_name: parts[0] || "",
+        last_name: parts.slice(1).join(" ") || "",
+        specialty: specialtyValue.trim(),
+      });
+      setDisplaySpecialty(specialtyValue.trim());
+      setSpecialtyMsg("Specialty updated.");
+      setEditingSpecialty(false);
+    } catch (e) {
+      setSpecialtyMsg("Could not update specialty: " + (e.message || e));
+    } finally {
+      setSpecialtySaving(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    setPwMsg("");
+    if (!pw.current || !pw.next || !pw.confirm) {
+      setPwMsg("Please fill in all password fields.");
+      return;
+    }
+    if (pw.next !== pw.confirm) {
+      setPwMsg("New passwords do not match.");
+      return;
+    }
+    if (pw.next.length < 6) {
+      setPwMsg("Password must be at least 6 characters.");
+      return;
+    }
+    setPwSaving(true);
+    try {
+      await authApi.updatePassword(pw.current, pw.next);
+      setPwMsg("Password updated successfully.");
+      setPwOpen(false);
+      setPw({ current: "", next: "", confirm: "" });
+    } catch (e) {
+      setPwMsg("Could not update password: " + (e.message || e));
+    } finally {
+      setPwSaving(false);
+    }
+  };
+
+  const handleEnableBiometric = async () => {
+    setAuthBusy(true);
+    setAuthMsg("");
+    try {
+      await authApi.enableBiometricLogin();
+      setAuthMsg("Biometric login enabled for this device.");
+    } catch (e) {
+      setAuthMsg("Unable to enable biometric login: " + (e.message || e));
+    } finally {
+      setAuthBusy(false);
+    }
+  };
+
+  return (
+    <section className='acct-page'>
+      <div className='acct-header'>
+        <h3 className='acct-title'>Account Settings</h3>
+        <button className='dash-view-all' onClick={onBack}>
+          Back to dashboard
+        </button>
+      </div>
+
+      <div className='acct-section'>
+        <p className='acct-section-label'>Profile</p>
+
+        <div className='acct-row'>
+          <span className='acct-row-key'>Name</span>
+          {editingName ? (
+            <div className='acct-inline-edit'>
+              <input
+                className='acct-input'
+                value={nameValue}
+                onChange={(e) => setNameValue(e.target.value)}
+                autoFocus
+              />
+              <div className='acct-inline-actions'>
+                <button className='acct-btn-primary' onClick={handleSaveName} disabled={nameSaving}>
+                  {nameSaving ? "Saving…" : "Save"}
+                </button>
+                <button className='acct-btn-ghost' onClick={() => { setEditingName(false); setNameValue(displayName); setNameMsg(""); }}>
+                  Cancel
+                </button>
+              </div>
+              {nameMsg && <p className='acct-msg'>{nameMsg}</p>}
+            </div>
+          ) : (
+            <div className='acct-row-value-wrap'>
+              <span className='acct-row-value'>{displayName}</span>
+              <button className='acct-edit-link' onClick={() => setEditingName(true)}>Edit</button>
+            </div>
+          )}
+        </div>
+
+        <div className='acct-row'>
+          <span className='acct-row-key'>Role</span>
+          <span className='acct-row-value'>{currentUser.role}</span>
+        </div>
+
+        <div className='acct-row'>
+          <span className='acct-row-key'>Specialty</span>
+          {editingSpecialty ? (
+            <div className='acct-inline-edit'>
+              <input
+                className='acct-input'
+                value={specialtyValue}
+                onChange={(e) => setSpecialtyValue(e.target.value)}
+                autoFocus
+              />
+              <div className='acct-inline-actions'>
+                <button className='acct-btn-primary' onClick={handleSaveSpecialty} disabled={specialtySaving}>
+                  {specialtySaving ? "Saving…" : "Save"}
+                </button>
+                <button className='acct-btn-ghost' onClick={() => { setEditingSpecialty(false); setSpecialtyValue(displaySpecialty); setSpecialtyMsg(""); }}>
+                  Cancel
+                </button>
+              </div>
+              {specialtyMsg && <p className='acct-msg'>{specialtyMsg}</p>}
+            </div>
+          ) : (
+            <div className='acct-row-value-wrap'>
+              <span className='acct-row-value'>{displaySpecialty || "Not set"}</span>
+              <button className='acct-edit-link' onClick={() => setEditingSpecialty(true)}>Edit</button>
+            </div>
+          )}
+        </div>
+
+        <div className='acct-row'>
+          <span className='acct-row-key'>Email</span>
+          <span className='acct-row-value'>{user?.email || "Not available"}</span>
+        </div>
+      </div>
+
+      <div className='acct-section'>
+        <p className='acct-section-label'>Password</p>
+        {!pwOpen ? (
+          <button className='acct-btn-outline' onClick={() => { setPwOpen(true); setPwMsg(""); }}>
+            Change password
+          </button>
+        ) : (
+          <div className='acct-pw-form'>
+            <div className='acct-field'>
+              <label className='acct-field-label'>Current password</label>
+              <input className='acct-input' type='password' value={pw.current} onChange={(e) => setPw((p) => ({ ...p, current: e.target.value }))} />
+            </div>
+            <div className='acct-field'>
+              <label className='acct-field-label'>New password</label>
+              <input className='acct-input' type='password' value={pw.next} onChange={(e) => setPw((p) => ({ ...p, next: e.target.value }))} />
+            </div>
+            <div className='acct-field'>
+              <label className='acct-field-label'>Confirm new password</label>
+              <input className='acct-input' type='password' value={pw.confirm} onChange={(e) => setPw((p) => ({ ...p, confirm: e.target.value }))} />
+            </div>
+            {pwMsg && <p className='acct-msg'>{pwMsg}</p>}
+            <div className='acct-inline-actions'>
+              <button className='acct-btn-primary' onClick={handleChangePassword} disabled={pwSaving}>
+                {pwSaving ? "Updating…" : "Update password"}
+              </button>
+              <button className='acct-btn-ghost' onClick={() => { setPwOpen(false); setPw({ current: "", next: "", confirm: "" }); setPwMsg(""); }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className='acct-section'>
+        <p className='acct-section-label'>Authentication</p>
+        <p className='acct-section-desc'>
+          Enable biometric/passkey login for faster sign-in on supported devices.
+        </p>
+        <button className='acct-btn-primary' onClick={handleEnableBiometric} disabled={authBusy}>
+          {authBusy ? "Setting up…" : "Enable biometric login"}
+        </button>
+        {authMsg && <p className='acct-msg'>{authMsg}</p>}
+      </div>
+    </section>
+  );
 }
 
 // Temp data until backend data connect
@@ -449,6 +674,7 @@ export default function DoctorDashboard({
         userName={currentUser.firstName}
         userRole={currentUser.specialty || currentUser.role}
         userInitials={currentUser.initials}
+        onAccountSettings={() => setView("account-settings")}
         onSignOut={onSignOut}
       />
 
@@ -462,6 +688,14 @@ export default function DoctorDashboard({
               setActiveLabId(id);
               setView("lab-review");
             }}
+          />
+        )}
+
+        {view === "account-settings" && (
+          <AccountSettings
+            user={user}
+            currentUser={currentUser}
+            onBack={() => setView("home")}
           />
         )}
 

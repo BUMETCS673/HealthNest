@@ -15,7 +15,6 @@ from .schemas import SignInRequest, SignUpRequest
 import secrets
 import base64
 from datetime import datetime, timedelta
-from typing import Optional
 
 
 # --- Biometric / WebAuthn helpers and flows ---
@@ -323,3 +322,58 @@ def refresh(refresh_token: str) -> dict[str, Any]:
             detail="Unable to refresh session.",
         )
     return {"session": session, "user": _serialize_user(result.user)}
+
+def update_profile(access_token: str, first_name: str, last_name: str, specialty: str | None = None) -> dict[str, Any]:
+    try:
+        user_result = get_supabase().auth.get_user(access_token)
+        user_id = user_result.user.id
+        existing_metadata = user_result.user.user_metadata or {}
+    except AuthApiError as exc:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc))
+
+    metadata: dict[str, Any] = {
+        **existing_metadata,
+        "first_name": first_name.strip(),
+        "last_name": last_name.strip(),
+    }
+    if specialty is not None:
+        metadata["specialty"] = specialty.strip()
+
+    try:
+        get_supabase_admin().auth.admin.update_user_by_id(
+            user_id,
+            {"user_metadata": metadata},
+        )
+    except AuthApiError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+
+    return {"message": "Profile updated."}
+
+
+def update_password(access_token: str, current_password: str, new_password: str) -> dict[str, Any]:
+    try:
+        user_result = get_supabase().auth.get_user(access_token)
+        email = user_result.user.email
+        user_id = user_result.user.id
+    except AuthApiError as exc:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc))
+
+    try:
+        get_supabase().auth.sign_in_with_password(
+            {"email": email, "password": current_password}
+        )
+    except AuthApiError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect.",
+        )
+
+    try:
+        get_supabase_admin().auth.admin.update_user_by_id(
+            user_id,
+            {"password": new_password},
+        )
+    except AuthApiError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+
+    return {"message": "Password updated."}
