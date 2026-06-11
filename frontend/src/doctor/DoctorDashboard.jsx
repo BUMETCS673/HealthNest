@@ -6,7 +6,7 @@
  * Human Contributions: Workflow design (save vs release-with-implicit-patch), the manual-entry-required gating on release, the patient-name resolution wiring, and the decision to mirror server state into a local editable copy with explicit diffing rather than a controlled-from-server pattern.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import "./DoctorDashboard.css";
 import {
   Search,
@@ -89,8 +89,12 @@ function AccountSettings({ user, currentUser, onBack }) {
   const [nameMsg, setNameMsg] = useState("");
 
   const [editingSpecialty, setEditingSpecialty] = useState(false);
-  const [displaySpecialty, setDisplaySpecialty] = useState(currentUser.specialty || "");
-  const [specialtyValue, setSpecialtyValue] = useState(currentUser.specialty || "");
+  const [displaySpecialty, setDisplaySpecialty] = useState(
+    currentUser.specialty || "",
+  );
+  const [specialtyValue, setSpecialtyValue] = useState(
+    currentUser.specialty || "",
+  );
   const [specialtySaving, setSpecialtySaving] = useState(false);
   const [specialtyMsg, setSpecialtyMsg] = useState("");
 
@@ -204,10 +208,19 @@ function AccountSettings({ user, currentUser, onBack }) {
                 autoFocus
               />
               <div className='acct-inline-actions'>
-                <button className='acct-btn-primary' onClick={handleSaveName} disabled={nameSaving}>
+                <button
+                  className='acct-btn-primary'
+                  onClick={handleSaveName}
+                  disabled={nameSaving}>
                   {nameSaving ? "Saving…" : "Save"}
                 </button>
-                <button className='acct-btn-ghost' onClick={() => { setEditingName(false); setNameValue(displayName); setNameMsg(""); }}>
+                <button
+                  className='acct-btn-ghost'
+                  onClick={() => {
+                    setEditingName(false);
+                    setNameValue(displayName);
+                    setNameMsg("");
+                  }}>
                   Cancel
                 </button>
               </div>
@@ -216,7 +229,11 @@ function AccountSettings({ user, currentUser, onBack }) {
           ) : (
             <div className='acct-row-value-wrap'>
               <span className='acct-row-value'>{displayName}</span>
-              <button className='acct-edit-link' onClick={() => setEditingName(true)}>Edit</button>
+              <button
+                className='acct-edit-link'
+                onClick={() => setEditingName(true)}>
+                Edit
+              </button>
             </div>
           )}
         </div>
@@ -237,10 +254,19 @@ function AccountSettings({ user, currentUser, onBack }) {
                 autoFocus
               />
               <div className='acct-inline-actions'>
-                <button className='acct-btn-primary' onClick={handleSaveSpecialty} disabled={specialtySaving}>
+                <button
+                  className='acct-btn-primary'
+                  onClick={handleSaveSpecialty}
+                  disabled={specialtySaving}>
                   {specialtySaving ? "Saving…" : "Save"}
                 </button>
-                <button className='acct-btn-ghost' onClick={() => { setEditingSpecialty(false); setSpecialtyValue(displaySpecialty); setSpecialtyMsg(""); }}>
+                <button
+                  className='acct-btn-ghost'
+                  onClick={() => {
+                    setEditingSpecialty(false);
+                    setSpecialtyValue(displaySpecialty);
+                    setSpecialtyMsg("");
+                  }}>
                   Cancel
                 </button>
               </div>
@@ -248,44 +274,85 @@ function AccountSettings({ user, currentUser, onBack }) {
             </div>
           ) : (
             <div className='acct-row-value-wrap'>
-              <span className='acct-row-value'>{displaySpecialty || "Not set"}</span>
-              <button className='acct-edit-link' onClick={() => setEditingSpecialty(true)}>Edit</button>
+              <span className='acct-row-value'>
+                {displaySpecialty || "Not set"}
+              </span>
+              <button
+                className='acct-edit-link'
+                onClick={() => setEditingSpecialty(true)}>
+                Edit
+              </button>
             </div>
           )}
         </div>
 
         <div className='acct-row'>
           <span className='acct-row-key'>Email</span>
-          <span className='acct-row-value'>{user?.email || "Not available"}</span>
+          <span className='acct-row-value'>
+            {user?.email || "Not available"}
+          </span>
         </div>
       </div>
 
       <div className='acct-section'>
         <p className='acct-section-label'>Password</p>
         {!pwOpen ? (
-          <button className='acct-btn-outline' onClick={() => { setPwOpen(true); setPwMsg(""); }}>
+          <button
+            className='acct-btn-outline'
+            onClick={() => {
+              setPwOpen(true);
+              setPwMsg("");
+            }}>
             Change password
           </button>
         ) : (
           <div className='acct-pw-form'>
             <div className='acct-field'>
               <label className='acct-field-label'>Current password</label>
-              <input className='acct-input' type='password' value={pw.current} onChange={(e) => setPw((p) => ({ ...p, current: e.target.value }))} />
+              <input
+                className='acct-input'
+                type='password'
+                value={pw.current}
+                onChange={(e) =>
+                  setPw((p) => ({ ...p, current: e.target.value }))
+                }
+              />
             </div>
             <div className='acct-field'>
               <label className='acct-field-label'>New password</label>
-              <input className='acct-input' type='password' value={pw.next} onChange={(e) => setPw((p) => ({ ...p, next: e.target.value }))} />
+              <input
+                className='acct-input'
+                type='password'
+                value={pw.next}
+                onChange={(e) => setPw((p) => ({ ...p, next: e.target.value }))}
+              />
             </div>
             <div className='acct-field'>
               <label className='acct-field-label'>Confirm new password</label>
-              <input className='acct-input' type='password' value={pw.confirm} onChange={(e) => setPw((p) => ({ ...p, confirm: e.target.value }))} />
+              <input
+                className='acct-input'
+                type='password'
+                value={pw.confirm}
+                onChange={(e) =>
+                  setPw((p) => ({ ...p, confirm: e.target.value }))
+                }
+              />
             </div>
             {pwMsg && <p className='acct-msg'>{pwMsg}</p>}
             <div className='acct-inline-actions'>
-              <button className='acct-btn-primary' onClick={handleChangePassword} disabled={pwSaving}>
+              <button
+                className='acct-btn-primary'
+                onClick={handleChangePassword}
+                disabled={pwSaving}>
                 {pwSaving ? "Updating…" : "Update password"}
               </button>
-              <button className='acct-btn-ghost' onClick={() => { setPwOpen(false); setPw({ current: "", next: "", confirm: "" }); setPwMsg(""); }}>
+              <button
+                className='acct-btn-ghost'
+                onClick={() => {
+                  setPwOpen(false);
+                  setPw({ current: "", next: "", confirm: "" });
+                  setPwMsg("");
+                }}>
                 Cancel
               </button>
             </div>
@@ -296,9 +363,13 @@ function AccountSettings({ user, currentUser, onBack }) {
       <div className='acct-section'>
         <p className='acct-section-label'>Authentication</p>
         <p className='acct-section-desc'>
-          Enable biometric/passkey login for faster sign-in on supported devices.
+          Enable biometric/passkey login for faster sign-in on supported
+          devices.
         </p>
-        <button className='acct-btn-primary' onClick={handleEnableBiometric} disabled={authBusy}>
+        <button
+          className='acct-btn-primary'
+          onClick={handleEnableBiometric}
+          disabled={authBusy}>
           {authBusy ? "Setting up…" : "Enable biometric login"}
         </button>
         {authMsg && <p className='acct-msg'>{authMsg}</p>}
@@ -311,18 +382,65 @@ function AccountSettings({ user, currentUser, onBack }) {
 
 const patientAlerts = [];
 
-const unsignEn = [];
-
-function VisitOverviewDrawer({ visit, onClose, onOpenFullChart }) {
+function VisitOverviewDrawer({
+  visit,
+  onClose,
+  onOpenFullChart,
+  onSaveEncounterDraft,
+  onSignEncounterNote,
+}) {
   const patient = visit.patient || {};
   const appointment = visit.appointment || {};
 
+  const [encounterNote, setEncounterNote] = useState("");
+  const [noteSaving, setNoteSaving] = useState(false);
+  const [noteMessage, setNoteMessage] = useState("");
   const recentHistory = visit.recentHistory || [];
   const activeProblems = visit.activeProblems || [];
   const medications = visit.medications || [];
   const labs = visit.labs || [];
   const openIssues = visit.openIssues || [];
   const missingSections = visit.missingSections || [];
+
+  const handleSaveDraft = async () => {
+    if (!encounterNote.trim()) {
+      setNoteMessage("Please enter a note before saving.");
+      return;
+    }
+
+    setNoteSaving(true);
+    setNoteMessage("");
+
+    try {
+      await onSaveEncounterDraft(visit, encounterNote);
+      setNoteMessage("Draft saved to Unsigned Encounters.");
+      setEncounterNote("");
+    } catch (error) {
+      setNoteMessage(error.message || "Unable to save draft.");
+    } finally {
+      setNoteSaving(false);
+    }
+  };
+
+  const handleSignNote = async () => {
+    if (!encounterNote.trim()) {
+      setNoteMessage("Please enter a note before signing.");
+      return;
+    }
+
+    setNoteSaving(true);
+    setNoteMessage("");
+
+    try {
+      await onSignEncounterNote(visit, encounterNote);
+      setNoteMessage("Encounter note signed.");
+      setEncounterNote("");
+    } catch (error) {
+      setNoteMessage(error.message || "Unable to sign note.");
+    } finally {
+      setNoteSaving(false);
+    }
+  };
 
   return (
     <div className='visit-overview-backdrop'>
@@ -471,6 +589,40 @@ function VisitOverviewDrawer({ visit, onClose, onOpenFullChart }) {
           </div>
         </section>
 
+        <section className='visit-overview-section'>
+          <h3>Encounter Note</h3>
+          <p className='visit-overview-meta'>
+            Draft a note for this visit. Saved drafts appear in Unsigned
+            Encounters.
+          </p>
+
+          <textarea
+            className='visit-note-textarea'
+            placeholder='Write encounter note...'
+            value={encounterNote}
+            onChange={(e) => setEncounterNote(e.target.value)}
+          />
+
+          <div className='visit-note-actions'>
+            <button
+              type='button'
+              className='doc-btn-review'
+              onClick={handleSaveDraft}
+              disabled={noteSaving}>
+              {noteSaving ? "Saving..." : "Save Draft"}
+            </button>
+
+            <button
+              type='button'
+              className='doc-btn-sign'
+              onClick={handleSignNote}
+              disabled={noteSaving}>
+              {noteSaving ? "Signing..." : "Sign Note"}
+            </button>
+            {noteMessage && <p className='acct-msg'>{noteMessage}</p>}
+          </div>
+        </section>
+
         {missingSections.length > 0 && (
           <section className='visit-overview-section'>
             <h3>Missing Information</h3>
@@ -517,6 +669,13 @@ export default function DoctorDashboard({
   const [visitOverviewItems, setVisitOverviewItems] = useState([]);
   const [visitOverviewError, setVisitOverviewError] = useState("");
   const [visitOverviewLoading, setVisitOverviewLoading] = useState(false);
+  const [unsignedEncounters, setUnsignedEncounters] = useState([]);
+  const [unsignedEncounterError, setUnsignedEncounterError] = useState("");
+  const [unsignedEncounterLoading, setUnsignedEncounterLoading] =
+    useState(false);
+  const [signingEncounterId, setSigningEncounterId] = useState(null);
+  const [selectedUnsignedEncounter, setSelectedUnsignedEncounter] =
+    useState(null);
 
   const getAuthHeaders = () => {
     const session = authApi.getSession();
@@ -558,6 +717,103 @@ export default function DoctorDashboard({
     loadVisitOverviews();
   }, []);
 
+  const loadUnsignedEncounters = async () => {
+    setUnsignedEncounterLoading(true);
+    setUnsignedEncounterError("");
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/providers/unsigned-encounters`,
+        {
+          headers: getAuthHeaders(),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Unable to load unsigned encounters.");
+      }
+
+      const data = await response.json();
+      setUnsignedEncounters(data);
+    } catch (error) {
+      setUnsignedEncounterError(
+        error.message || "Unable to load unsigned encounters.",
+      );
+    } finally {
+      setUnsignedEncounterLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      loadUnsignedEncounters();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  const handleSignEncounter = async (encounterId) => {
+    setSigningEncounterId(encounterId);
+    setUnsignedEncounterError("");
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/providers/unsigned-encounters/${encounterId}/sign`,
+        {
+          method: "PATCH",
+          headers: getAuthHeaders(),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Unable to sign encounter.");
+      }
+
+      setUnsignedEncounters((current) =>
+        current.filter((encounter) => encounter.id !== encounterId),
+      );
+    } catch (error) {
+      setUnsignedEncounterError(error.message || "Unable to sign encounter.");
+    } finally {
+      setSigningEncounterId(null);
+    }
+  };
+
+  const saveEncounterNote = async (visit, noteText, shouldSign = false) => {
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL}/providers/encounter-notes`,
+      {
+        method: "POST",
+        headers: {
+          ...getAuthHeaders(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          patientId: visit.patient?.id,
+          encounterType: visit.appointment?.visitType || "Visit Note",
+          summary: noteText,
+          signed: shouldSign,
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error("Unable to save encounter note.");
+    }
+
+    await loadUnsignedEncounters();
+
+    return response.json();
+  };
+
+  const handleSaveEncounterDraft = async (visit, noteText) => {
+    return saveEncounterNote(visit, noteText, false);
+  };
+
+  const handleSignEncounterNote = async (visit, noteText) => {
+    return saveEncounterNote(visit, noteText, true);
+  };
+
   const today = new Date();
 
   const dateFormat = today.toLocaleDateString("en-US", {
@@ -583,7 +839,8 @@ export default function DoctorDashboard({
 
   //dashboard counts
   const { unreadCount: unreadMessages } = useMessages();
-  const signNotesCount = 0;
+  const unsignedEncountersRef = useRef(null);
+  const signNotesCount = unsignedEncounters.length;
   const inboxCount = 0;
 
   const todayPatientsCount = visitOverviewItems.length;
@@ -592,9 +849,9 @@ export default function DoctorDashboard({
 
   const pendingPatientCount = visitOverviewItems.length;
 
-  const unsignEnCount = unsignEn.length;
+  const unsignEnCount = unsignedEncounters.length;
 
-  const urgentEncounterCount = unsignEn.filter((encounter) => {
+  const urgentEncounterCount = unsignedEncounters.filter((encounter) => {
     return encounter.urgent;
   }).length;
 
@@ -987,7 +1244,14 @@ export default function DoctorDashboard({
                   <span>Quick patient lookup...</span> {/*search bar*/}
                 </div>
 
-                <button className='doc-action-btn'>
+                <button
+                  className='doc-action-btn'
+                  onClick={() => {
+                    loadUnsignedEncounters();
+                    unsignedEncountersRef.current?.scrollIntoView({
+                      behavior: "smooth",
+                    });
+                  }}>
                   <FileSignature size={14} />
                   Sign Notes
                   {signNotesCount > 0 && (
@@ -1153,7 +1417,7 @@ export default function DoctorDashboard({
                   ))}
                 </div>
 
-                <div className='doc-card'>
+                <div className='doc-card' ref={unsignedEncountersRef}>
                   <div className='doc-card-header'>
                     <div>
                       <h3 className='doc-card-title'>Unsigned Encounters</h3>
@@ -1167,8 +1431,28 @@ export default function DoctorDashboard({
                     </span>
                   </div>
 
-                  {unsignEn.map((encounter) => (
-                    <div key={encounter.name} className='doc-encounter-row'>
+                  {unsignedEncounterLoading && (
+                    <p className='visit-overview-empty'>
+                      Loading unsigned encounters...
+                    </p>
+                  )}
+
+                  {unsignedEncounterError && (
+                    <p className='visit-overview-empty'>
+                      {unsignedEncounterError}
+                    </p>
+                  )}
+
+                  {!unsignedEncounterLoading &&
+                    !unsignedEncounterError &&
+                    unsignedEncounters.length === 0 && (
+                      <p className='visit-overview-empty'>
+                        No unsigned encounters pending.
+                      </p>
+                    )}
+
+                  {unsignedEncounters.map((encounter) => (
+                    <div key={encounter.id} className='doc-encounter-row'>
                       <div className='doc-encounter-info'>
                         <p className='doc-encounter-name'>
                           {encounter.name}
@@ -1184,8 +1468,21 @@ export default function DoctorDashboard({
                       </div>
 
                       <div className='doc-encounter-actions'>
-                        <button className='doc-btn-review'>Review</button>
-                        <button className='doc-btn-sign'>Sign</button>
+                        <button
+                          className='doc-btn-review'
+                          onClick={() =>
+                            setSelectedUnsignedEncounter(encounter)
+                          }>
+                          Review
+                        </button>
+                        <button
+                          className='doc-btn-sign'
+                          onClick={() => handleSignEncounter(encounter.id)}
+                          disabled={signingEncounterId === encounter.id}>
+                          {signingEncounterId === encounter.id
+                            ? "Signing..."
+                            : "Sign"}
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -1217,11 +1514,71 @@ export default function DoctorDashboard({
         )}
       </main>
 
+      {selectedUnsignedEncounter && (
+        <div className='visit-overview-backdrop'>
+          <aside
+            className='visit-overview-drawer'
+            aria-label='Unsigned encounter review'>
+            <div className='visit-overview-header'>
+              <div>
+                <h2>{selectedUnsignedEncounter.name}</h2>
+                <p className='visit-overview-meta'>
+                  {selectedUnsignedEncounter.detail}
+                </p>
+              </div>
+
+              <button
+                type='button'
+                className='visit-overview-close'
+                onClick={() => setSelectedUnsignedEncounter(null)}
+                aria-label='Close unsigned encounter review'>
+                ×
+              </button>
+            </div>
+
+            <section className='visit-overview-section'>
+              <h3>Encounter Summary</h3>
+              <p>
+                {selectedUnsignedEncounter.summary ||
+                  "No summary available for this encounter."}
+              </p>
+            </section>
+
+            <div className='visit-overview-actions'>
+              <p className='visit-overview-source'>
+                Unsigned encounter pending provider signature
+              </p>
+
+              <div className='visit-overview-action-buttons'>
+                <button
+                  type='button'
+                  className='doc-btn-review'
+                  onClick={() => setSelectedUnsignedEncounter(null)}>
+                  Close
+                </button>
+
+                <button
+                  type='button'
+                  className='doc-btn-sign'
+                  onClick={() => {
+                    handleSignEncounter(selectedUnsignedEncounter.id);
+                    setSelectedUnsignedEncounter(null);
+                  }}>
+                  Sign
+                </button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      )}
+
       {selectedVisit && (
         <VisitOverviewDrawer
           visit={selectedVisit}
           onClose={() => setSelectedVisit(null)}
           onOpenFullChart={openFullChart}
+          onSaveEncounterDraft={handleSaveEncounterDraft}
+          onSignEncounterNote={handleSignEncounterNote}
         />
       )}
 
