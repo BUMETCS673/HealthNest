@@ -42,8 +42,8 @@ export default function AppointmentDetailPage({
   initialAppointment = null,
 }) {
   const [appt, setAppt] = useState(initialAppointment);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const [loading, setLoading] = useState(() => Boolean(appointmentId));
+  const [notFound, setNotFound] = useState(() => !appointmentId);
   const [reschedule, setReschedule] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [cancelling, setCancelling] = useState(false);
@@ -82,12 +82,10 @@ export default function AppointmentDetailPage({
   };
 
   useEffect(() => {
-    if (!appointmentId) {
-      setNotFound(true);
-      setLoading(false);
-      return;
-    }
-    refresh();
+    if (!appointmentId) return;
+    // Deferred to a microtask so no setState runs synchronously in the
+    // effect body (react-hooks/set-state-in-effect).
+    Promise.resolve().then(refresh);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appointmentId]);
 

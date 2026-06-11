@@ -974,20 +974,28 @@ export default function DoctorDashboard({
     setView("full-chart");
   };
 
+  // Immediate state for each keystroke; the debounced fetch lives in the
+  // effect below.
+  const handleSearchInput = (value) => {
+    setSearchQuery(value);
+    setSearchOpen(true);
+    if (value.trim().length < 2) {
+      setSearchResults([]);
+      setSearchLoading(false);
+      setSearchError("");
+    } else {
+      setSearchLoading(true);
+      setSearchError("");
+    }
+  };
+
   // Debounced quick patient lookup — searches the provider's own panel
   // (the backend only returns patients with an active care relationship).
   useEffect(() => {
     const q = searchQuery.trim();
-    if (q.length < 2) {
-      setSearchResults([]);
-      setSearchLoading(false);
-      setSearchError("");
-      return;
-    }
+    if (q.length < 2) return;
 
     let cancelled = false;
-    setSearchLoading(true);
-    setSearchError("");
 
     const timer = setTimeout(async () => {
       try {
@@ -1508,10 +1516,7 @@ export default function DoctorDashboard({
                     placeholder="Quick patient lookup..."
                     aria-label="Quick patient lookup"
                     value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value);
-                      setSearchOpen(true);
-                    }}
+                    onChange={(e) => handleSearchInput(e.target.value)}
                     onFocus={() => setSearchOpen(true)}
                     onBlur={() => setSearchOpen(false)}
                   />
