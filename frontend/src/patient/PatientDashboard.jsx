@@ -23,6 +23,7 @@ import { usePulse } from "../pulse/PulseProvider";
 import { useMessages } from "../messages/MessagesProvider";
 import TopNav from "../components/TopNav";
 import Footer from "../components/Footer";
+import { authApi } from "../lib/authApi";
 
 function formatRole(role) {
   if (!role) return "Patient";
@@ -87,6 +88,234 @@ function SummaryCard({ icon, label, value, detail, onClick }) {
   );
 }
 
+function AccountSettings({ user, currentUser, onBack }) {
+  // ── Display name edit ──
+  const [editingName, setEditingName] = useState(false);
+  const [nameValue, setNameValue] = useState(currentUser.fullName);
+  const [nameSaving, setNameSaving] = useState(false);
+  const [nameMsg, setNameMsg] = useState("");
+
+  const handleSaveName = async () => {
+    if (!nameValue.trim()) return;
+    setNameSaving(true);
+    setNameMsg("");
+    try {
+      const parts = nameValue.trim().split(" ");
+      const first = parts[0] || "";
+      const last = parts.slice(1).join(" ") || "";
+      await authApi.updateProfile({ first_name: first, last_name: last });
+      setNameMsg("Name updated.");
+      setEditingName(false);
+    } catch (e) {
+      setNameMsg("Could not update name: " + (e.message || e));
+    } finally {
+      setNameSaving(false);
+    }
+  };
+
+  // ── Password change ──
+  const [pwOpen, setPwOpen] = useState(false);
+  const [pw, setPw] = useState({ current: "", next: "", confirm: "" });
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwMsg, setPwMsg] = useState("");
+
+  const handleChangePassword = async () => {
+    setPwMsg("");
+    if (!pw.current || !pw.next || !pw.confirm) {
+      setPwMsg("Please fill in all password fields.");
+      return;
+    }
+    if (pw.next !== pw.confirm) {
+      setPwMsg("New passwords do not match.");
+      return;
+    }
+    if (pw.next.length < 6) {
+      setPwMsg("Password must be at least 6 characters.");
+      return;
+    }
+    setPwSaving(true);
+    try {
+      await authApi.updatePassword(pw.current, pw.next);
+      setPwMsg("Password updated successfully.");
+      setPwOpen(false);
+      setPw({ current: "", next: "", confirm: "" });
+    } catch (e) {
+      setPwMsg("Could not update password: " + (e.message || e));
+    } finally {
+      setPwSaving(false);
+    }
+  };
+
+  // ── Biometric ──
+  const [authBusy, setAuthBusy] = useState(false);
+  const [authMsg, setAuthMsg] = useState("");
+
+  const handleEnableBiometric = async () => {
+    setAuthBusy(true);
+    setAuthMsg("");
+    try {
+      await authApi.enableBiometricLogin();
+      setAuthMsg("Biometric login enabled for this device.");
+    } catch (e) {
+      setAuthMsg("Unable to enable biometric login: " + (e.message || e));
+    } finally {
+      setAuthBusy(false);
+    }
+  };
+
+  return (
+    <section className='acct-page'>
+      <div className='acct-header'>
+        <h3 className='acct-title'>Account Settings</h3>
+        <button className='dash-view-all' onClick={onBack}>
+          Back to dashboard
+        </button>
+      </div>
+
+      {/* ── Profile ── */}
+      <div className='acct-section'>
+        <p className='acct-section-label'>Profile</p>
+
+        <div className='acct-row'>
+          <span className='acct-row-key'>Name</span>
+          {editingName ? (
+            <div className='acct-inline-edit'>
+              <input
+                className='acct-input'
+                value={nameValue}
+                onChange={(e) => setNameValue(e.target.value)}
+                autoFocus
+              />
+              <div className='acct-inline-actions'>
+                <button
+                  className='acct-btn-primary'
+                  onClick={handleSaveName}
+                  disabled={nameSaving}>
+                  {nameSaving ? "Saving…" : "Save"}
+                </button>
+                <button
+                  className='acct-btn-ghost'
+                  onClick={() => {
+                    setEditingName(false);
+                    setNameValue(currentUser.fullName);
+                    setNameMsg("");
+                  }}>
+                  Cancel
+                </button>
+              </div>
+              {nameMsg && <p className='acct-msg'>{nameMsg}</p>}
+            </div>
+          ) : (
+            <div className='acct-row-value-wrap'>
+              <span className='acct-row-value'>{currentUser.fullName}</span>
+              <button
+                className='acct-edit-link'
+                onClick={() => setEditingName(true)}>
+                Edit
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className='acct-row'>
+          <span className='acct-row-key'>Role</span>
+          <span className='acct-row-value'>{currentUser.role}</span>
+        </div>
+
+        <div className='acct-row'>
+          <span className='acct-row-key'>Email</span>
+          <span className='acct-row-value'>
+            {user?.email || "Not available"}
+          </span>
+        </div>
+      </div>
+
+      {/* ── Password ── */}
+      <div className='acct-section'>
+        <p className='acct-section-label'>Password</p>
+        {!pwOpen ? (
+          <button
+            className='acct-btn-outline'
+            onClick={() => {
+              setPwOpen(true);
+              setPwMsg("");
+            }}>
+            Change password
+          </button>
+        ) : (
+          <div className='acct-pw-form'>
+            <div className='acct-field'>
+              <label className='acct-field-label'>Current password</label>
+              <input
+                className='acct-input'
+                type='password'
+                value={pw.current}
+                onChange={(e) =>
+                  setPw((p) => ({ ...p, current: e.target.value }))
+                }
+              />
+            </div>
+            <div className='acct-field'>
+              <label className='acct-field-label'>New password</label>
+              <input
+                className='acct-input'
+                type='password'
+                value={pw.next}
+                onChange={(e) => setPw((p) => ({ ...p, next: e.target.value }))}
+              />
+            </div>
+            <div className='acct-field'>
+              <label className='acct-field-label'>Confirm new password</label>
+              <input
+                className='acct-input'
+                type='password'
+                value={pw.confirm}
+                onChange={(e) =>
+                  setPw((p) => ({ ...p, confirm: e.target.value }))
+                }
+              />
+            </div>
+            {pwMsg && <p className='acct-msg'>{pwMsg}</p>}
+            <div className='acct-inline-actions'>
+              <button
+                className='acct-btn-primary'
+                onClick={handleChangePassword}
+                disabled={pwSaving}>
+                {pwSaving ? "Updating…" : "Update password"}
+              </button>
+              <button
+                className='acct-btn-ghost'
+                onClick={() => {
+                  setPwOpen(false);
+                  setPw({ current: "", next: "", confirm: "" });
+                  setPwMsg("");
+                }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Authentication ── */}
+      <div className='acct-section'>
+        <p className='acct-section-label'>Authentication</p>
+        <p className='acct-section-desc'>
+          Enable biometric/passkey login for faster sign-in on supported
+          devices.
+        </p>
+        <button
+          className='acct-btn-primary'
+          onClick={handleEnableBiometric}
+          disabled={authBusy}>
+          {authBusy ? "Setting up…" : "Enable biometric login"}
+        </button>
+        {authMsg && <p className='acct-msg'>{authMsg}</p>}
+      </div>
+    </section>
+  );
+}
+
 export default function PatientDashboard({
   user,
   onNavigate,
@@ -145,13 +374,10 @@ export default function PatientDashboard({
     day: "numeric",
   });
   const hour = today.getHours();
-
   let greetingMes = "Good evening";
-  if (hour >= 6 && hour < 12) {
-    greetingMes = "Good morning";
-  } else if (hour >= 12 && hour < 18) {
-    greetingMes = "Good afternoon";
-  }
+  if (hour >= 6 && hour < 12) greetingMes = "Good morning";
+  else if (hour >= 12 && hour < 18) greetingMes = "Good afternoon";
+
   const { unreadCount: unreadMessages } = useMessages();
 
   const navOption = [
@@ -165,12 +391,17 @@ export default function PatientDashboard({
 
   return (
     <div className='p-dash'>
-      {/* Navigation bar */}
       <TopNav
         links={navOption.map((o) =>
           o === "Messages" ? { label: o, badge: unreadMessages } : o,
         )}
-        activeKey={view === "home" ? "Dashboard" : "Records"}
+        activeKey={
+          view === "home"
+            ? "Dashboard"
+            : view === "labs" || view === "lab-detail"
+              ? "Records"
+              : null
+        }
         onLogoClick={() => setView("home")}
         onSelect={(label) => {
           if (label === "Dashboard") setView("home");
@@ -182,11 +413,19 @@ export default function PatientDashboard({
         }}
         userName={currentUser.fullName}
         userRole={currentUser.role}
+        onAccountSettings={() => setView("account-settings")}
         onSignOut={onSignOut}
       />
 
-      {/* ── Main content ── */}
       <main className='dash-main'>
+        {view === "account-settings" && (
+          <AccountSettings
+            user={user}
+            currentUser={currentUser}
+            onBack={() => setView("home")}
+          />
+        )}
+
         {view === "labs" && (
           <PatientLabResultsPage
             onBack={() => setView("home")}
@@ -196,15 +435,16 @@ export default function PatientDashboard({
             }}
           />
         )}
+
         {view === "lab-detail" && activeLabId && (
           <LabResultDetail
             labResultId={activeLabId}
             onBack={() => setView("labs")}
           />
         )}
+
         {view !== "home" ? null : (
           <>
-            {/*  Header */}
             <div className='dash-header'>
               <div>
                 <p className='dash-date'>{dateFormat}</p>
@@ -219,7 +459,6 @@ export default function PatientDashboard({
               </button>
             </div>
 
-            {/* Top Four cards */}
             <div className='dash-sumcard'>
               <SummaryCard
                 icon={<Calendar size={16} />}
@@ -257,9 +496,7 @@ export default function PatientDashboard({
               />
             </div>
 
-            {/* ── Middle layout ── */}
             <div className='dash-middle'>
-              {/* Upcoming Appointments */}
               <div className='dash-card'>
                 <div className='dash-card-header'>
                   <h3 className='dash-card-title'>Upcoming Appointments</h3>
@@ -281,27 +518,21 @@ export default function PatientDashboard({
                       <span className='dash-appt-month'>{appt.month}</span>
                       <span className='dash-appt-day'>{appt.day}</span>
                     </div>
-
                     <div className='dash-appt-divider' />
-
                     <div className='dash-appt-info'>
                       <p className='dash-appt-doctor'>{appt.doctor}</p>
                       <p className='dash-appt-specialty'>{appt.specialty}</p>
                     </div>
-
                     <div className='dash-appt-time'>
                       <span>{appt.time}</span>
                       <Stethoscope size={14} />
                     </div>
-
                     <ChevronRight size={16} className='dash-appt-arrow' />
                   </button>
                 ))}
               </div>
 
-              {/* ── Right sidebar ── */}
               <div className='dash-sidebar'>
-                {/* Medications */}
                 <div className='dash-card'>
                   <div className='dash-card-header'>
                     <h3 className='dash-card-title'>Active Medications</h3>
@@ -320,7 +551,6 @@ export default function PatientDashboard({
                   ))}
                 </div>
 
-                {/* ── Labs ── */}
                 <div className='dash-card'>
                   <div className='dash-card-header'>
                     <h3 className='dash-card-title'>Recent Labs</h3>
@@ -330,34 +560,31 @@ export default function PatientDashboard({
                       View all
                     </button>
                   </div>
-                  {labResult.map((lab) => {
-                    let labNameClass = "dash-lab-name";
-                    let labStatusClass = "dash-lab-status";
-
-                    if (lab.flag) {
-                      labNameClass = "dash-lab-name flagged";
-                      labStatusClass = "dash-lab-status flagged";
-                    }
-                    {
-                      /* flag lab result*/
-                    }
-                    return (
-                      <div key={lab.test} className='dash-lab-row'>
-                        <div className='dash-lab-name-wrap'>
-                          {lab.flag && <span className='dash-lab-dot'></span>}
-
-                          <p className={labNameClass}>{lab.test}</p>
-                        </div>
-
-                        <span className={labStatusClass}>{lab.result}</span>
+                  {labResult.map((lab) => (
+                    <div key={lab.test} className='dash-lab-row'>
+                      <div className='dash-lab-name-wrap'>
+                        {lab.flag && <span className='dash-lab-dot'></span>}
+                        <p
+                          className={
+                            lab.flag ? "dash-lab-name flagged" : "dash-lab-name"
+                          }>
+                          {lab.test}
+                        </p>
                       </div>
-                    );
-                  })}
+                      <span
+                        className={
+                          lab.flag
+                            ? "dash-lab-status flagged"
+                            : "dash-lab-status"
+                        }>
+                        {lab.result}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
 
-            {/* ── AI Banner ── */}
             <div className='dash-ai-banner'>
               <div className='dash-ai-icon'>
                 <MessageCircleQuestion size={22} />
@@ -389,6 +616,7 @@ export default function PatientDashboard({
           <MessageCircleQuestion size={25} />
         </button>
       )}
+
       <Footer
         role='patient'
         onNavigate={(target) => {

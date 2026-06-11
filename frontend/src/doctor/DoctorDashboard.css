@@ -1051,6 +1051,31 @@
   line-height: 1.5;
 }
 
+.visit-note-textarea {
+  width: 100%;
+  min-height: 140px;
+  padding: 14px 16px;
+  margin-top: 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 14px;
+  font: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+  background: #fff;
+}
+
+.visit-note-textarea:focus {
+  outline: none;
+  border-color: #111;
+}
+
+.visit-note-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 14px;
+}
+
 /* HIGH should be red */
 .visit-issue-high {
   background: #e74c3c;
@@ -1451,4 +1476,182 @@
 
 .patient-record-table tr:last-child td {
   border-bottom: none;
+}
+
+/* ── Account Settings ── */
+
+.acct-page {
+  width: min(880px, 100%);
+  margin: 0 auto;
+  background: #ffffff;
+  border: 1px solid #ececea;
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: 0 18px 45px rgba(17, 17, 16, 0.06);
+}
+
+.acct-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.acct-title {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: 34px;
+  font-weight: 300;
+  color: #111110;
+}
+
+.acct-section {
+  border-top: 1px solid #ececea;
+  padding: 22px 0;
+}
+
+.acct-section:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.acct-section-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #7a7a78;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 14px;
+}
+
+.acct-section-desc {
+  font-size: 14px;
+  color: #6f6f6d;
+  line-height: 1.5;
+  margin-bottom: 14px;
+  max-width: 620px;
+}
+
+.acct-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 14px 0;
+  border-bottom: 1px solid #f3f3f1;
+}
+
+.acct-row:last-child {
+  border-bottom: 0;
+}
+
+.acct-row-key {
+  font-size: 14px;
+  font-weight: 700;
+  color: #333330;
+  min-width: 120px;
+}
+
+.acct-row-value {
+  font-size: 14px;
+  color: #111110;
+}
+
+.acct-row-value-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.acct-edit-link {
+  border: 0;
+  background: transparent;
+  color: #111110;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.acct-inline-edit,
+.acct-pw-form {
+  width: min(420px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.acct-inline-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.acct-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.acct-field-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #5f5f5d;
+}
+
+.acct-input {
+  width: 100%;
+  height: 40px;
+  border: 1px solid #d9d9d6;
+  border-radius: 12px;
+  padding: 0 12px;
+  background: #fbfbfa;
+  color: #111110;
+  font-size: 14px;
+}
+
+.acct-input:focus {
+  outline: none;
+  border-color: #111110;
+  background: #ffffff;
+}
+
+.acct-btn-primary,
+.acct-btn-outline,
+.acct-btn-ghost {
+  height: 38px;
+  border-radius: 999px;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.acct-btn-primary {
+  border: 1px solid #111110;
+  background: #111110;
+  color: #ffffff;
+}
+
+.acct-btn-outline {
+  border: 1px solid #111110;
+  background: #ffffff;
+  color: #111110;
+}
+
+.acct-btn-ghost {
+  border: 1px solid transparent;
+  background: transparent;
+  color: #6f6f6d;
+}
+
+.acct-btn-primary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.acct-msg {
+  font-size: 13px;
+  color: #5f5f5d;
+  line-height: 1.4;
 }
