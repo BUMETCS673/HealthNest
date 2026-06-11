@@ -16,6 +16,18 @@ import { render, screen, cleanup } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import PatientDashboard from "../patient/PatientDashboard";
 import PulseProvider from "../pulse/PulseProvider";
+import { appointmentsApi } from "../lib/appointmentsApi";
+
+jest.mock("../lib/appointmentsApi", () => {
+  const actual = jest.requireActual("../lib/appointmentsApi");
+  return {
+    ...actual,
+    appointmentsApi: {
+      ...actual.appointmentsApi,
+      getAppointments: jest.fn().mockResolvedValue([]),
+    },
+  };
+});
 
 afterEach(() => {
   cleanup();
@@ -71,5 +83,48 @@ describe("PatientDashboard", () => {
     await user.click(screen.getByRole("menuitem", { name: /Sign out/i }));
 
     expect(onSignOut).toHaveBeenCalledTimes(1);
+  });
+
+  test("upcoming appointment row opens that appointment's detail page", async () => {
+    const onNavigate = jest.fn();
+    appointmentsApi.getAppointments.mockResolvedValue([
+      {
+        id: "appt-1",
+        status: "scheduled",
+        provider_id: "prov-1",
+        providers: {
+          first_name: "Sam",
+          last_name: "Lee",
+          specialty: "cardiology",
+        },
+        provider_availability: {
+          available_date: "2099-01-15",
+          available_time: "09:30",
+        },
+      },
+    ]);
+
+    renderPatientDashboard({ onNavigate });
+
+    const user = userEvent.setup();
+    await user.click(await screen.findByText("Sam Lee"));
+
+    expect(onNavigate).toHaveBeenCalledWith(
+      "appointment-detail",
+      expect.objectContaining({ appointmentId: "appt-1" }),
+    );
+  });
+
+  test("view all link still opens the appointments list", async () => {
+    const onNavigate = jest.fn();
+    appointmentsApi.getAppointments.mockResolvedValue([]);
+
+    renderPatientDashboard({ onNavigate });
+
+    const user = userEvent.setup();
+    // The appointments card renders first; meds/labs cards have their own.
+    await user.click(screen.getAllByRole("button", { name: "View all" })[0]);
+
+    expect(onNavigate).toHaveBeenCalledWith("appointments");
   });
 });

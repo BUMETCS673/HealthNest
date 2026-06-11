@@ -234,7 +234,14 @@ export default function PatientDashboard({
                     ? `${upcomingAppoint[0].doctor}${upcomingAppoint[0].specialty ? ` · ${upcomingAppoint[0].specialty}` : ""}`
                     : "No upcoming appointments"
                 }
-                onClick={() => onNavigate?.("appointments")}
+                onClick={() =>
+                  upcomingAppoint[0]
+                    ? onNavigate?.("appointment-detail", {
+                        appointmentId: upcomingAppoint[0].id,
+                        appointment: upcomingAppoint[0],
+                      })
+                    : onNavigate?.("appointments")
+                }
               />
               <SummaryCard
                 icon={<Pill size={16} />}
@@ -277,7 +284,12 @@ export default function PatientDashboard({
                   <button
                     key={appt.id}
                     className="dash-appt-row"
-                    onClick={() => onNavigate?.("appointments")}
+                    onClick={() =>
+                      onNavigate?.("appointment-detail", {
+                        appointmentId: appt.id,
+                        appointment: appt,
+                      })
+                    }
                   >
                     <div className="dash-appt-date">
                       <span className="dash-appt-month">{appt.month}</span>

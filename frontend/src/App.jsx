@@ -14,6 +14,7 @@ import Signup from "./loginsignup/Signup";
 import PatientDashboard from "./patient/PatientDashboard";
 import DoctorDashboard from "./doctor/DoctorDashboard";
 import AppointmentsPage from "./appointments/AppointmentsPage";
+import AppointmentDetailPage from "./appointments/AppointmentDetailPage";
 import BookingPage from "./booking/BookingPage";
 import PulseProvider from "./pulse/PulseProvider";
 import PulseDrawer from "./pulse/PulseDrawer";
@@ -36,6 +37,8 @@ const PATH_TO_PAGE = {
 const PAGE_TO_PATH = {
   dashboard: "/",
   appointments: "/appointments",
+  // Detail state lives in pageData; back/refresh land on the list.
+  "appointment-detail": "/appointments",
   booking: "/booking",
   pulse: "/pulse",
   messages: "/messages",
@@ -160,6 +163,15 @@ export default function App() {
     }
 
     const patientPage = (() => {
+      if (page === "appointment-detail") {
+        return (
+          <AppointmentDetailPage
+            {...sharedProps}
+            appointmentId={pageData?.appointmentId ?? null}
+            initialAppointment={pageData?.appointment ?? null}
+          />
+        );
+      }
       if (page === "appointments") return <AppointmentsPage {...sharedProps} />;
       if (page === "messages") return <MessagesPage {...sharedProps} />;
       if (page === "booking") {
