@@ -183,6 +183,7 @@ export default function App() {
           <PulseDrawer
             onOpenWorkspace={() => handleNavigate("pulse")}
             onNavigate={handleNavigate}
+            hideLauncher={page === "pulse"}
           />
           <MessagesDrawer
             myId={session.user?.id}

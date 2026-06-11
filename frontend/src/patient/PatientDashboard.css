@@ -450,28 +450,3 @@
 }
 
 /* ── Floating AI Button ── */
-.dash-pulse-fab {
-  position: fixed;
-  bottom: 28px;
-  right: 28px;
-  width: 52px;
-  height: 52px;
-  background: #111110;
-  color: #fff;
-  border: none;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
-  transition:
-    background 0.2s,
-    transform 0.15s;
-  z-index: 200;
-}
-
-.dash-pulse-fab:hover {
-  background: #2a2a2a;
-  transform: scale(1.07);
-}

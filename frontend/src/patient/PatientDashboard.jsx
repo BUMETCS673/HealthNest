@@ -429,15 +429,6 @@ export default function PatientDashboard({
       <div className="dash-copyright">
         © 2026 HealthNest Technologies, Inc. All rights reserved.
       </div>
-      {!pulse.drawerOpen && (
-        <button
-          className="dash-pulse-fab"
-          onClick={() => pulse.openDrawer()}
-          aria-label="Open Pulse AI"
-        >
-          <MessageCircleQuestion size={25} />
-        </button>
-      )}
     </div>
   );
 }
