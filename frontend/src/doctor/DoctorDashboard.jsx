@@ -23,6 +23,8 @@ import LabResultReview from "../labresults/LabResultReview";
 import { authApi } from "../lib/authApi";
 import { useMessages } from "../messages/MessagesProvider";
 import MessagesView from "../messages/MessagesView";
+import ProviderSchedule from "./ProviderSchedule";
+import TodayScheduleCard from "./TodayScheduleCard";
 import { useDfa } from "../pulse/DfaProvider";
 import TopNav from "../components/TopNav";
 import Footer from "../components/Footer";
@@ -186,173 +188,182 @@ function AccountSettings({ user, currentUser, onBack }) {
   };
 
   return (
-    <section className='acct-page'>
-      <div className='acct-header'>
-        <h3 className='acct-title'>Account Settings</h3>
-        <button className='dash-view-all' onClick={onBack}>
+    <section className="acct-page">
+      <div className="acct-header">
+        <h3 className="acct-title">Account Settings</h3>
+        <button className="dash-view-all" onClick={onBack}>
           Back to dashboard
         </button>
       </div>
 
-      <div className='acct-section'>
-        <p className='acct-section-label'>Profile</p>
+      <div className="acct-section">
+        <p className="acct-section-label">Profile</p>
 
-        <div className='acct-row'>
-          <span className='acct-row-key'>Name</span>
+        <div className="acct-row">
+          <span className="acct-row-key">Name</span>
           {editingName ? (
-            <div className='acct-inline-edit'>
+            <div className="acct-inline-edit">
               <input
-                className='acct-input'
+                className="acct-input"
                 value={nameValue}
                 onChange={(e) => setNameValue(e.target.value)}
                 autoFocus
               />
-              <div className='acct-inline-actions'>
+              <div className="acct-inline-actions">
                 <button
-                  className='acct-btn-primary'
+                  className="acct-btn-primary"
                   onClick={handleSaveName}
-                  disabled={nameSaving}>
+                  disabled={nameSaving}
+                >
                   {nameSaving ? "Saving…" : "Save"}
                 </button>
                 <button
-                  className='acct-btn-ghost'
+                  className="acct-btn-ghost"
                   onClick={() => {
                     setEditingName(false);
                     setNameValue(displayName);
                     setNameMsg("");
-                  }}>
+                  }}
+                >
                   Cancel
                 </button>
               </div>
-              {nameMsg && <p className='acct-msg'>{nameMsg}</p>}
+              {nameMsg && <p className="acct-msg">{nameMsg}</p>}
             </div>
           ) : (
-            <div className='acct-row-value-wrap'>
-              <span className='acct-row-value'>{displayName}</span>
+            <div className="acct-row-value-wrap">
+              <span className="acct-row-value">{displayName}</span>
               <button
-                className='acct-edit-link'
-                onClick={() => setEditingName(true)}>
+                className="acct-edit-link"
+                onClick={() => setEditingName(true)}
+              >
                 Edit
               </button>
             </div>
           )}
         </div>
 
-        <div className='acct-row'>
-          <span className='acct-row-key'>Role</span>
-          <span className='acct-row-value'>{currentUser.role}</span>
+        <div className="acct-row">
+          <span className="acct-row-key">Role</span>
+          <span className="acct-row-value">{currentUser.role}</span>
         </div>
 
-        <div className='acct-row'>
-          <span className='acct-row-key'>Specialty</span>
+        <div className="acct-row">
+          <span className="acct-row-key">Specialty</span>
           {editingSpecialty ? (
-            <div className='acct-inline-edit'>
+            <div className="acct-inline-edit">
               <input
-                className='acct-input'
+                className="acct-input"
                 value={specialtyValue}
                 onChange={(e) => setSpecialtyValue(e.target.value)}
                 autoFocus
               />
-              <div className='acct-inline-actions'>
+              <div className="acct-inline-actions">
                 <button
-                  className='acct-btn-primary'
+                  className="acct-btn-primary"
                   onClick={handleSaveSpecialty}
-                  disabled={specialtySaving}>
+                  disabled={specialtySaving}
+                >
                   {specialtySaving ? "Saving…" : "Save"}
                 </button>
                 <button
-                  className='acct-btn-ghost'
+                  className="acct-btn-ghost"
                   onClick={() => {
                     setEditingSpecialty(false);
                     setSpecialtyValue(displaySpecialty);
                     setSpecialtyMsg("");
-                  }}>
+                  }}
+                >
                   Cancel
                 </button>
               </div>
-              {specialtyMsg && <p className='acct-msg'>{specialtyMsg}</p>}
+              {specialtyMsg && <p className="acct-msg">{specialtyMsg}</p>}
             </div>
           ) : (
-            <div className='acct-row-value-wrap'>
-              <span className='acct-row-value'>
+            <div className="acct-row-value-wrap">
+              <span className="acct-row-value">
                 {displaySpecialty || "Not set"}
               </span>
               <button
-                className='acct-edit-link'
-                onClick={() => setEditingSpecialty(true)}>
+                className="acct-edit-link"
+                onClick={() => setEditingSpecialty(true)}
+              >
                 Edit
               </button>
             </div>
           )}
         </div>
 
-        <div className='acct-row'>
-          <span className='acct-row-key'>Email</span>
-          <span className='acct-row-value'>
+        <div className="acct-row">
+          <span className="acct-row-key">Email</span>
+          <span className="acct-row-value">
             {user?.email || "Not available"}
           </span>
         </div>
       </div>
 
-      <div className='acct-section'>
-        <p className='acct-section-label'>Password</p>
+      <div className="acct-section">
+        <p className="acct-section-label">Password</p>
         {!pwOpen ? (
           <button
-            className='acct-btn-outline'
+            className="acct-btn-outline"
             onClick={() => {
               setPwOpen(true);
               setPwMsg("");
-            }}>
+            }}
+          >
             Change password
           </button>
         ) : (
-          <div className='acct-pw-form'>
-            <div className='acct-field'>
-              <label className='acct-field-label'>Current password</label>
+          <div className="acct-pw-form">
+            <div className="acct-field">
+              <label className="acct-field-label">Current password</label>
               <input
-                className='acct-input'
-                type='password'
+                className="acct-input"
+                type="password"
                 value={pw.current}
                 onChange={(e) =>
                   setPw((p) => ({ ...p, current: e.target.value }))
                 }
               />
             </div>
-            <div className='acct-field'>
-              <label className='acct-field-label'>New password</label>
+            <div className="acct-field">
+              <label className="acct-field-label">New password</label>
               <input
-                className='acct-input'
-                type='password'
+                className="acct-input"
+                type="password"
                 value={pw.next}
                 onChange={(e) => setPw((p) => ({ ...p, next: e.target.value }))}
               />
             </div>
-            <div className='acct-field'>
-              <label className='acct-field-label'>Confirm new password</label>
+            <div className="acct-field">
+              <label className="acct-field-label">Confirm new password</label>
               <input
-                className='acct-input'
-                type='password'
+                className="acct-input"
+                type="password"
                 value={pw.confirm}
                 onChange={(e) =>
                   setPw((p) => ({ ...p, confirm: e.target.value }))
                 }
               />
             </div>
-            {pwMsg && <p className='acct-msg'>{pwMsg}</p>}
-            <div className='acct-inline-actions'>
+            {pwMsg && <p className="acct-msg">{pwMsg}</p>}
+            <div className="acct-inline-actions">
               <button
-                className='acct-btn-primary'
+                className="acct-btn-primary"
                 onClick={handleChangePassword}
-                disabled={pwSaving}>
+                disabled={pwSaving}
+              >
                 {pwSaving ? "Updating…" : "Update password"}
               </button>
               <button
-                className='acct-btn-ghost'
+                className="acct-btn-ghost"
                 onClick={() => {
                   setPwOpen(false);
                   setPw({ current: "", next: "", confirm: "" });
                   setPwMsg("");
-                }}>
+                }}
+              >
                 Cancel
               </button>
             </div>
@@ -360,19 +371,20 @@ function AccountSettings({ user, currentUser, onBack }) {
         )}
       </div>
 
-      <div className='acct-section'>
-        <p className='acct-section-label'>Authentication</p>
-        <p className='acct-section-desc'>
+      <div className="acct-section">
+        <p className="acct-section-label">Authentication</p>
+        <p className="acct-section-desc">
           Enable biometric/passkey login for faster sign-in on supported
           devices.
         </p>
         <button
-          className='acct-btn-primary'
+          className="acct-btn-primary"
           onClick={handleEnableBiometric}
-          disabled={authBusy}>
+          disabled={authBusy}
+        >
           {authBusy ? "Setting up…" : "Enable biometric login"}
         </button>
-        {authMsg && <p className='acct-msg'>{authMsg}</p>}
+        {authMsg && <p className="acct-msg">{authMsg}</p>}
       </div>
     </section>
   );
@@ -443,46 +455,47 @@ function VisitOverviewDrawer({
   };
 
   return (
-    <div className='visit-overview-backdrop'>
-      <aside className='visit-overview-drawer' aria-label='Visit overview'>
-        <div className='visit-overview-header'>
-          <div className='visit-overview-patient-header'>
-            <div className='visit-overview-avatar'>{patient.initials}</div>
+    <div className="visit-overview-backdrop">
+      <aside className="visit-overview-drawer" aria-label="Visit overview">
+        <div className="visit-overview-header">
+          <div className="visit-overview-patient-header">
+            <div className="visit-overview-avatar">{patient.initials}</div>
 
             <div>
-              <div className='visit-overview-name-line'>
+              <div className="visit-overview-name-line">
                 <h2>{patient.name}</h2>
                 <span>{patient.mrn}</span>
                 <span>DOB {patient.dateOfBirth}</span>
               </div>
 
-              <p className='visit-overview-meta'>
+              <p className="visit-overview-meta">
                 {appointment.time || "TBD"} · {appointment.visitType}
               </p>
             </div>
           </div>
 
           <button
-            type='button'
-            className='visit-overview-close'
+            type="button"
+            className="visit-overview-close"
             onClick={onClose}
-            aria-label='Close visit overview'>
+            aria-label="Close visit overview"
+          >
             ×
           </button>
         </div>
 
-        <section className='visit-overview-section'>
+        <section className="visit-overview-section">
           <h3>Recent History</h3>
 
-          <div className='visit-history-list'>
+          <div className="visit-history-list">
             {recentHistory.map((item) => (
-              <div key={item.date + item.title} className='visit-history-card'>
-                <div className='visit-history-date'>
+              <div key={item.date + item.title} className="visit-history-card">
+                <div className="visit-history-date">
                   <p>{item.date}</p>
                   <span>{item.provider}</span>
                 </div>
 
-                <div className='visit-history-detail'>
+                <div className="visit-history-detail">
                   <p>{item.title}</p>
                   <span>{item.detail}</span>
                 </div>
@@ -491,14 +504,14 @@ function VisitOverviewDrawer({
           </div>
         </section>
 
-        <section className='visit-overview-section'>
+        <section className="visit-overview-section">
           <h3>Active Problems</h3>
 
-          <div className='visit-problem-list'>
+          <div className="visit-problem-list">
             {activeProblems.map((problem) => (
-              <div key={problem.name} className='visit-problem-row'>
-                <div className='visit-problem-left'>
-                  <span className='visit-problem-dot'></span>
+              <div key={problem.name} className="visit-problem-row">
+                <div className="visit-problem-left">
+                  <span className="visit-problem-dot"></span>
 
                   <div>
                     <p>{problem.name}</p>
@@ -508,17 +521,17 @@ function VisitOverviewDrawer({
                   </div>
                 </div>
 
-                <span className='visit-problem-status'>{problem.status}</span>
+                <span className="visit-problem-status">{problem.status}</span>
               </div>
             ))}
           </div>
         </section>
 
-        <section className='visit-overview-section'>
+        <section className="visit-overview-section">
           <h3>Medications</h3>
 
-          <div className='visit-table-wrap'>
-            <table className='visit-overview-table'>
+          <div className="visit-table-wrap">
+            <table className="visit-overview-table">
               <thead>
                 <tr>
                   <th>Medication</th>
@@ -532,7 +545,7 @@ function VisitOverviewDrawer({
                 {medications.map((med) => (
                   <tr key={med.medication}>
                     <td>
-                      {med.flagged && <span className='visit-med-flag'>!</span>}
+                      {med.flagged && <span className="visit-med-flag">!</span>}
                       {med.medication}
                     </td>
                     <td>{med.dose}</td>
@@ -545,11 +558,11 @@ function VisitOverviewDrawer({
           </div>
         </section>
 
-        <section className='visit-overview-section'>
+        <section className="visit-overview-section">
           <h3>Last Labs</h3>
 
-          <div className='visit-table-wrap'>
-            <table className='visit-overview-table'>
+          <div className="visit-table-wrap">
+            <table className="visit-overview-table">
               <thead>
                 <tr>
                   <th>Test</th>
@@ -573,61 +586,63 @@ function VisitOverviewDrawer({
           </div>
         </section>
 
-        <section className='visit-overview-section'>
+        <section className="visit-overview-section">
           <h3>Open Issues</h3>
 
-          <div className='visit-issues-list'>
+          <div className="visit-issues-list">
             {openIssues.map((issue) => (
-              <div key={issue.text} className='visit-issue-card'>
+              <div key={issue.text} className="visit-issue-card">
                 <span className={`visit-issue-badge visit-issue-${issue.tone}`}>
                   {issue.level}
                 </span>
 
-                <span className='visit-issue-text'>{issue.text}</span>
+                <span className="visit-issue-text">{issue.text}</span>
               </div>
             ))}
           </div>
         </section>
 
-        <section className='visit-overview-section'>
+        <section className="visit-overview-section">
           <h3>Encounter Note</h3>
-          <p className='visit-overview-meta'>
+          <p className="visit-overview-meta">
             Draft a note for this visit. Saved drafts appear in Unsigned
             Encounters.
           </p>
 
           <textarea
-            className='visit-note-textarea'
-            placeholder='Write encounter note...'
+            className="visit-note-textarea"
+            placeholder="Write encounter note..."
             value={encounterNote}
             onChange={(e) => setEncounterNote(e.target.value)}
           />
 
-          <div className='visit-note-actions'>
+          <div className="visit-note-actions">
             <button
-              type='button'
-              className='doc-btn-review'
+              type="button"
+              className="doc-btn-review"
               onClick={handleSaveDraft}
-              disabled={noteSaving}>
+              disabled={noteSaving}
+            >
               {noteSaving ? "Saving..." : "Save Draft"}
             </button>
 
             <button
-              type='button'
-              className='doc-btn-sign'
+              type="button"
+              className="doc-btn-sign"
               onClick={handleSignNote}
-              disabled={noteSaving}>
+              disabled={noteSaving}
+            >
               {noteSaving ? "Signing..." : "Sign Note"}
             </button>
-            {noteMessage && <p className='acct-msg'>{noteMessage}</p>}
+            {noteMessage && <p className="acct-msg">{noteMessage}</p>}
           </div>
         </section>
 
         {missingSections.length > 0 && (
-          <section className='visit-overview-section'>
+          <section className="visit-overview-section">
             <h3>Missing Information</h3>
 
-            <ul className='visit-overview-list visit-overview-warning-list'>
+            <ul className="visit-overview-list visit-overview-warning-list">
               {missingSections.map((section) => (
                 <li key={section}>{section}</li>
               ))}
@@ -635,14 +650,15 @@ function VisitOverviewDrawer({
           </section>
         )}
 
-        <div className='visit-overview-actions'>
-          <p className='visit-overview-source'>{visit.generatedFrom}</p>
+        <div className="visit-overview-actions">
+          <p className="visit-overview-source">{visit.generatedFrom}</p>
 
-          <div className='visit-overview-action-buttons'>
+          <div className="visit-overview-action-buttons">
             <button
-              type='button'
-              className='doc-btn-sign'
-              onClick={() => onOpenFullChart(visit)}>
+              type="button"
+              className="doc-btn-sign"
+              onClick={() => onOpenFullChart(visit)}
+            >
               Open Full Chart
             </button>
           </div>
@@ -662,6 +678,24 @@ export default function DoctorDashboard({
   const dfa = useDfa();
 
   const [view, setView] = useState(initialView);
+
+  // Keep the visible view in sync with the URL-derived initialView (browser
+  // back/forward, returning from the Pulse workspace). Adjusting state during
+  // render is React's recommended alternative to a syncing effect here.
+  const [syncedView, setSyncedView] = useState(initialView);
+  if (initialView !== syncedView) {
+    setSyncedView(initialView);
+    setView(initialView);
+  }
+
+  // Opening a patient's message thread from the schedule (Message action).
+  const [messageContactId, setMessageContactId] = useState(null);
+  const messagePatient = (appt) => {
+    setMessageContactId(appt?.patient_user_id ?? null);
+    setView("messages");
+    onNavigate?.("messages");
+  };
+
   const [activeLabId, setActiveLabId] = useState(null);
   const [selectedVisit, setSelectedVisit] = useState(null);
   const [selectedChart, setSelectedChart] = useState(null);
@@ -903,7 +937,7 @@ export default function DoctorDashboard({
   };
 
   return (
-    <div className='d-dash'>
+    <div className="d-dash">
       {/* Navigation bar */}
       <TopNav
         links={navOption.map((o) =>
@@ -920,13 +954,28 @@ export default function DoctorDashboard({
                   ? "Schedule"
                   : null
         }
-        onLogoClick={() => setView("home")}
+        onLogoClick={() => {
+          setView("home");
+          onNavigate?.("dashboard");
+        }}
         onSelect={(label) => {
-          if (label === "Dashboard") setView("home");
-          else if (label === "Patient Records") setView("labs");
-          else if (label === "Messages") setView("messages");
-          else if (label === "Schedule") setView("schedule");
-          else if (label === "Pulse AI") onNavigate?.("dfa-pulse");
+          // Set the view immediately (resets any drill-down) and update the URL.
+          if (label === "Dashboard") {
+            setView("home");
+            onNavigate?.("dashboard");
+          } else if (label === "Patient Records") {
+            setView("labs");
+            onNavigate?.("patient-records");
+          } else if (label === "Messages") {
+            setMessageContactId(null);
+            setView("messages");
+            onNavigate?.("messages");
+          } else if (label === "Schedule") {
+            setView("schedule");
+            onNavigate?.("schedule");
+          } else if (label === "Pulse AI") {
+            onNavigate?.("dfa-pulse");
+          }
         }}
         userName={currentUser.firstName}
         userRole={currentUser.specialty || currentUser.role}
@@ -937,7 +986,8 @@ export default function DoctorDashboard({
 
       {/* Main content */}
       <main
-        className={`doc-main${view === "messages" ? " doc-main--messages" : ""}`}>
+        className={`doc-main${view === "messages" ? " doc-main--messages" : ""}`}
+      >
         {view === "labs" && (
           <LabResultsPage
             onBack={() => setView("home")}
@@ -948,6 +998,9 @@ export default function DoctorDashboard({
           />
         )}
 
+        {view === "messages" && (
+          <MessagesView myId={user?.id} initialContactId={messageContactId} />
+        )}
         {view === "account-settings" && (
           <AccountSettings
             user={user}
@@ -956,105 +1009,108 @@ export default function DoctorDashboard({
           />
         )}
 
-        {view === "messages" && <MessagesView myId={user?.id} />}
-
         {view === "full-chart" && selectedChart && (
-          <div className='patient-record-page'>
+          <div className="patient-record-page">
             <button
-              type='button'
-              className='patient-record-back'
+              type="button"
+              className="patient-record-back"
               onClick={() => {
                 setSelectedChart(null);
                 setView("home");
-              }}>
+              }}
+            >
               ← All Patients
             </button>
 
-            <section className='patient-record-hero'>
-              <div className='patient-record-left'>
-                <div className='patient-record-avatar'>
+            <section className="patient-record-hero">
+              <div className="patient-record-left">
+                <div className="patient-record-avatar">
                   {selectedChart.patient?.initials || "PT"}
                 </div>
 
                 <div>
-                  <div className='patient-record-name-row'>
+                  <div className="patient-record-name-row">
                     <h1>{selectedChart.patient?.name || "Unknown Patient"}</h1>
                     <span>
                       MRN {selectedChart.patient?.mrn || "Unavailable"}
                     </span>
                   </div>
 
-                  <p className='patient-record-meta'>
+                  <p className="patient-record-meta">
                     DOB {selectedChart.patient?.dateOfBirth || "Unavailable"} ·
                     Last visit{" "}
                     {selectedChart.appointment?.date || "Unavailable"}
                   </p>
 
-                  <p className='patient-record-summary'>
+                  <p className="patient-record-summary">
                     {selectedChart.appointment?.visitType || "Visit Overview"} ·{" "}
                     {selectedChart.appointment?.status || "Status unavailable"}
                   </p>
                 </div>
               </div>
 
-              <div className='patient-record-actions'>
-                <button type='button' className='patient-record-secondary'>
+              <div className="patient-record-actions">
+                <button type="button" className="patient-record-secondary">
                   Message
                 </button>
               </div>
             </section>
 
-            <div className='patient-record-tabs'>
+            <div className="patient-record-tabs">
               <button
-                type='button'
+                type="button"
                 className={`patient-record-tab ${
                   chartTab === "overview" ? "active" : ""
                 }`}
-                onClick={() => setChartTab("overview")}>
+                onClick={() => setChartTab("overview")}
+              >
                 Overview
               </button>
 
               <button
-                type='button'
+                type="button"
                 className={`patient-record-tab ${
                   chartTab === "documents" ? "active" : ""
                 }`}
-                onClick={() => setChartTab("documents")}>
+                onClick={() => setChartTab("documents")}
+              >
                 Documents
               </button>
 
               <button
-                type='button'
+                type="button"
                 className={`patient-record-tab ${
                   chartTab === "labs" ? "active" : ""
                 }`}
-                onClick={() => setChartTab("labs")}>
+                onClick={() => setChartTab("labs")}
+              >
                 Labs
               </button>
 
               <button
-                type='button'
+                type="button"
                 className={`patient-record-tab ${
                   chartTab === "medications" ? "active" : ""
                 }`}
-                onClick={() => setChartTab("medications")}>
+                onClick={() => setChartTab("medications")}
+              >
                 Medications
               </button>
             </div>
 
             {chartTab === "overview" && (
               <>
-                <div className='patient-record-grid'>
-                  <section className='patient-record-card'>
+                <div className="patient-record-grid">
+                  <section className="patient-record-card">
                     <h2>Active Problems</h2>
 
                     {(selectedChart.activeProblems || []).length === 0 ? (
-                      <p className='patient-record-empty'>
+                      <p className="patient-record-empty">
                         Active problem list unavailable.
                       </p>
                     ) : (
                       selectedChart.activeProblems.map((problem) => (
-                        <div key={problem.name} className='patient-problem-row'>
+                        <div key={problem.name} className="patient-problem-row">
                           <div>
                             <p>{problem.name}</p>
                             <span>
@@ -1069,7 +1125,7 @@ export default function DoctorDashboard({
                     )}
                   </section>
 
-                  <section className='patient-record-card'>
+                  <section className="patient-record-card">
                     <h2>Open Issues</h2>
 
                     {(selectedChart.openIssues || []).filter((issue) => {
@@ -1077,7 +1133,7 @@ export default function DoctorDashboard({
                         ?.toLowerCase()
                         .includes("no recent lab results");
                     }).length === 0 ? (
-                      <p className='patient-record-empty'>
+                      <p className="patient-record-empty">
                         No open issues available.
                       </p>
                     ) : (
@@ -1088,9 +1144,10 @@ export default function DoctorDashboard({
                             .includes("no recent lab results");
                         })
                         .map((issue) => (
-                          <div key={issue.text} className='patient-issue-row'>
+                          <div key={issue.text} className="patient-issue-row">
                             <span
-                              className={`patient-issue-badge ${issue.tone || ""}`}>
+                              className={`patient-issue-badge ${issue.tone || ""}`}
+                            >
                               {issue.level || "Info"}
                             </span>
 
@@ -1101,24 +1158,25 @@ export default function DoctorDashboard({
                   </section>
                 </div>
 
-                <section className='patient-record-card patient-record-history'>
+                <section className="patient-record-card patient-record-history">
                   <h2>Visit History</h2>
 
                   {(selectedChart.recentHistory || []).length === 0 ? (
-                    <p className='patient-record-empty'>
+                    <p className="patient-record-empty">
                       No visit history available.
                     </p>
                   ) : (
                     selectedChart.recentHistory.map((item) => (
                       <div
                         key={item.date + item.title}
-                        className='patient-history-row'>
-                        <div className='patient-history-date'>
+                        className="patient-history-row"
+                      >
+                        <div className="patient-history-date">
                           <p>{item.date || "No date"}</p>
                           <span>{item.provider || "Provider unavailable"}</span>
                         </div>
 
-                        <div className='patient-history-main'>
+                        <div className="patient-history-main">
                           <span>{item.title || "Visit"}</span>
                           <p>{item.detail || "No detail available."}</p>
                         </div>
@@ -1127,15 +1185,15 @@ export default function DoctorDashboard({
                   )}
                 </section>
 
-                <section className='patient-record-card patient-record-history'>
+                <section className="patient-record-card patient-record-history">
                   <h2>Missing Information</h2>
 
                   {(selectedChart.missingSections || []).length === 0 ? (
-                    <p className='patient-record-empty'>
+                    <p className="patient-record-empty">
                       No missing information flagged.
                     </p>
                   ) : (
-                    <ul className='patient-missing-list'>
+                    <ul className="patient-missing-list">
                       {selectedChart.missingSections.map((section) => (
                         <li key={section}>{section}</li>
                       ))}
@@ -1146,22 +1204,22 @@ export default function DoctorDashboard({
             )}
 
             {chartTab === "documents" && (
-              <section className='patient-record-card patient-record-history'>
+              <section className="patient-record-card patient-record-history">
                 <h2>Documents</h2>
-                <p className='patient-record-empty'>No documents available.</p>
+                <p className="patient-record-empty">No documents available.</p>
               </section>
             )}
 
             {chartTab === "labs" && (
-              <section className='patient-record-card patient-record-history'>
+              <section className="patient-record-card patient-record-history">
                 <h2>Lab Results</h2>
 
                 {(selectedChart.labs || []).length === 0 ? (
-                  <p className='patient-record-empty'>
+                  <p className="patient-record-empty">
                     No lab information available.
                   </p>
                 ) : (
-                  <table className='patient-record-table'>
+                  <table className="patient-record-table">
                     <thead>
                       <tr>
                         <th>Test</th>
@@ -1187,15 +1245,15 @@ export default function DoctorDashboard({
             )}
 
             {chartTab === "medications" && (
-              <section className='patient-record-card patient-record-history'>
+              <section className="patient-record-card patient-record-history">
                 <h2>Current Medications</h2>
 
                 {(selectedChart.medications || []).length === 0 ? (
-                  <p className='patient-record-empty'>
+                  <p className="patient-record-empty">
                     Medication information unavailable.
                   </p>
                 ) : (
-                  <table className='patient-record-table'>
+                  <table className="patient-record-table">
                     <thead>
                       <tr>
                         <th>Medication</th>
@@ -1227,52 +1285,59 @@ export default function DoctorDashboard({
             onBack={() => setView("labs")}
           />
         )}
+        {view === "schedule" && (
+          <ProviderSchedule onMessagePatient={messagePatient} />
+        )}
+
         {view !== "home" ? null : (
           <>
             {/* Header */}
-            <div className='doc-header'>
+            <div className="doc-header">
               <div>
-                <p className='doc-date'>{dateFormat}</p>
-                <h1 className='doc-greeting'>
+                <p className="doc-date">{dateFormat}</p>
+                <h1 className="doc-greeting">
                   {greetingMes}, {currentUser.firstName}.
                 </h1>
               </div>
 
-              <div className='doc-header-actions'>
-                <div className='doc-search'>
+              <div className="doc-header-actions">
+                <div className="doc-search">
                   <Search size={14} />
                   <span>Quick patient lookup...</span> {/*search bar*/}
                 </div>
 
                 <button
-                  className='doc-action-btn'
+                  className="doc-action-btn"
                   onClick={() => {
                     loadUnsignedEncounters();
                     unsignedEncountersRef.current?.scrollIntoView({
                       behavior: "smooth",
                     });
-                  }}>
+                  }}
+                >
                   <FileSignature size={14} />
                   Sign Notes
                   {signNotesCount > 0 && (
-                    <span className='doc-action-count'>{signNotesCount}</span>
+                    <span className="doc-action-count">{signNotesCount}</span>
                   )}
                 </button>
 
                 <button
-                  className='doc-action-btn'
-                  onClick={() => setView("labs")}>
+                  className="doc-action-btn"
+                  onClick={() => setView("labs")}
+                >
                   <FlaskConical size={14} />
                   Lab Results
                 </button>
 
                 <button
-                  className='doc-action-btn doc-action-filled'
-                  onClick={() => setView("messages")}>
+                  className="doc-action-btn doc-action-filled"
+                  onClick={() => setView("messages")}
+                >
                   <MessageSquare size={14} />
                   Inbox
                   {inboxCount > 0 && (
-                    <span className='doc-action-count doc-action-count-light'>
+                    <span className="doc-action-count doc-action-count-light">
                       {inboxCount}
                     </span>
                   )}
@@ -1281,50 +1346,50 @@ export default function DoctorDashboard({
             </div>
 
             {/* Top summary cards */}
-            <div className='doc-stats'>
-              <div className='doc-stat-item'>
-                <Users size={18} className='doc-stat-icon' />
+            <div className="doc-stats">
+              <div className="doc-stat-item">
+                <Users size={18} className="doc-stat-icon" />
 
-                <div className='doc-stat-main'>
-                  <p className='doc-stat-label'>Today's Patients</p>
-                  <p className='doc-stat-value'>
+                <div className="doc-stat-main">
+                  <p className="doc-stat-label">Today's Patients</p>
+                  <p className="doc-stat-value">
                     {todayPatientsCount} scheduled
                   </p>
                 </div>
 
-                <p className='doc-stat-side'>
+                <p className="doc-stat-side">
                   {seenPatientCount} seen · {pendingPatientCount} pending
                 </p>
               </div>
 
-              <div className='doc-stat-item'>
-                <FileText size={18} className='doc-stat-icon' />
+              <div className="doc-stat-item">
+                <FileText size={18} className="doc-stat-icon" />
 
-                <div className='doc-stat-main'>
-                  <p className='doc-stat-label'>Unsigned Encounters</p>
-                  <p className='doc-stat-value'>{unsignEnCount} notes</p>
+                <div className="doc-stat-main">
+                  <p className="doc-stat-label">Unsigned Encounters</p>
+                  <p className="doc-stat-value">{unsignEnCount} notes</p>
                 </div>
 
                 {urgentEncounterCount > 0 && (
-                  <p className='doc-stat-side doc-stat-side-urgent'>
+                  <p className="doc-stat-side doc-stat-side-urgent">
                     {urgentEncounterCount} urgent
                   </p>
                 )}
               </div>
 
-              <div className='doc-stat-item'>
+              <div className="doc-stat-item">
                 <AlertCircle
                   size={18}
-                  className='doc-stat-icon doc-stat-alert'
+                  className="doc-stat-icon doc-stat-alert"
                 />
 
-                <div className='doc-stat-main'>
-                  <p className='doc-stat-label'>Clinical Alerts</p>
-                  <p className='doc-stat-value'>{activeAlertCount} active</p>
+                <div className="doc-stat-main">
+                  <p className="doc-stat-label">Clinical Alerts</p>
+                  <p className="doc-stat-value">{activeAlertCount} active</p>
                 </div>
 
                 {criticalAlertCount > 0 && (
-                  <p className='doc-stat-side doc-stat-side-urgent'>
+                  <p className="doc-stat-side doc-stat-side-urgent">
                     {criticalAlertCount} critical
                   </p>
                 )}
@@ -1332,54 +1397,28 @@ export default function DoctorDashboard({
             </div>
 
             {/* Dashboard body */}
-            <div className='doc-grid'>
-              {/* Today's schedule */}
-              <div className='doc-card doc-schedule-card'>
-                <div className='doc-card-header'>
-                  <h3 className='doc-card-title'>Today's Schedule</h3>
-                  <span className='doc-date-badge'>{badgeDateFormat}</span>
-                </div>
-
-                {visitOverviewLoading && (
-                  <p className='visit-overview-empty'>
-                    Loading visit overview...
-                  </p>
-                )}
-
-                {visitOverviewError && (
-                  <p className='visit-overview-empty'>{visitOverviewError}</p>
-                )}
-
-                {visitOverviewItems.map((appt, index) => (
-                  <div
-                    key={appt.id || appt.name}
-                    className={`doc-sched-row${index === 0 ? " now" : ""} clickable`}
-                    onClick={() => openVisitOverview(appt.id)}>
-                    <span className='doc-sched-time'>{appt.time || "TBD"}</span>
-                    <span className='doc-sched-dot'></span>
-
-                    <div className='doc-sched-info'>
-                      <p className='doc-sched-name'>{appt.name}</p>
-                      <p className='doc-sched-type'>{appt.type}</p>
-                    </div>
-
-                    {index === 0 && <span className='doc-now-badge'>Now</span>}
-                  </div>
-                ))}
-              </div>
+            <div className="doc-grid">
+              {/* Today's schedule — hours-of-the-day grid (scrolled to now) */}
+              <TodayScheduleCard
+                onOpenSchedule={() => {
+                  setView("schedule");
+                  onNavigate?.("schedule");
+                }}
+                onMessagePatient={messagePatient}
+              />
 
               {/* Middle section for AI summaries and notes */}
-              <div className='doc-col-main'>
-                <div className='doc-card'>
-                  <div className='doc-card-header'>
+              <div className="doc-col-main">
+                <div className="doc-card">
+                  <div className="doc-card-header">
                     <div>
-                      <h3 className='doc-card-title'>AI Pre-Visit Summaries</h3>
-                      <p className='doc-card-subtitle'>
+                      <h3 className="doc-card-title">AI Pre-Visit Summaries</h3>
+                      <p className="doc-card-subtitle">
                         Generated from records, labs, and prior notes
                       </p>
                     </div>
 
-                    <span className='doc-date-badge'>
+                    <span className="doc-date-badge">
                       {Math.min(visitOverviewItems.length, 4)} upcoming
                     </span>
                   </div>
@@ -1387,29 +1426,30 @@ export default function DoctorDashboard({
                   {visitOverviewItems.slice(0, 4).map((summary) => (
                     <div
                       key={summary.id}
-                      className='doc-summary-item clickable'
-                      onClick={() => openVisitOverview(summary.id)}>
-                      <div className='doc-summary-top'>
-                        <div className='doc-summary-avatar'>
+                      className="doc-summary-item clickable"
+                      onClick={() => openVisitOverview(summary.id)}
+                    >
+                      <div className="doc-summary-top">
+                        <div className="doc-summary-avatar">
                           {summary.initials || "PT"}
                         </div>
 
-                        <div className='doc-summary-info'>
-                          <p className='doc-summary-name'>{summary.name}</p>
-                          <p className='doc-summary-appt'>
+                        <div className="doc-summary-info">
+                          <p className="doc-summary-name">{summary.name}</p>
+                          <p className="doc-summary-appt">
                             {summary.time || "TBD"} ·{" "}
                             {summary.type || "Visit Overview"}
                           </p>
                         </div>
 
-                        <div className='doc-summary-tags'>
-                          <span className='doc-tag doc-tag-info'>
+                        <div className="doc-summary-tags">
+                          <span className="doc-tag doc-tag-info">
                             Visit overview
                           </span>
                         </div>
                       </div>
 
-                      <p className='doc-summary-snippet'>
+                      <p className="doc-summary-snippet">
                         Open the patient visit overview generated from available
                         appointment, patient, and lab records.
                       </p>
@@ -1417,28 +1457,28 @@ export default function DoctorDashboard({
                   ))}
                 </div>
 
-                <div className='doc-card' ref={unsignedEncountersRef}>
-                  <div className='doc-card-header'>
+                <div className="doc-card" ref={unsignedEncountersRef}>
+                  <div className="doc-card-header">
                     <div>
-                      <h3 className='doc-card-title'>Unsigned Encounters</h3>
-                      <p className='doc-card-subtitle'>
+                      <h3 className="doc-card-title">Unsigned Encounters</h3>
+                      <p className="doc-card-subtitle">
                         Notes pending your signature
                       </p>
                     </div>
 
-                    <span className='doc-date-badge'>
+                    <span className="doc-date-badge">
                       {unsignEnCount} pending
                     </span>
                   </div>
 
                   {unsignedEncounterLoading && (
-                    <p className='visit-overview-empty'>
+                    <p className="visit-overview-empty">
                       Loading unsigned encounters...
                     </p>
                   )}
 
                   {unsignedEncounterError && (
-                    <p className='visit-overview-empty'>
+                    <p className="visit-overview-empty">
                       {unsignedEncounterError}
                     </p>
                   )}
@@ -1446,39 +1486,41 @@ export default function DoctorDashboard({
                   {!unsignedEncounterLoading &&
                     !unsignedEncounterError &&
                     unsignedEncounters.length === 0 && (
-                      <p className='visit-overview-empty'>
+                      <p className="visit-overview-empty">
                         No unsigned encounters pending.
                       </p>
                     )}
 
                   {unsignedEncounters.map((encounter) => (
-                    <div key={encounter.id} className='doc-encounter-row'>
-                      <div className='doc-encounter-info'>
-                        <p className='doc-encounter-name'>
+                    <div key={encounter.id} className="doc-encounter-row">
+                      <div className="doc-encounter-info">
+                        <p className="doc-encounter-name">
                           {encounter.name}
 
                           {encounter.urgent && (
-                            <span className='doc-urgent-badge'>Urgent</span>
+                            <span className="doc-urgent-badge">Urgent</span>
                           )}
                         </p>
 
-                        <p className='doc-encounter-detail'>
+                        <p className="doc-encounter-detail">
                           {encounter.detail}
                         </p>
                       </div>
 
-                      <div className='doc-encounter-actions'>
+                      <div className="doc-encounter-actions">
                         <button
-                          className='doc-btn-review'
+                          className="doc-btn-review"
                           onClick={() =>
                             setSelectedUnsignedEncounter(encounter)
-                          }>
+                          }
+                        >
                           Review
                         </button>
                         <button
-                          className='doc-btn-sign'
+                          className="doc-btn-sign"
                           onClick={() => handleSignEncounter(encounter.id)}
-                          disabled={signingEncounterId === encounter.id}>
+                          disabled={signingEncounterId === encounter.id}
+                        >
                           {signingEncounterId === encounter.id
                             ? "Signing..."
                             : "Sign"}
@@ -1490,21 +1532,21 @@ export default function DoctorDashboard({
               </div>
 
               {/* Patient alerts */}
-              <div className='doc-card doc-alerts-card'>
-                <div className='doc-card-header'>
-                  <h3 className='doc-card-title'>Patient Alerts</h3>
-                  <span className='doc-date-badge'>
+              <div className="doc-card doc-alerts-card">
+                <div className="doc-card-header">
+                  <h3 className="doc-card-title">Patient Alerts</h3>
+                  <span className="doc-date-badge">
                     {activeAlertCount} active
                   </span>
                 </div>
 
                 {patientAlerts.map((alert) => (
-                  <div key={alert.name} className='doc-alert-row'>
-                    <div className='doc-alert-icon'>!</div>
+                  <div key={alert.name} className="doc-alert-row">
+                    <div className="doc-alert-icon">!</div>
 
                     <div>
-                      <p className='doc-alert-name'>{alert.name}</p>
-                      <p className='doc-alert-desc'>{alert.desc}</p>
+                      <p className="doc-alert-name">{alert.name}</p>
+                      <p className="doc-alert-desc">{alert.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -1515,28 +1557,30 @@ export default function DoctorDashboard({
       </main>
 
       {selectedUnsignedEncounter && (
-        <div className='visit-overview-backdrop'>
+        <div className="visit-overview-backdrop">
           <aside
-            className='visit-overview-drawer'
-            aria-label='Unsigned encounter review'>
-            <div className='visit-overview-header'>
+            className="visit-overview-drawer"
+            aria-label="Unsigned encounter review"
+          >
+            <div className="visit-overview-header">
               <div>
                 <h2>{selectedUnsignedEncounter.name}</h2>
-                <p className='visit-overview-meta'>
+                <p className="visit-overview-meta">
                   {selectedUnsignedEncounter.detail}
                 </p>
               </div>
 
               <button
-                type='button'
-                className='visit-overview-close'
+                type="button"
+                className="visit-overview-close"
                 onClick={() => setSelectedUnsignedEncounter(null)}
-                aria-label='Close unsigned encounter review'>
+                aria-label="Close unsigned encounter review"
+              >
                 ×
               </button>
             </div>
 
-            <section className='visit-overview-section'>
+            <section className="visit-overview-section">
               <h3>Encounter Summary</h3>
               <p>
                 {selectedUnsignedEncounter.summary ||
@@ -1544,26 +1588,28 @@ export default function DoctorDashboard({
               </p>
             </section>
 
-            <div className='visit-overview-actions'>
-              <p className='visit-overview-source'>
+            <div className="visit-overview-actions">
+              <p className="visit-overview-source">
                 Unsigned encounter pending provider signature
               </p>
 
-              <div className='visit-overview-action-buttons'>
+              <div className="visit-overview-action-buttons">
                 <button
-                  type='button'
-                  className='doc-btn-review'
-                  onClick={() => setSelectedUnsignedEncounter(null)}>
+                  type="button"
+                  className="doc-btn-review"
+                  onClick={() => setSelectedUnsignedEncounter(null)}
+                >
                   Close
                 </button>
 
                 <button
-                  type='button'
-                  className='doc-btn-sign'
+                  type="button"
+                  className="doc-btn-sign"
                   onClick={() => {
                     handleSignEncounter(selectedUnsignedEncounter.id);
                     setSelectedUnsignedEncounter(null);
-                  }}>
+                  }}
+                >
                   Sign
                 </button>
               </div>
@@ -1584,13 +1630,14 @@ export default function DoctorDashboard({
 
       {/* ── Floating AI button ── */}
       <button
-        className='doc-pulse-fab'
-        aria-label='Pulse AI'
-        onClick={() => dfa.openDrawer()}>
+        className="doc-pulse-fab"
+        aria-label="Pulse AI"
+        onClick={() => dfa.openDrawer()}
+      >
         <MessageCircleQuestion size={25} />
       </button>
       <Footer
-        role='provider'
+        role="provider"
         onNavigate={(target) => {
           if (target === "dashboard") setView("home");
           else if (target === "schedule") setView("schedule");

@@ -1,0 +1,167 @@
+/*
+AI-USAGE SUMMARY
+Tools: Claude Code (Opus 4.8)
+Overall AI Contribution: ~88%
+AI-Assisted Areas: Styling for the hours-of-the-day schedule grid — time gutter
+  and per-state slot colours (white = non-office-hours, green = open / booked,
+  red = blocked). The hover background change plus the absolutely-positioned
+  action buttons that appear on hover without shifting layout; dimmed past slots.
+Human Contributions: Visual direction.
+Notes: Validated visually and via `npm run build`.
+*/
+
+.ds-grid {
+  position: relative; /* rows' offsetTop is measured from here (scroll-to-now) */
+  overflow-y: auto;
+  overflow-x: hidden; /* vertical scrolling only */
+  border: 1px solid #f2f2f1;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.ds-row {
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  align-items: stretch;
+  border-bottom: 1px solid #f6f6f4;
+  min-height: var(--ds-row-h, 40px);
+}
+
+.ds-row:last-child {
+  border-bottom: none;
+}
+
+.ds-time {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 10px;
+  font-size: 11px;
+  color: #9c9c9b;
+  border-right: 1px solid #f6f6f4;
+  white-space: nowrap;
+}
+
+.ds-slot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 3px 6px; /* grid item stretches to fill the cell minus these margins */
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #fff;
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.12s;
+}
+
+/* ── state backgrounds ── */
+.ds-slot.empty {
+  background: #fff;
+}
+.ds-slot.empty:hover {
+  background: #f2f2f1;
+}
+
+.ds-slot.open {
+  background: #e7f2ec;
+}
+.ds-slot.open:hover {
+  background: #d8eadf;
+}
+
+.ds-slot.booked {
+  background: #e7f2ec;
+  cursor: pointer;
+}
+.ds-slot.booked:hover {
+  background: #d8eadf;
+}
+
+.ds-slot.blocked {
+  background: #fdebeb;
+}
+.ds-slot.blocked:hover {
+  background: #f8dada;
+}
+
+.ds-slot.empty.past {
+  background: #fff;
+  opacity: 0.4;
+}
+.ds-slot.booked.past {
+  opacity: 0.5;
+}
+
+.ds-slot.selected {
+  border-color: #111110;
+}
+
+.ds-slot-name {
+  font-size: 13px;
+  color: #111110;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── hover actions: cover the whole slot, split into equal columns ── */
+.ds-actions {
+  position: absolute;
+  inset: 0;
+  display: none;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ds-row:hover .ds-actions {
+  display: flex;
+}
+
+.ds-act {
+  flex: 1; /* 1 → full width, 2 → halves, 3 → thirds */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-left: 1px solid rgba(17, 17, 16, 0.07);
+  background: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  color: #71716e;
+}
+
+.ds-act:first-child {
+  border-left: none;
+}
+
+.ds-act:hover {
+  background: #fff;
+  color: #111110;
+}
+
+.ds-act--open:hover {
+  color: #1f7a4d;
+}
+
+.ds-act--block:hover,
+.ds-act--cancel:hover {
+  color: #c2410c;
+}
+
+/* ── status pill (used by AppointmentDetails) ── */
+.ds-status--scheduled {
+  background: #e7f2ec;
+  color: #1f7a4d;
+}
+
+.ds-status--cancelled {
+  background: #f7e7e7;
+  color: #b3261e;
+}
+
+.ds-status--completed {
+  background: #eef0ef;
+  color: #71716e;
+}

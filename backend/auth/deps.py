@@ -59,6 +59,10 @@ def current_provider(user: dict[str, Any] = Depends(current_user)) -> dict[str, 
     return rows[0]
 
 
+def current_provider_id(provider: dict[str, Any] = Depends(current_provider)) -> str:
+    return provider["id"]
+
+
 def current_patient(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
     admin = get_supabase_admin()
     resp = (
