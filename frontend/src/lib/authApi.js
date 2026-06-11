@@ -317,20 +317,24 @@ export const authApi = {
     return res;
   },
 
-  async updateProfile({ first_name, last_name }) {
+  async updateProfile({ first_name, last_name, specialty }) {
     const session = readStoredSession();
     if (!session?.access_token) throw new Error("Not signed in");
     const data = await request("/auth/profile", {
       method: "PATCH",
       token: session.access_token,
-      body: { first_name, last_name },
+      body: {
+        first_name,
+        last_name,
+        ...(specialty !== undefined && { specialty }),
+      },
     });
-    // Update the stored session's user_metadata so the name reflects
     if (session.user) {
       session.user.user_metadata = {
         ...session.user.user_metadata,
         first_name,
         last_name,
+        ...(specialty !== undefined && { specialty }),
       };
       writeStoredSession(session);
     }
