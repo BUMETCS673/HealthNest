@@ -37,7 +37,7 @@ export default function Signup({ onSwitchToLogin, onSignedUp, initialRole = "pat
     try {
       const data = await authApi.signUp({ email, password, metadata });
       if (data.session) {
-        onSignedUp?.(data.session);
+        onSignedUp?.(data.session, role);
       } else {
         setInfo(
           data.message ||

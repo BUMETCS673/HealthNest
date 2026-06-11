@@ -10,7 +10,6 @@ import {
   Calendar,
   Pill,
   Activity,
-  FileText,
   ChevronRight,
   Plus,
   MessageCircleQuestion,
@@ -76,16 +75,31 @@ function summarizeForCard(rows) {
 }
 
 function SummaryCard({ icon, label, value, detail, onClick }) {
-  return (
-    <div
-      className={`summ-card${onClick ? " summ-card--clickable" : ""}`}
-      onClick={onClick}>
-      <div className='summ-icon'>{icon}</div>
-      <p className='summ-label'>{label}</p>
-      <p className='summ-value'>{value}</p>
-      {detail && <p className='summ-detail'>{detail}</p>}
-    </div>
+  const body = (
+    <>
+      <div className="summ-icon">{icon}</div>
+      <p className="summ-label">{label}</p>
+      <p className="summ-value">{value}</p>
+      {detail && <p className="summ-detail">{detail}</p>}
+    </>
   );
+
+  // Clickable cards are real buttons (keyboard + screen-reader friendly)
+  // with a corner chevron hinting they navigate somewhere.
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        className="summ-card summ-card--clickable"
+        onClick={onClick}
+      >
+        {body}
+        <ChevronRight size={15} className="summ-arrow" />
+      </button>
+    );
+  }
+
+  return <div className="summ-card">{body}</div>;
 }
 
 function AccountSettings({ user, currentUser, onBack }) {
@@ -473,26 +487,33 @@ export default function PatientDashboard({
                     ? `${upcomingAppoint[0].doctor}${upcomingAppoint[0].specialty ? ` · ${upcomingAppoint[0].specialty}` : ""}`
                     : "No upcoming appointments"
                 }
-                onClick={() => onNavigate?.("appointments")}
+                onClick={() =>
+                  upcomingAppoint[0]
+                    ? onNavigate?.("appointment-detail", {
+                        appointmentId: upcomingAppoint[0].id,
+                        appointment: upcomingAppoint[0],
+                      })
+                    : onNavigate?.("appointments")
+                }
               />
+              {/* Medications are still demo data (no meds backend yet);
+                  the soonest refill in that list is Metformin's. */}
               <SummaryCard
                 icon={<Pill size={16} />}
-                label='Active Medications'
-                value='3'
-                detail='Refill due May 28'
+                label="Active Medications"
+                value={String(activeMed.length)}
+                detail={`Next refill ${activeMed[1].refillDue}`}
               />
               <SummaryCard
                 icon={<Activity size={16} />}
-                label='Recent Labs'
-                value='4'
-                detail='1 result flagged'
+                label="Recent Labs"
+                value={String(labRows.length)}
+                detail={
+                  labResult[0]
+                    ? `Latest: ${labResult[0].test} · ${labResult[0].result}`
+                    : "No results yet"
+                }
                 onClick={() => setView("labs")}
-              />
-              <SummaryCard
-                icon={<FileText size={16} />}
-                label='Balance Due'
-                value='$142'
-                detail='Due Jun 1 · BCBS on file'
               />
             </div>
 
@@ -512,11 +533,17 @@ export default function PatientDashboard({
                 {upcomingAppoint.map((appt) => (
                   <button
                     key={appt.id}
-                    className='dash-appt-row'
-                    onClick={() => onNavigate?.("appointments")}>
-                    <div className='dash-appt-date'>
-                      <span className='dash-appt-month'>{appt.month}</span>
-                      <span className='dash-appt-day'>{appt.day}</span>
+                    className="dash-appt-row"
+                    onClick={() =>
+                      onNavigate?.("appointment-detail", {
+                        appointmentId: appt.id,
+                        appointment: appt,
+                      })
+                    }
+                  >
+                    <div className="dash-appt-date">
+                      <span className="dash-appt-month">{appt.month}</span>
+                      <span className="dash-appt-day">{appt.day}</span>
                     </div>
                     <div className='dash-appt-divider' />
                     <div className='dash-appt-info'>
@@ -608,17 +635,8 @@ export default function PatientDashboard({
         )}
       </main>
 
-      {!pulse.drawerOpen && (
-        <button
-          className='dash-pulse-fab'
-          onClick={() => pulse.openDrawer()}
-          aria-label='Open Pulse AI'>
-          <MessageCircleQuestion size={25} />
-        </button>
-      )}
-
       <Footer
-        role='patient'
+        role="patient"
         onNavigate={(target) => {
           if (target === "dashboard") setView("home");
           else if (target === "records") setView("labs");

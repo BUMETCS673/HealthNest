@@ -21,6 +21,12 @@ import {
 import LabResultsPage from "../labresults/LabResultsPage";
 import LabResultReview from "../labresults/LabResultReview";
 import { authApi } from "../lib/authApi";
+import {
+  patientsApi,
+  formatPatientName,
+  formatPatientSubtitle,
+} from "../lib/patientsApi";
+import { labResultsApi } from "../lib/labResultsApi";
 import { useMessages } from "../messages/MessagesProvider";
 import MessagesView from "../messages/MessagesView";
 import ProviderSchedule from "./ProviderSchedule";
@@ -81,6 +87,29 @@ function getCurrUser(user) {
     role,
     initials,
   };
+}
+
+function formatChartDate(value) {
+  if (!value) return "—";
+  const str = String(value);
+  // Parse date-only strings as local dates ("2026-06-01" would otherwise be
+  // treated as UTC midnight and render a day early in western timezones).
+  const dateOnly = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const d = dateOnly
+    ? new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3]))
+    : new Date(str);
+  if (isNaN(d)) return str;
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function formatChartTime(value) {
+  if (!value) return "—";
+  // Times arrive as "HH:MM:SS"; show "HH:MM".
+  return String(value).split(":").slice(0, 2).join(":");
 }
 
 function AccountSettings({ user, currentUser, onBack }) {
@@ -703,6 +732,15 @@ export default function DoctorDashboard({
   const [visitOverviewItems, setVisitOverviewItems] = useState([]);
   const [visitOverviewError, setVisitOverviewError] = useState("");
   const [visitOverviewLoading, setVisitOverviewLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [chartLabs, setChartLabs] = useState([]);
+  const [chartLabsError, setChartLabsError] = useState("");
+  // Where lab-review should return to: the lab queue or a patient's chart.
+  const [labReviewFrom, setLabReviewFrom] = useState("labs");
   const [unsignedEncounters, setUnsignedEncounters] = useState([]);
   const [unsignedEncounterError, setUnsignedEncounterError] = useState("");
   const [unsignedEncounterLoading, setUnsignedEncounterLoading] =
@@ -936,6 +974,98 @@ export default function DoctorDashboard({
     setView("full-chart");
   };
 
+  // Immediate state for each keystroke; the debounced fetch lives in the
+  // effect below.
+  const handleSearchInput = (value) => {
+    setSearchQuery(value);
+    setSearchOpen(true);
+    if (value.trim().length < 2) {
+      setSearchResults([]);
+      setSearchLoading(false);
+      setSearchError("");
+    } else {
+      setSearchLoading(true);
+      setSearchError("");
+    }
+  };
+
+  // Debounced quick patient lookup — searches the provider's own panel
+  // (the backend only returns patients with an active care relationship).
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (q.length < 2) return;
+
+    let cancelled = false;
+
+    const timer = setTimeout(async () => {
+      try {
+        const results = await patientsApi.search({ q, limit: 8 });
+        if (!cancelled) setSearchResults(results || []);
+      } catch (error) {
+        if (!cancelled) {
+          setSearchResults([]);
+          setSearchError(error.message || "Patient search failed.");
+        }
+      } finally {
+        if (!cancelled) setSearchLoading(false);
+      }
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [searchQuery]);
+
+  const loadChartLabs = async (patientId) => {
+    setChartLabs([]);
+    setChartLabsError("");
+    try {
+      const labs = await labResultsApi.list({ patientId, limit: 50 });
+      setChartLabs(labs || []);
+    } catch (error) {
+      setChartLabsError(error.message || "Unable to load lab results.");
+    }
+  };
+
+  const openPatientChart = async (patientId) => {
+    if (!patientId) return;
+
+    setSearchLoading(true);
+    setSearchError("");
+
+    try {
+      const [response] = await Promise.all([
+        fetch(
+          `${import.meta.env.VITE_API_URL}/providers/patient-overview/${patientId}`,
+          {
+            headers: getAuthHeaders(),
+          },
+        ),
+        loadChartLabs(patientId),
+      ]);
+
+      if (!response.ok) {
+        throw new Error("Unable to load patient information.");
+      }
+
+      const data = await response.json();
+      setSearchQuery("");
+      setSearchResults([]);
+      setSearchOpen(false);
+      openFullChart(data);
+    } catch (error) {
+      setSearchError(error.message || "Unable to load patient information.");
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const openMessagesWithPatient = (patientUserId) => {
+    setMessageContactId(patientUserId || null);
+    setView("messages");
+  };
+
   return (
     <div className="d-dash">
       {/* Navigation bar */}
@@ -993,6 +1123,7 @@ export default function DoctorDashboard({
             onBack={() => setView("home")}
             onOpenReview={(id) => {
               setActiveLabId(id);
+              setLabReviewFrom("labs");
               setView("lab-review");
             }}
           />
@@ -1050,7 +1181,19 @@ export default function DoctorDashboard({
               </div>
 
               <div className="patient-record-actions">
-                <button type="button" className="patient-record-secondary">
+                <button
+                  type="button"
+                  className="patient-record-secondary"
+                  disabled={!selectedChart.patient?.userId}
+                  title={
+                    selectedChart.patient?.userId
+                      ? "Send a secure message"
+                      : "Messaging unavailable for this patient"
+                  }
+                  onClick={() =>
+                    openMessagesWithPatient(selectedChart.patient?.userId)
+                  }
+                >
                   Message
                 </button>
               </div>
@@ -1095,6 +1238,16 @@ export default function DoctorDashboard({
                 onClick={() => setChartTab("medications")}
               >
                 Medications
+              </button>
+
+              <button
+                type="button"
+                className={`patient-record-tab ${
+                  chartTab === "appointments" ? "active" : ""
+                }`}
+                onClick={() => setChartTab("appointments")}
+              >
+                Appointments
               </button>
             </div>
 
@@ -1214,28 +1367,82 @@ export default function DoctorDashboard({
               <section className="patient-record-card patient-record-history">
                 <h2>Lab Results</h2>
 
-                {(selectedChart.labs || []).length === 0 ? (
+                {chartLabsError && (
+                  <p className="patient-record-empty">{chartLabsError}</p>
+                )}
+
+                {!chartLabsError && chartLabs.length === 0 ? (
                   <p className="patient-record-empty">
-                    No lab information available.
+                    No lab results for this patient.
+                  </p>
+                ) : (
+                  !chartLabsError && (
+                    <table className="patient-record-table">
+                      <thead>
+                        <tr>
+                          <th>Lab</th>
+                          <th>Collected</th>
+                          <th>Resulted</th>
+                          <th>Status</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {chartLabs.map((lab) => (
+                          <tr key={lab.id}>
+                            <td>{lab.lab_name || "Unavailable"}</td>
+                            <td>{formatChartDate(lab.collected_at)}</td>
+                            <td>{formatChartDate(lab.resulted_at)}</td>
+                            <td>{lab.status || "Unavailable"}</td>
+                            <td>
+                              <button
+                                type="button"
+                                className="doc-btn-review"
+                                onClick={() => {
+                                  setActiveLabId(lab.id);
+                                  setLabReviewFrom("full-chart");
+                                  setView("lab-review");
+                                }}
+                              >
+                                Open
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )
+                )}
+              </section>
+            )}
+
+            {chartTab === "appointments" && (
+              <section className="patient-record-card patient-record-history">
+                <h2>Appointments With This Patient</h2>
+
+                {(selectedChart.appointments || []).length === 0 ? (
+                  <p className="patient-record-empty">
+                    No appointments with this patient.
                   </p>
                 ) : (
                   <table className="patient-record-table">
                     <thead>
                       <tr>
-                        <th>Test</th>
-                        <th>Value</th>
                         <th>Date</th>
+                        <th>Time</th>
+                        <th>Visit</th>
                         <th>Status</th>
                       </tr>
                     </thead>
 
                     <tbody>
-                      {selectedChart.labs.map((lab) => (
-                        <tr key={lab.test + lab.date}>
-                          <td>{lab.test || "Unavailable"}</td>
-                          <td>{lab.result || "Unavailable"}</td>
-                          <td>{lab.date || "Unavailable"}</td>
-                          <td>{lab.status || "Unavailable"}</td>
+                      {selectedChart.appointments.map((appt) => (
+                        <tr key={appt.id}>
+                          <td>{formatChartDate(appt.date)}</td>
+                          <td>{formatChartTime(appt.time)}</td>
+                          <td>{appt.visitType || "Visit"}</td>
+                          <td>{appt.status || "Unavailable"}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -1282,7 +1489,7 @@ export default function DoctorDashboard({
         {view === "lab-review" && activeLabId && (
           <LabResultReview
             labResultId={activeLabId}
-            onBack={() => setView("labs")}
+            onBack={() => setView(labReviewFrom)}
           />
         )}
         {view === "schedule" && (
@@ -1303,7 +1510,54 @@ export default function DoctorDashboard({
               <div className="doc-header-actions">
                 <div className="doc-search">
                   <Search size={14} />
-                  <span>Quick patient lookup...</span> {/*search bar*/}
+                  <input
+                    type="text"
+                    className="doc-search-input"
+                    placeholder="Quick patient lookup..."
+                    aria-label="Quick patient lookup"
+                    value={searchQuery}
+                    onChange={(e) => handleSearchInput(e.target.value)}
+                    onFocus={() => setSearchOpen(true)}
+                    onBlur={() => setSearchOpen(false)}
+                  />
+
+                  {searchOpen && searchQuery.trim().length >= 2 && (
+                    <div className="doc-search-results">
+                      {searchLoading && (
+                        <p className="doc-search-status">Searching…</p>
+                      )}
+
+                      {!searchLoading && searchError && (
+                        <p className="doc-search-status">{searchError}</p>
+                      )}
+
+                      {!searchLoading &&
+                        !searchError &&
+                        searchResults.length === 0 && (
+                          <p className="doc-search-status">
+                            No matching patients.
+                          </p>
+                        )}
+
+                      {!searchLoading &&
+                        searchResults.map((patient) => (
+                          <button
+                            type="button"
+                            key={patient.id}
+                            className="doc-search-result"
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => openPatientChart(patient.id)}
+                          >
+                            <span className="doc-search-result-name">
+                              {formatPatientName(patient)}
+                            </span>
+                            <span className="doc-search-result-sub">
+                              {formatPatientSubtitle(patient)}
+                            </span>
+                          </button>
+                        ))}
+                    </div>
+                  )}
                 </div>
 
                 <button
@@ -1622,7 +1876,7 @@ export default function DoctorDashboard({
         <VisitOverviewDrawer
           visit={selectedVisit}
           onClose={() => setSelectedVisit(null)}
-          onOpenFullChart={openFullChart}
+          onOpenFullChart={(visit) => openPatientChart(visit.patient?.id)}
           onSaveEncounterDraft={handleSaveEncounterDraft}
           onSignEncounterNote={handleSignEncounterNote}
         />

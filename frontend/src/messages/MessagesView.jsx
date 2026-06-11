@@ -18,7 +18,7 @@ import { useMessages } from "./MessagesProvider";
  * Reused by the patient MessagesPage and the provider dashboard.
  * `myId` is the caller's auth user id (used to right-align their own bubbles).
  */
-export default function MessagesView({ myId, initialContactId }) {
+export default function MessagesView({ myId, initialContactId = null }) {
   const {
     contacts,
     activeContactId,
@@ -37,12 +37,12 @@ export default function MessagesView({ myId, initialContactId }) {
     loadContacts?.();
   }, [loadContacts]);
 
-  // When arriving with a target contact (e.g. the "Message" button on the care
-  // team page), open that conversation automatically.
+  // Deep-link support: open straight into a conversation (e.g. the Message
+  // button on a patient's chart or the care team page). The thread loads
+  // even before contacts do.
   useEffect(() => {
-    if (initialContactId) openThread(initialContactId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialContactId]);
+    if (initialContactId) openThread?.(initialContactId);
+  }, [initialContactId, openThread]);
 
   // When this view unmounts (navigating away from Messages), clear the active
   // conversation so incoming messages bump the unread badge instead of being

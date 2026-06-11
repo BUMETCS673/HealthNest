@@ -6,15 +6,20 @@
  * Human Contributions: Decided the drawer mounts unconditionally and animates via the `is-open` class so React state changes never have to remount the conversation tree — protects scroll position and streaming continuity when the user closes + reopens mid-stream.
  */
 import { useEffect } from "react";
-import { X, ArrowUpRight, Plus } from "lucide-react";
+import { X, ArrowUpRight, Plus, MessageCircleQuestion } from "lucide-react";
 import { usePulse } from "./PulseProvider";
 import ConversationThread from "./ConversationThread";
 import Composer from "./Composer";
 import "./PulseDrawer.css";
 
-export default function PulseDrawer({ onOpenWorkspace, onNavigate }) {
+export default function PulseDrawer({
+  onOpenWorkspace,
+  onNavigate,
+  hideLauncher = false,
+}) {
   const {
     drawerOpen,
+    openDrawer,
     closeDrawer,
     messages,
     streaming,
@@ -35,7 +40,22 @@ export default function PulseDrawer({ onOpenWorkspace, onNavigate }) {
 
   return (
     <>
-      {drawerOpen && <div className="pulse-scrim" onClick={closeDrawer} />}
+      {/* Floating launcher (bottom-right), shown on every patient page.
+          Hidden in the full Pulse workspace and while the drawer is open. */}
+      {!hideLauncher && !drawerOpen && (
+        <button
+          type="button"
+          className="pulse-fab"
+          onClick={openDrawer}
+          aria-label="Open Pulse AI"
+          title="Pulse AI"
+        >
+          <MessageCircleQuestion size={25} />
+        </button>
+      )}
+
+      {/* No scrim: the page (and the messages drawer on the other side)
+          stays interactive while Pulse is open. */}
       <aside
         className={`pulse-drawer ${drawerOpen ? "is-open" : ""}`}
         aria-hidden={!drawerOpen}

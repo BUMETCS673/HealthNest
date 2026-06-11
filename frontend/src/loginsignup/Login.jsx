@@ -33,7 +33,7 @@ export default function Login({ onSwitchToSignup, onSignedIn }) {
     setError("");
 
     try {
-      const data = await authApi.signIn({ email, password });
+      const data = await authApi.signIn({ email, password, role });
       onSignedIn?.(data.session, role);
     } catch (signInError) {
       setError(signInError.message);
