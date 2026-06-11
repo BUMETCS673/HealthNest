@@ -1257,9 +1257,13 @@ export default function DoctorDashboard({
       {/* ── Footer ── */}
       <footer className="doc-footer">
         <div className="doc-footer-left">
-          <span className="dash-logo">
+          <button
+            type="button"
+            className="dash-logo"
+            onClick={() => setView("home")}
+          >
             <u>HealthNest</u>
-          </span>
+          </button>
 
           <p className="doc-footer-tag">
             Coordinated care across clinics,

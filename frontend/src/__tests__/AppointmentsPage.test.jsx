@@ -149,4 +149,23 @@ describe("AppointmentsPage", () => {
       expect(screen.getByText("John Smith")).toBeInTheDocument();
     });
   });
+
+  test("footer logo navigates back to the dashboard", async () => {
+    const onNavigate = jest.fn();
+    const { container } = render(
+      <AppointmentsPage
+        user={mockUser}
+        onNavigate={onNavigate}
+        onSignOut={jest.fn()}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Emily Park")).toBeInTheDocument();
+    });
+
+    fireEvent.click(container.querySelector("footer .ap-logo"));
+
+    expect(onNavigate).toHaveBeenCalledWith("dashboard");
+  });
 });

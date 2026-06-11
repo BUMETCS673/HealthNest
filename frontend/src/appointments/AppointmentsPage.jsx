@@ -290,9 +290,13 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
 
       {/* Footer */}
       <footer className="ap-footer">
-        <span className="ap-logo">
+        <button
+          type="button"
+          className="ap-logo"
+          onClick={() => onNavigate?.("dashboard")}
+        >
           <u>HealthNest</u>
-        </span>
+        </button>
         <p className="ap-footer-tag">
           Coordinated care across clinics, built for patients and providers.
         </p>

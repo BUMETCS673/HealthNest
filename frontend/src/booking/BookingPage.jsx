@@ -181,9 +181,13 @@ export default function BookingPage({
       </main>
 
       <footer className="bp-footer">
-        <span className="bp-logo">
+        <button
+          type="button"
+          className="bp-logo"
+          onClick={() => onNavigate?.("dashboard")}
+        >
           <u>HealthNest</u>
-        </span>
+        </button>
         <p className="bp-footer-tag">
           Coordinated care across clinics, built for patients and providers.
         </p>

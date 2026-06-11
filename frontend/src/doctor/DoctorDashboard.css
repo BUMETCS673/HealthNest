@@ -1500,3 +1500,11 @@
 .patient-record-table tr:last-child td {
   border-bottom: none;
 }
+
+/* Footer logo doubles as a link back to the dashboard. */
+button.dash-logo {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}

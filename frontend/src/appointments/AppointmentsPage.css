@@ -323,3 +323,11 @@
   .ap-card { flex-wrap: wrap; }
   .ap-card-actions { flex-direction: row; }
 }
+
+/* Footer logo doubles as a link back to the dashboard. */
+button.ap-logo {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}

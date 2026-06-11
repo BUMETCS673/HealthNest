@@ -479,3 +479,11 @@
 }
 
 /* ── Floating AI Button ── */
+
+/* Footer logo doubles as a link back to the dashboard. */
+button.dash-logo {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
