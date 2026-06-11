@@ -26,6 +26,25 @@ jest.mock("../lib/patientsApi", () => ({
   formatPatientSubtitle: (p) => (p.mrn ? `MRN ${p.mrn}` : ""),
 }));
 
+jest.mock("../lib/labResultsApi", () => ({
+  labResultsApi: { list: jest.fn() },
+}));
+
+jest.mock("../messages/MessagesView", () => {
+  const mockReact = require("react");
+  return {
+    __esModule: true,
+    default: ({ initialContactId }) =>
+      mockReact.createElement(
+        "div",
+        { "data-testid": "messages-view" },
+        initialContactId || "no-contact",
+      ),
+  };
+});
+
+import { labResultsApi } from "../lib/labResultsApi";
+
 afterEach(() => {
   cleanup();
   jest.clearAllMocks();
@@ -197,28 +216,37 @@ describe("DoctorDashboard", () => {
     ).toBeInTheDocument();
   });
 
-  test("selecting a lookup result opens the patient's full chart", async () => {
-    const user = userEvent.setup();
+  const overview = {
+    patient: {
+      id: "pat-1",
+      userId: "user-77",
+      name: "Alex Morgan",
+      initials: "AM",
+      mrn: "MRN-001",
+      dateOfBirth: "1990-01-01",
+    },
+    appointment: null,
+    appointments: [
+      {
+        id: "appt-9",
+        date: "2026-06-01",
+        time: "09:30:00",
+        status: "scheduled",
+        visitType: "Follow-up",
+      },
+    ],
+    recentHistory: [],
+    activeProblems: [],
+    medications: [],
+    labs: [],
+    openIssues: [],
+    missingSections: [],
+  };
+
+  const openChartViaSearch = async (user) => {
     patientsApi.search.mockResolvedValue([
       { id: "pat-1", first_name: "Alex", last_name: "Morgan", mrn: "MRN-001" },
     ]);
-
-    const overview = {
-      patient: {
-        id: "pat-1",
-        name: "Alex Morgan",
-        initials: "AM",
-        mrn: "MRN-001",
-        dateOfBirth: "1990-01-01",
-      },
-      appointment: null,
-      recentHistory: [],
-      activeProblems: [],
-      medications: [],
-      labs: [],
-      openIssues: [],
-      missingSections: [],
-    };
 
     global.fetch = jest.fn((url) => {
       if (String(url).includes("/providers/patient-overview/pat-1")) {
@@ -238,17 +266,78 @@ describe("DoctorDashboard", () => {
 
     await user.type(screen.getByLabelText("Quick patient lookup"), "Alex");
     await user.click(await screen.findByText("Alex Morgan"));
+    await screen.findByRole("heading", { name: "Alex Morgan" });
+  };
 
-    await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining("/providers/patient-overview/pat-1"),
-        expect.any(Object),
-      );
-    });
-    expect(
-      await screen.findByRole("heading", { name: "Alex Morgan" }),
-    ).toBeInTheDocument();
+  test("selecting a lookup result opens the patient's full chart", async () => {
+    const user = userEvent.setup();
+    labResultsApi.list.mockResolvedValue([]);
+
+    await openChartViaSearch(user);
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining("/providers/patient-overview/pat-1"),
+      expect.any(Object),
+    );
     expect(screen.getByText("← All Patients")).toBeInTheDocument();
+
+    delete global.fetch;
+  });
+
+  test("message button opens secure messaging with the patient preselected", async () => {
+    const user = userEvent.setup();
+    labResultsApi.list.mockResolvedValue([]);
+
+    await openChartViaSearch(user);
+    await user.click(screen.getByRole("button", { name: "Message" }));
+
+    expect(await screen.findByTestId("messages-view")).toHaveTextContent(
+      "user-77",
+    );
+
+    delete global.fetch;
+  });
+
+  test("labs tab shows the patient's real lab results", async () => {
+    const user = userEvent.setup();
+    labResultsApi.list.mockResolvedValue([
+      {
+        id: "lab-1",
+        lab_name: "CBC Panel",
+        status: "released",
+        collected_at: "2026-05-20T08:00:00Z",
+        resulted_at: "2026-05-21T08:00:00Z",
+      },
+    ]);
+
+    await openChartViaSearch(user);
+
+    expect(labResultsApi.list).toHaveBeenCalledWith({
+      patientId: "pat-1",
+      limit: 50,
+    });
+
+    await user.click(screen.getByRole("button", { name: "Labs" }));
+
+    expect(await screen.findByText("CBC Panel")).toBeInTheDocument();
+    expect(screen.getByText("released")).toBeInTheDocument();
+
+    delete global.fetch;
+  });
+
+  test("appointments tab lists appointments with this patient", async () => {
+    const user = userEvent.setup();
+    labResultsApi.list.mockResolvedValue([]);
+
+    await openChartViaSearch(user);
+    await user.click(screen.getByRole("button", { name: "Appointments" }));
+
+    expect(
+      await screen.findByText("Appointments With This Patient"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Follow-up")).toBeInTheDocument();
+    expect(screen.getByText("Jun 1, 2026")).toBeInTheDocument();
+    expect(screen.getByText("09:30")).toBeInTheDocument();
 
     delete global.fetch;
   });

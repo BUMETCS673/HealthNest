@@ -42,30 +42,42 @@ def _initials(patient: dict[str, Any]) -> str:
     return (first + last).upper() or "PT"
 
 
-def _latest_appointment(admin: Any, patient_id: str) -> dict[str, Any] | None:
+def _appointments_with_patient(
+    admin: Any, provider_id: str, patient_id: str
+) -> list[dict[str, Any]]:
+    """All appointments between this provider and this patient, newest first.
+
+    Appointment date/time live on the joined provider_availability row."""
     try:
         resp = (
             admin.table("appointments")
-            .select("id, appointment_date, appointment_time, status, notes")
+            .select(
+                "id, status, notes, "
+                "provider_availability (available_date, available_time)"
+            )
             .eq("patient_id", patient_id)
-            .order("appointment_date", desc=True)
-            .order("appointment_time", desc=True)
-            .limit(1)
+            .eq("provider_id", provider_id)
             .execute()
         )
-        rows = resp.data or []
-        if not rows:
-            return None
-        appt = rows[0]
-        return {
-            "id": appt.get("id"),
-            "time": appt.get("appointment_time"),
-            "date": appt.get("appointment_date"),
-            "visitType": appt.get("notes") or "Visit",
-            "status": appt.get("status"),
-        }
+        appointments = []
+        for appt in resp.data or []:
+            availability = appt.get("provider_availability") or {}
+            appointments.append(
+                {
+                    "id": appt.get("id"),
+                    "date": availability.get("available_date"),
+                    "time": availability.get("available_time"),
+                    "status": appt.get("status"),
+                    "visitType": appt.get("notes") or "Visit",
+                }
+            )
+        appointments.sort(
+            key=lambda a: (a.get("date") or "", a.get("time") or ""),
+            reverse=True,
+        )
+        return appointments
     except Exception:
-        return None
+        return []
 
 
 def get_patient_overview(provider_id: str, patient_id: str) -> dict[str, Any]:
@@ -79,7 +91,9 @@ def get_patient_overview(provider_id: str, patient_id: str) -> dict[str, Any]:
     admin = get_supabase_admin()
     resp = (
         admin.table("patients")
-        .select("id, first_name, last_name, preferred_name, mrn, date_of_birth")
+        .select(
+            "id, user_id, first_name, last_name, preferred_name, mrn, date_of_birth"
+        )
         .eq("id", patient_id)
         .is_("deleted_at", None)
         .limit(1)
@@ -92,15 +106,18 @@ def get_patient_overview(provider_id: str, patient_id: str) -> dict[str, Any]:
             detail="Patient not found.",
         )
     patient = rows[0]
+    appointments = _appointments_with_patient(admin, provider_id, patient_id)
 
     return {
         "patient": {
             "id": patient.get("id"),
+            "userId": patient.get("user_id"),
             "name": _full_name(patient),
             "initials": _initials(patient),
             "mrn": patient.get("mrn"),
             "dateOfBirth": patient.get("date_of_birth"),
         },
-        "appointment": _latest_appointment(admin, patient_id),
+        "appointment": appointments[0] if appointments else None,
+        "appointments": appointments,
         **build_patient_sections(admin, patient_id),
     }

@@ -27,6 +27,7 @@ import {
   formatPatientName,
   formatPatientSubtitle,
 } from "../lib/patientsApi";
+import { labResultsApi } from "../lib/labResultsApi";
 import { useMessages } from "../messages/MessagesProvider";
 import MessagesView from "../messages/MessagesView";
 import { useDfa } from "../pulse/DfaProvider";
@@ -84,6 +85,29 @@ function getCurrUser(user) {
     role,
     initials,
   };
+}
+
+function formatChartDate(value) {
+  if (!value) return "—";
+  const str = String(value);
+  // Parse date-only strings as local dates ("2026-06-01" would otherwise be
+  // treated as UTC midnight and render a day early in western timezones).
+  const dateOnly = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const d = dateOnly
+    ? new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3]))
+    : new Date(str);
+  if (isNaN(d)) return str;
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function formatChartTime(value) {
+  if (!value) return "—";
+  // Times arrive as "HH:MM:SS"; show "HH:MM".
+  return String(value).split(":").slice(0, 2).join(":");
 }
 
 // Temp data until backend data connect
@@ -303,6 +327,12 @@ export default function DoctorDashboard({
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [chartLabs, setChartLabs] = useState([]);
+  const [chartLabsError, setChartLabsError] = useState("");
+  // Where lab-review should return to: the lab queue or a patient's chart.
+  const [labReviewFrom, setLabReviewFrom] = useState("labs");
+  // Conversation to open when entering Messages from a patient chart.
+  const [messageContactId, setMessageContactId] = useState(null);
 
   const getAuthHeaders = () => {
     const session = authApi.getSession();
@@ -467,17 +497,33 @@ export default function DoctorDashboard({
     };
   }, [searchQuery]);
 
+  const loadChartLabs = async (patientId) => {
+    setChartLabs([]);
+    setChartLabsError("");
+    try {
+      const labs = await labResultsApi.list({ patientId, limit: 50 });
+      setChartLabs(labs || []);
+    } catch (error) {
+      setChartLabsError(error.message || "Unable to load lab results.");
+    }
+  };
+
   const openPatientChart = async (patientId) => {
+    if (!patientId) return;
+
     setSearchLoading(true);
     setSearchError("");
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/providers/patient-overview/${patientId}`,
-        {
-          headers: getAuthHeaders(),
-        },
-      );
+      const [response] = await Promise.all([
+        fetch(
+          `${import.meta.env.VITE_API_URL}/providers/patient-overview/${patientId}`,
+          {
+            headers: getAuthHeaders(),
+          },
+        ),
+        loadChartLabs(patientId),
+      ]);
 
       if (!response.ok) {
         throw new Error("Unable to load patient information.");
@@ -493,6 +539,11 @@ export default function DoctorDashboard({
     } finally {
       setSearchLoading(false);
     }
+  };
+
+  const openMessagesWithPatient = (patientUserId) => {
+    setMessageContactId(patientUserId || null);
+    setView("messages");
   };
 
   return (
@@ -519,8 +570,10 @@ export default function DoctorDashboard({
         onSelect={(label) => {
           if (label === "Dashboard") setView("home");
           else if (label === "Patient Records") setView("labs");
-          else if (label === "Messages") setView("messages");
-          else if (label === "Schedule") setView("schedule");
+          else if (label === "Messages") {
+            setMessageContactId(null);
+            setView("messages");
+          } else if (label === "Schedule") setView("schedule");
           else if (label === "Pulse AI") onNavigate?.("dfa-pulse");
         }}
         userName={currentUser.firstName}
@@ -538,12 +591,15 @@ export default function DoctorDashboard({
             onBack={() => setView("home")}
             onOpenReview={(id) => {
               setActiveLabId(id);
+              setLabReviewFrom("labs");
               setView("lab-review");
             }}
           />
         )}
 
-        {view === "messages" && <MessagesView myId={user?.id} />}
+        {view === "messages" && (
+          <MessagesView myId={user?.id} initialContactId={messageContactId} />
+        )}
 
         {view === "full-chart" && selectedChart && (
           <div className="patient-record-page">
@@ -586,7 +642,19 @@ export default function DoctorDashboard({
               </div>
 
               <div className="patient-record-actions">
-                <button type="button" className="patient-record-secondary">
+                <button
+                  type="button"
+                  className="patient-record-secondary"
+                  disabled={!selectedChart.patient?.userId}
+                  title={
+                    selectedChart.patient?.userId
+                      ? "Send a secure message"
+                      : "Messaging unavailable for this patient"
+                  }
+                  onClick={() =>
+                    openMessagesWithPatient(selectedChart.patient?.userId)
+                  }
+                >
                   Message
                 </button>
               </div>
@@ -631,6 +699,16 @@ export default function DoctorDashboard({
                 onClick={() => setChartTab("medications")}
               >
                 Medications
+              </button>
+
+              <button
+                type="button"
+                className={`patient-record-tab ${
+                  chartTab === "appointments" ? "active" : ""
+                }`}
+                onClick={() => setChartTab("appointments")}
+              >
+                Appointments
               </button>
             </div>
 
@@ -750,28 +828,82 @@ export default function DoctorDashboard({
               <section className="patient-record-card patient-record-history">
                 <h2>Lab Results</h2>
 
-                {(selectedChart.labs || []).length === 0 ? (
+                {chartLabsError && (
+                  <p className="patient-record-empty">{chartLabsError}</p>
+                )}
+
+                {!chartLabsError && chartLabs.length === 0 ? (
                   <p className="patient-record-empty">
-                    No lab information available.
+                    No lab results for this patient.
+                  </p>
+                ) : (
+                  !chartLabsError && (
+                    <table className="patient-record-table">
+                      <thead>
+                        <tr>
+                          <th>Lab</th>
+                          <th>Collected</th>
+                          <th>Resulted</th>
+                          <th>Status</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {chartLabs.map((lab) => (
+                          <tr key={lab.id}>
+                            <td>{lab.lab_name || "Unavailable"}</td>
+                            <td>{formatChartDate(lab.collected_at)}</td>
+                            <td>{formatChartDate(lab.resulted_at)}</td>
+                            <td>{lab.status || "Unavailable"}</td>
+                            <td>
+                              <button
+                                type="button"
+                                className="doc-btn-review"
+                                onClick={() => {
+                                  setActiveLabId(lab.id);
+                                  setLabReviewFrom("full-chart");
+                                  setView("lab-review");
+                                }}
+                              >
+                                Open
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )
+                )}
+              </section>
+            )}
+
+            {chartTab === "appointments" && (
+              <section className="patient-record-card patient-record-history">
+                <h2>Appointments With This Patient</h2>
+
+                {(selectedChart.appointments || []).length === 0 ? (
+                  <p className="patient-record-empty">
+                    No appointments with this patient.
                   </p>
                 ) : (
                   <table className="patient-record-table">
                     <thead>
                       <tr>
-                        <th>Test</th>
-                        <th>Value</th>
                         <th>Date</th>
+                        <th>Time</th>
+                        <th>Visit</th>
                         <th>Status</th>
                       </tr>
                     </thead>
 
                     <tbody>
-                      {selectedChart.labs.map((lab) => (
-                        <tr key={lab.test + lab.date}>
-                          <td>{lab.test || "Unavailable"}</td>
-                          <td>{lab.result || "Unavailable"}</td>
-                          <td>{lab.date || "Unavailable"}</td>
-                          <td>{lab.status || "Unavailable"}</td>
+                      {selectedChart.appointments.map((appt) => (
+                        <tr key={appt.id}>
+                          <td>{formatChartDate(appt.date)}</td>
+                          <td>{formatChartTime(appt.time)}</td>
+                          <td>{appt.visitType || "Visit"}</td>
+                          <td>{appt.status || "Unavailable"}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -818,7 +950,7 @@ export default function DoctorDashboard({
         {view === "lab-review" && activeLabId && (
           <LabResultReview
             labResultId={activeLabId}
-            onBack={() => setView("labs")}
+            onBack={() => setView(labReviewFrom)}
           />
         )}
         {view !== "home" ? null : (
@@ -1177,7 +1309,7 @@ export default function DoctorDashboard({
         <VisitOverviewDrawer
           visit={selectedVisit}
           onClose={() => setSelectedVisit(null)}
-          onOpenFullChart={openFullChart}
+          onOpenFullChart={(visit) => openPatientChart(visit.patient?.id)}
         />
       )}
 
