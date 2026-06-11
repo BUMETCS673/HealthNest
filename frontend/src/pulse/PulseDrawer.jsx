@@ -54,7 +54,8 @@ export default function PulseDrawer({
         </button>
       )}
 
-      {drawerOpen && <div className="pulse-scrim" onClick={closeDrawer} />}
+      {/* No scrim: the page (and the messages drawer on the other side)
+          stays interactive while Pulse is open. */}
       <aside
         className={`pulse-drawer ${drawerOpen ? "is-open" : ""}`}
         aria-hidden={!drawerOpen}

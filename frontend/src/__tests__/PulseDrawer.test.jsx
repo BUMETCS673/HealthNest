@@ -78,4 +78,13 @@ describe("PulseDrawer launcher", () => {
       screen.queryByRole("button", { name: "Open Pulse AI" }),
     ).not.toBeInTheDocument();
   });
+
+  test("does not render a blocking scrim while open", () => {
+    mockPulseState.drawerOpen = true;
+    const { container } = render(<PulseDrawer />);
+
+    // No scrim — the rest of the page (incl. the messages drawer) stays
+    // clickable while Pulse is open.
+    expect(container.querySelector(".pulse-scrim")).toBeNull();
+  });
 });
