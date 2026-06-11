@@ -71,6 +71,7 @@ class BiometricOptionsResponse(BaseModel):
 class UpdateProfileRequest(BaseModel):
     first_name: str
     last_name: str
+    specialty: str | None = None
 
 class UpdatePasswordRequest(BaseModel):
     current_password: str

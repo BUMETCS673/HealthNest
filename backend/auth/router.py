@@ -87,7 +87,7 @@ def update_profile(
     payload: UpdateProfileRequest,
     token: str = Depends(_bearer_token),
 ) -> dict:
-    return service.update_profile(token, payload.first_name, payload.last_name)
+    return service.update_profile(token, payload.first_name, payload.last_name, payload.specialty)
  
  
 @router.patch("/password", status_code=status.HTTP_200_OK)
