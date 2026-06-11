@@ -215,14 +215,13 @@ export const authApi = {
   },
 
   async enableBiometricLogin() {
-    // Requires current session (user must be signed in)
-    const session = readStoredSession();
-    if (!session?.access_token) throw new Error("Not signed in");
+    const token = await this.getValidAccessToken();
+    if (!token) throw new Error("Not signed in");
 
     // Start registration
     const start = await request("/auth/biometric/register/start", {
       method: "POST",
-      token: session.access_token,
+      token,
     });
 
     const publicKey = start.options;
@@ -244,7 +243,7 @@ export const authApi = {
 
     const res = await request("/auth/biometric/register/finish", {
       method: "POST",
-      token: session.access_token,
+      token,
       body: {
         credential: {
           id: credential.id,
@@ -284,7 +283,9 @@ export const authApi = {
     ]);
     if (!assertion) throw new Error("Credential assertion cancelled");
 
-    const authData = this._bufferToB64(assertion.response.authenticatorData);
+    const authenticatorData = this._bufferToB64(
+      assertion.response.authenticatorData,
+    );
     const clientDataJSON = this._bufferToB64(assertion.response.clientDataJSON);
     const signature = this._bufferToB64(assertion.response.signature);
     const userHandle = assertion.response.userHandle
@@ -299,8 +300,8 @@ export const authApi = {
           id: assertion.id,
           rawId: this._bufferToB64(assertion.rawId),
           response: {
-            authenticatorData: authData,
             clientDataJSON,
+            authenticatorData,
             signature,
             userHandle,
           },
@@ -309,7 +310,42 @@ export const authApi = {
       },
     });
 
-    if (res.session) writeStoredSession(res.session);
+    if (res.session?.access_token) {
+      writeStoredSession(res.session);
+    }
+
     return res;
+  },
+
+  async updateProfile({ first_name, last_name }) {
+    const session = readStoredSession();
+    if (!session?.access_token) throw new Error("Not signed in");
+    const data = await request("/auth/profile", {
+      method: "PATCH",
+      token: session.access_token,
+      body: { first_name, last_name },
+    });
+    // Update the stored session's user_metadata so the name reflects
+    if (session.user) {
+      session.user.user_metadata = {
+        ...session.user.user_metadata,
+        first_name,
+        last_name,
+      };
+      writeStoredSession(session);
+    }
+    return data;
+  },
+
+  async updatePassword(currentPassword, newPassword) {
+    const token = await this.getValidAccessToken();
+
+    if (!token) throw new Error("Not signed in");
+
+    return await request("/auth/password", {
+      method: "PATCH",
+      token,
+      body: { current_password: currentPassword, new_password: newPassword },
+    });
   },
 };
