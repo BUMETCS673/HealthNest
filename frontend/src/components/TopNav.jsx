@@ -11,7 +11,8 @@
 //   navigation action), and verification across patient + provider surfaces.
 // Notes: Validated via `npm run build`, eslint, and manual click-through.
 import { useState, useRef, useEffect } from "react";
-import { Bell, ChevronDown, User, LogOut, Settings } from "lucide-react";
+import { ChevronDown, User, LogOut, Settings } from "lucide-react";
+import NotificationBell from "./NotificationBell";
 import "./TopNav.css";
 
 /**
@@ -95,11 +96,7 @@ export default function TopNav({
       </div>
 
       <div className="topnav-right">
-        {showBell && (
-          <button className="topnav-icon-btn" aria-label="Notifications">
-            <Bell size={20} />
-          </button>
-        )}
+        {showBell && <NotificationBell />}
 
         <div className="topnav-user-wrap" ref={menuRef}>
           <button

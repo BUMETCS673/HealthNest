@@ -27,7 +27,8 @@
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 8px 24px rgba(15, 118, 110, 0.32);
-  z-index: 240;
+  /* Above the shared drawer scrim (250), below the drawers (260). */
+  z-index: 255;
   transition:
     background 120ms ease,
     transform 80ms ease;

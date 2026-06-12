@@ -37,7 +37,8 @@ export default function DfaDrawer({ onNavigate }) {
 
   return (
     <>
-      {drawerOpen && <div className='pulse-scrim' onClick={closeDrawer} />}
+      {/* Dismissal is handled by the shared DrawerScrim (App-level), so both
+          this drawer and the Messages drawer can be open at once. */}
       <aside
         className={`pulse-drawer ${drawerOpen ? "is-open" : ""}`}
         aria-hidden={!drawerOpen}>
