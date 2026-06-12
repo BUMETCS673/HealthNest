@@ -36,9 +36,13 @@ export default function Footer({ role = "patient", onNavigate }) {
     <>
       <footer className='dash-footer'>
         <div className='dash-footer-left'>
-          <span className='dash-logo'>
+          {/* Logo doubles as a link back to the dashboard, like the header. */}
+          <button
+            type='button'
+            className='dash-logo'
+            onClick={() => onNavigate?.("dashboard")}>
             <u>HealthNest</u>
-          </span>
+          </button>
 
           <p className='dash-footer-tag'>
             Coordinated care across clinics,

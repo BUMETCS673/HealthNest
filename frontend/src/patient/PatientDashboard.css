@@ -77,20 +77,32 @@
   background: #2a2a2a;
 }
 
-/* ── Top four cards ── */
+/* ── Summary cards (Next Appointment · Medications · Labs) ── */
 .dash-sumcard {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
 
+@media (max-width: 900px) {
+  .dash-sumcard {
+    grid-template-columns: 1fr;
+  }
+}
+
 .summ-card {
+  position: relative;
   background: #fff;
   border: 1px solid #f2f2f1;
   border-radius: 12px;
   padding: 20px;
   cursor: default;
-  transition: border-color 0.2s;
+  text-align: left;
+  font: inherit;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    transform 0.15s;
 }
 
 .summ-card:hover {
@@ -103,6 +115,23 @@
 
 .summ-card--clickable:hover {
   border-color: #111110;
+  box-shadow: 0 6px 18px rgba(17, 17, 16, 0.06);
+  transform: translateY(-1px);
+}
+
+.summ-arrow {
+  position: absolute;
+  top: 20px;
+  right: 16px;
+  color: #d6d6d4;
+  transition:
+    color 0.2s,
+    transform 0.2s;
+}
+
+.summ-card--clickable:hover .summ-arrow {
+  color: #111110;
+  transform: translateX(2px);
 }
 
 .summ-icon {
@@ -456,31 +485,7 @@
 }
 
 /* ── Floating AI Button ── */
-.dash-pulse-fab {
-  position: fixed;
-  bottom: 28px;
-  right: 28px;
-  width: 52px;
-  height: 52px;
-  background: #111110;
-  color: #fff;
-  border: none;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
-  transition:
-    background 0.2s,
-    transform 0.15s;
-  z-index: 200;
-}
 
-.dash-pulse-fab:hover {
-  background: #2a2a2a;
-  transform: scale(1.07);
-}
 
 /* ── Account Settings page ── */
 .acct-page {

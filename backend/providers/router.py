@@ -53,6 +53,15 @@ def list_visit_overviews(
     return payload.get("appointments", [])
  
  
+@router.get("/patient-overview/{patient_id}")
+def get_patient_overview(
+    patient_id: str,
+    provider: dict[str, Any] = Depends(current_provider),
+) -> dict[str, Any]:
+    """Return the chart overview for one patient (Quick Patient Lookup)."""
+    return service.get_patient_overview(provider["id"], patient_id)
+
+
 @router.get("/visit-overview/{appointment_id}")
 def get_visit_overview(
     appointment_id: str,

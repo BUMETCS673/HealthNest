@@ -57,16 +57,6 @@
   border: 2px solid #f9f9f7;
 }
 
-/* ── Scrim ─────────────────────────────────────────────────── */
-.msg-scrim {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.28);
-  backdrop-filter: blur(2px);
-  z-index: 250;
-  animation: msg-fade-in 160ms ease-out;
-}
-
 /* ── Drawer shell (LEFT) ───────────────────────────────────── */
 .msg-drawer {
   position: fixed;
@@ -347,11 +337,3 @@
   cursor: not-allowed;
 }
 
-@keyframes msg-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
