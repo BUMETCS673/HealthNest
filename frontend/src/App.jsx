@@ -173,11 +173,22 @@ export default function App() {
         );
       })();
 
+      // Wrap the provider tree in MessagesProvider too, so the provider
+      // dashboard gets the same messaging context (contacts, threads, unread
+      // badge, Realtime) as the patient side. Without this, useMessages() falls
+      // back to the no-op default and the provider sees no contacts.
       return (
-        <DfaProvider>
-          {providerPage}
-          <DfaDrawer onNavigate={handleNavigate} />
-        </DfaProvider>
+        <MessagesProvider session={session}>
+          <DfaProvider>
+            {providerPage}
+            <DfaDrawer onNavigate={handleNavigate} />
+            <MessagesDrawer
+              myId={session.user?.id}
+              onOpenMessages={() => handleNavigate("messages")}
+              hideLauncher={page === "messages"}
+            />
+          </DfaProvider>
+        </MessagesProvider>
       );
     }
 
@@ -200,36 +211,27 @@ export default function App() {
             initialContactId={pageData?.openContactId}
           />
         );
-      if (page === "booking") {
-        return (
-          <BookingPage
-            {...sharedProps}
-            appointments={pageData?.appointments ?? null}
-          />
-        );
-      }
+      if (page === "booking") return <BookingPage {...sharedProps} />;
       if (page === "pulse") return <PulseWorkspace {...sharedProps} />;
       return <PatientDashboard {...sharedProps} pageData={pageData} />;
     })();
 
-    const signedInTree =
-      role === "provider" ? (
-        <DoctorDashboard user={session.user} onSignOut={handleSignOut} />
-      ) : (
-        <PulseProvider>
-          {patientPage}
-          <PulseDrawer
-            onOpenWorkspace={() => handleNavigate("pulse")}
-            onNavigate={handleNavigate}
-            hideLauncher={page === "pulse"}
-          />
-          <MessagesDrawer
-            myId={session.user?.id}
-            onOpenMessages={() => handleNavigate("messages")}
-            hideLauncher={page === "messages"}
-          />
-        </PulseProvider>
-      );
+    // Providers returned above; only the patient tree reaches here.
+    const signedInTree = (
+      <PulseProvider>
+        {patientPage}
+        <PulseDrawer
+          onOpenWorkspace={() => handleNavigate("pulse")}
+          onNavigate={handleNavigate}
+          hideLauncher={page === "pulse"}
+        />
+        <MessagesDrawer
+          myId={session.user?.id}
+          onOpenMessages={() => handleNavigate("messages")}
+          hideLauncher={page === "messages"}
+        />
+      </PulseProvider>
+    );
 
     // Mount the messaging provider around the whole signed-in tree so the
     // Realtime subscription + unread state are available on every page.

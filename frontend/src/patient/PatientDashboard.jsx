@@ -5,7 +5,11 @@
 // Human Contributions: Owned the data-source decisions (appointments + labs), the role-based gating, and the decision to wire ALL three Pulse entry points to the same drawer state so promotion to the full workspace is one click anywhere on the page.
 import { useEffect, useState } from "react";
 import "./PatientDashboard.css";
-import { appointmentsApi, apptToDisplayRow } from "../lib/appointmentsApi";
+import {
+  appointmentsApi,
+  apptToDisplayRow,
+  providersApi,
+} from "../lib/appointmentsApi";
 import {
   Calendar,
   Pill,
@@ -20,6 +24,8 @@ import PatientLabResultsPage from "./PatientLabResultsPage";
 import LabResultDetail from "../labresults/LabResultDetail";
 import { usePulse } from "../pulse/PulseProvider";
 import { useMessages } from "../messages/MessagesProvider";
+import AppointmentDetailModal from "../appointments/AppointmentDetailModal";
+import AppointmentModal from "../appointments/AppointmentModal";
 import TopNav from "../components/TopNav";
 import Footer from "../components/Footer";
 import { authApi } from "../lib/authApi";
@@ -339,8 +345,10 @@ export default function PatientDashboard({
   const currentUser = deriveCurrentUser(user);
   const pulse = usePulse();
   const [upcomingAppoint, setUpcomingAppoint] = useState([]);
+  const [providerUserMap, setProviderUserMap] = useState({});
+  const [rescheduleAppt, setRescheduleAppt] = useState(null);
 
-  useEffect(() => {
+  const loadUpcoming = () => {
     appointmentsApi
       .getAppointments()
       .then((data) => {
@@ -356,6 +364,22 @@ export default function PatientDashboard({
           })
           .slice(0, 3);
         setUpcomingAppoint(upcoming);
+      })
+      .catch(() => {});
+  };
+
+  useEffect(() => {
+    loadUpcoming();
+    // Map provider_id → the provider's auth user id, so messaging opens the
+    // right conversation regardless of the appointment payload.
+    providersApi
+      .getCareTeam()
+      .then((team) => {
+        const map = {};
+        for (const p of team || []) {
+          if (p.id && p.user_id) map[p.id] = p.user_id;
+        }
+        setProviderUserMap(map);
       })
       .catch(() => {});
   }, []);
@@ -392,7 +416,33 @@ export default function PatientDashboard({
   if (hour >= 6 && hour < 12) greetingMes = "Good morning";
   else if (hour >= 12 && hour < 18) greetingMes = "Good afternoon";
 
-  const { unreadCount: unreadMessages } = useMessages();
+  const { unreadCount: unreadMessages, openThread, openDrawer } = useMessages();
+  const [detailAppt, setDetailAppt] = useState(null);
+
+  // Open the appointment's provider conversation in the global messaging drawer.
+  const messageProvider = (appt) => {
+    setDetailAppt(null);
+    const uid = appt?.providerUserId || providerUserMap[appt?.raw?.provider_id];
+    if (uid) openThread(uid);
+    openDrawer();
+  };
+
+  const rescheduleProvider = (appt) => {
+    setDetailAppt(null);
+    setRescheduleAppt({
+      id: appt.id,
+      providerId: appt.raw?.provider_id,
+      providerName: appt.doctor,
+    });
+  };
+
+  const cancelProvider = (appt) => {
+    setDetailAppt(null);
+    appointmentsApi
+      .cancelAppointment(appt.id)
+      .then(loadUpcoming)
+      .catch(() => {});
+  };
 
   const navOption = [
     "Dashboard",
@@ -533,17 +583,11 @@ export default function PatientDashboard({
                 {upcomingAppoint.map((appt) => (
                   <button
                     key={appt.id}
-                    className="dash-appt-row"
-                    onClick={() =>
-                      onNavigate?.("appointment-detail", {
-                        appointmentId: appt.id,
-                        appointment: appt,
-                      })
-                    }
-                  >
-                    <div className="dash-appt-date">
-                      <span className="dash-appt-month">{appt.month}</span>
-                      <span className="dash-appt-day">{appt.day}</span>
+                    className='dash-appt-row'
+                    onClick={() => setDetailAppt(appt)}>
+                    <div className='dash-appt-date'>
+                      <span className='dash-appt-month'>{appt.month}</span>
+                      <span className='dash-appt-day'>{appt.day}</span>
                     </div>
                     <div className='dash-appt-divider' />
                     <div className='dash-appt-info'>
@@ -634,6 +678,29 @@ export default function PatientDashboard({
           </>
         )}
       </main>
+
+      {detailAppt && (
+        <AppointmentDetailModal
+          appt={detailAppt}
+          onClose={() => setDetailAppt(null)}
+          onMessage={messageProvider}
+          onReschedule={rescheduleProvider}
+          onCancel={cancelProvider}
+        />
+      )}
+
+      {rescheduleAppt && (
+        <AppointmentModal
+          rescheduleId={rescheduleAppt.id}
+          providerId={rescheduleAppt.providerId}
+          providerName={rescheduleAppt.providerName}
+          onClose={() => setRescheduleAppt(null)}
+          onBooked={() => {
+            setRescheduleAppt(null);
+            loadUpcoming();
+          }}
+        />
+      )}
 
       <Footer
         role="patient"

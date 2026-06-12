@@ -70,5 +70,5 @@ def cancel_appointment(
     appointment_id: str,
     patient_id: str = Depends(current_patient_id),
 ):
-    """Soft-cancel an appointment (sets status → 'cancelled')."""
+    """Cancel an appointment (hard-deletes the row and frees its slot)."""
     service.cancel_appointment(appointment_id, patient_id)

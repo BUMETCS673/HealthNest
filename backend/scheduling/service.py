@@ -4,16 +4,16 @@
 # AI-Assisted Areas: Provider scheduling service — 30-minute slot generation,
 #   weekday/end-date recurrence expansion, duplicate-skip on insert, open-slot
 #   listing/deletion, the provider's patient list, and provider-initiated
-#   appointment creation (reuse-or-create the slot, then book it). Booking now
-#   self-heals orphaned slots: a slot flagged booked is only rejected when a
-#   live (non-cancelled) appointment actually references it, otherwise it is
-#   reused. Cancelling removes the appointment and its slot, then sweeps any
-#   duplicate slots at the same date/time with no live appointment so a leftover
-#   booked duplicate can't block materialize_rules from re-opening the slot
-#   (which had left it stuck white and unbookable).
+#   appointment creation (reuse-or-create the slot, then book it). Booking
+#   self-heals orphaned slots: a slot flagged booked is only rejected when an
+#   appointment actually references it, otherwise it is reused. Cancelling
+#   hard-deletes the appointment and its slot (an office-hours slot is re-opened
+#   by materialize_rules; a one-off slot disappears). Both the provider and the
+#   patient cancel hard-delete, so no lingering 'cancelled' rows reference a
+#   slot — which keeps the cancel path simple and FK-safe.
 # Human Contributions: Business rules (fixed 30-min slots, can't delete a booked
 #   slot, patient must be on the provider's care team); reported the stuck-slot /
-#   "already booked" bug after a cancel; verification.
+#   "already booked" and FK-violation bugs after a cancel; verification.
 # Notes: Validated via pytest. Backend runs uvicorn without --reload, so these
 #   changes require `docker compose restart backend` to take effect.
 from datetime import datetime, timedelta
@@ -434,43 +434,8 @@ def cancel_appointment(provider_id: str, appointment_id: str) -> None:
     admin.table("appointments").delete().eq("id", appointment_id).execute()
 
     slot_id = rows[0].get("availability_id")
-    if not slot_id:
-        return
-
-    # Note the slot's date/time before deleting so we can also sweep any
-    # duplicate slots at the same time. A leftover booked duplicate would block
-    # materialize_rules from re-opening the slot (it would linger white and
-    # unbookable), so remove same-time slots that have no live appointment.
-    slot = (
-        admin.table("provider_availability")
-        .select("available_date, available_time")
-        .eq("id", slot_id)
-        .limit(1)
-        .execute()
-    )
-    admin.table("provider_availability").delete().eq("id", slot_id).execute()
-
-    if not slot.data:
-        return
-    same_time = (
-        admin.table("provider_availability")
-        .select("id")
-        .eq("provider_id", provider_id)
-        .eq("available_date", slot.data[0]["available_date"])
-        .eq("available_time", slot.data[0]["available_time"])
-        .execute()
-    )
-    for s in same_time.data or []:
-        live = (
-            admin.table("appointments")
-            .select("id")
-            .eq("availability_id", s["id"])
-            .neq("status", "cancelled")
-            .limit(1)
-            .execute()
-        )
-        if not live.data:
-            admin.table("provider_availability").delete().eq("id", s["id"]).execute()
+    if slot_id:
+        admin.table("provider_availability").delete().eq("id", slot_id).execute()
 
 
 def create_appointment(provider_id: str, payload: ProviderAppointmentCreate) -> dict[str, Any]:

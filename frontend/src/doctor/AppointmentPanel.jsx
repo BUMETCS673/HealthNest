@@ -1,15 +1,25 @@
 // AI-USAGE SUMMARY
 // Tools: Claude Code (Opus 4.8)
 // Overall AI Contribution: ~85%
-// AI-Assisted Areas: The day-view appointment details panel (#SCRUM-77) — a tall
-//   card that fills the right side: avatar with the patient name beneath it,
-//   the date and time stacked in the top-right, the appointment details as the
-//   focal middle content, and full-width Message / Cancel buttons at the bottom.
-// Human Contributions: Iterated the layout (name under avatar, date+time moved
-//   to the top-right, full-width actions) and verification.
+// AI-Assisted Areas: The shared appointment details panel (#SCRUM-77) — avatar
+//   with the name beneath it, the date and time stacked in the top-right, the
+//   details as the focal middle content, and full-width Message / Reschedule /
+//   Cancel buttons at the bottom. Used by the provider day-view (patient as the
+//   name, fills the column) and the patient details modal (provider name +
+//   specialty as name/subtitle, shorter), so it carries its own portable CSS.
+// Human Contributions: Iterated the layout and the reuse; verification.
 // Notes: Validated via `npm run build`, jest, and manual testing.
-import { Calendar, Clock, User, FileText, MessageSquare, X } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  User,
+  FileText,
+  MessageSquare,
+  RefreshCw,
+  X,
+} from "lucide-react";
 import { formatApptTime } from "../lib/appointmentsApi";
+import "./AppointmentPanel.css";
 
 function fmtDate(d) {
   return d
@@ -21,17 +31,26 @@ function fmtDate(d) {
     : "";
 }
 
-export default function AppointmentPanel({ appt, onCancel, onMessage }) {
+export default function AppointmentPanel({
+  appt,
+  onCancel,
+  onMessage,
+  onReschedule,
+  name,
+  subtitle,
+  fill = true,
+}) {
   if (!appt) return null;
   return (
-    <div className="apanel">
+    <div className={`apanel${fill ? " apanel--fill" : ""}`}>
       <div className="apanel-head">
         <div className="apanel-head-left">
           <div className="apanel-avatar">
             <User size={26} />
           </div>
-          <p className="apanel-name">{appt.patient_name || "Patient"}</p>
-          <span className={`apanel-status ds-status--${appt.status}`}>
+          <p className="apanel-name">{name ?? appt.patient_name ?? "Patient"}</p>
+          {subtitle && <p className="apanel-subtitle">{subtitle}</p>}
+          <span className={`apanel-status apanel-status--${appt.status}`}>
             {appt.status}
           </span>
         </div>
@@ -53,11 +72,16 @@ export default function AppointmentPanel({ appt, onCancel, onMessage }) {
         )}
       </div>
 
-      {(onMessage || onCancel) && (
+      {(onMessage || onReschedule || onCancel) && (
         <div className="apanel-actions">
           {onMessage && (
             <button className="apanel-btn" onClick={() => onMessage(appt)}>
               <MessageSquare size={15} /> Message
+            </button>
+          )}
+          {onReschedule && (
+            <button className="apanel-btn" onClick={() => onReschedule(appt)}>
+              <RefreshCw size={15} /> Reschedule
             </button>
           )}
           {onCancel && (

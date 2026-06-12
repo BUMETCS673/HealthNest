@@ -96,7 +96,7 @@ describe("PatientDashboard", () => {
     expect(screen.getAllByText("Recent Labs").length).toBeGreaterThan(0);
   });
 
-  test("upcoming appointment row opens that appointment's detail page", async () => {
+  test("upcoming appointment row opens the appointment details modal", async () => {
     const onNavigate = jest.fn();
     appointmentsApi.getAppointments.mockResolvedValue([
       {
@@ -120,9 +120,13 @@ describe("PatientDashboard", () => {
     const user = userEvent.setup();
     await user.click(await screen.findByText("Sam Lee"));
 
-    expect(onNavigate).toHaveBeenCalledWith(
+    // Opens the in-page details modal rather than navigating away.
+    expect(
+      await screen.findByRole("button", { name: /Reschedule/i }),
+    ).toBeInTheDocument();
+    expect(onNavigate).not.toHaveBeenCalledWith(
       "appointment-detail",
-      expect.objectContaining({ appointmentId: "appt-1" }),
+      expect.anything(),
     );
   });
 
