@@ -25,7 +25,12 @@ const NAV_LINKS = [
   "Pulse AI",
 ];
 
-export default function DfaWorkspace({ user, onNavigate, onSignOut }) {
+export default function DfaWorkspace({
+  user,
+  onNavigate,
+  onSignOut,
+  onAccountSettings,
+}) {
   const {
     conversations,
     activeId,
@@ -64,7 +69,8 @@ export default function DfaWorkspace({ user, onNavigate, onSignOut }) {
     // Provider sub-pages are internal `view` states inside DoctorDashboard, not
     // App-level routes. Navigate back to the dashboard route and pass the target
     // view so DoctorDashboard opens on it (it remounts on leaving Pulse).
-    if (link === "Dashboard") onNavigate?.("dashboard", { providerView: "home" });
+    if (link === "Dashboard")
+      onNavigate?.("dashboard", { providerView: "home" });
     else if (link === "Schedule")
       onNavigate?.("dashboard", { providerView: "schedule" });
     else if (link === "Patient Records")
@@ -78,11 +84,12 @@ export default function DfaWorkspace({ user, onNavigate, onSignOut }) {
     <div className='ap-page'>
       <TopNav
         links={NAV_LINKS}
-        activeKey="Pulse AI"
+        activeKey='Pulse AI'
         onLogoClick={() => onNavigate?.("dashboard", { providerView: "home" })}
         onSelect={handleNavClick}
         userName={fullName}
         userRole={specialty}
+        onAccountSettings={onAccountSettings}
         onSignOut={onSignOut}
       />
 

@@ -347,6 +347,7 @@ export default function PatientDashboard({
   }, []);
 
   const [view, setView] = useState(() => {
+    if (pageData?.intent === "account-settings") return "account-settings";
     if (pageData?.intent === "labs" && pageData.labResultId)
       return "lab-detail";
     if (pageData?.intent === "labs") return "labs";

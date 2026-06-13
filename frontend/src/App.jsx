@@ -33,6 +33,7 @@ const PATH_TO_PAGE = {
   "/care-team": "care-team",
   "/pulse": "pulse",
   "/messages": "messages",
+  "/account-settings": "account-settings",
 };
 
 const PAGE_TO_PATH = {
@@ -42,6 +43,7 @@ const PAGE_TO_PATH = {
   "care-team": "/care-team",
   pulse: "/pulse",
   messages: "/messages",
+  "account-settings": "/account-settings",
   "dfa-pulse": "/pulse",
 };
 
@@ -118,6 +120,7 @@ export default function App() {
       user: session.user,
       onNavigate: handleNavigate,
       onSignOut: handleSignOut,
+      onAccountSettings: () => handleNavigate("account-settings"),
     };
 
     if (role === "provider") {
@@ -128,6 +131,7 @@ export default function App() {
               user={session.user}
               onNavigate={handleNavigate}
               onSignOut={handleSignOut}
+              onAccountSettings={() => handleNavigate("account-settings")}
             />
           );
         return (
@@ -135,7 +139,11 @@ export default function App() {
             user={session.user}
             onSignOut={handleSignOut}
             onNavigate={handleNavigate}
-            initialView={pageData?.providerView ?? "home"}
+            initialView={
+              page === "account-settings"
+                ? "account-settings"
+                : (pageData?.providerView ?? "home")
+            }
           />
         );
       })();
@@ -167,6 +175,14 @@ export default function App() {
         );
       }
       if (page === "pulse") return <PulseWorkspace {...sharedProps} />;
+      if (page === "account-settings") {
+        return (
+          <PatientDashboard
+            {...sharedProps}
+            pageData={{ intent: "account-settings", ...(pageData || {}) }}
+          />
+        );
+      }
       return <PatientDashboard {...sharedProps} pageData={pageData} />;
     })();
 

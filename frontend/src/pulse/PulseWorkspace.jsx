@@ -25,7 +25,12 @@ const NAV_LINKS = [
   "Pulse AI",
 ];
 
-export default function PulseWorkspace({ user, onNavigate, onSignOut }) {
+export default function PulseWorkspace({
+  user,
+  onNavigate,
+  onSignOut,
+  onAccountSettings,
+}) {
   const {
     conversations,
     activeId,
@@ -66,20 +71,21 @@ export default function PulseWorkspace({ user, onNavigate, onSignOut }) {
   };
 
   return (
-    <div className="ap-page">
+    <div className='ap-page'>
       <TopNav
         links={NAV_LINKS.map((l) =>
           l === "Messages" ? { label: l, badge: unreadCount } : l,
         )}
-        activeKey="Pulse AI"
+        activeKey='Pulse AI'
         onLogoClick={() => onNavigate?.("dashboard")}
         onSelect={handleNavClick}
         userName={fullName}
-        userRole="Patient"
+        userRole='Patient'
+        onAccountSettings={onAccountSettings}
         onSignOut={onSignOut}
       />
 
-      <div className="pulse-ws-grid">
+      <div className='pulse-ws-grid'>
         <ConversationSidebar
           conversations={conversations}
           activeId={activeId}
@@ -87,8 +93,8 @@ export default function PulseWorkspace({ user, onNavigate, onSignOut }) {
           onNew={newConversation}
         />
 
-        <main className="pulse-ws-main">
-          <div className="pulse-ws-thread">
+        <main className='pulse-ws-main'>
+          <div className='pulse-ws-thread'>
             <ConversationThread
               messages={messages}
               streaming={streaming}
@@ -96,8 +102,8 @@ export default function PulseWorkspace({ user, onNavigate, onSignOut }) {
               onNavigate={onNavigate}
             />
           </div>
-          {error && <div className="pulse-error">{error}</div>}
-          <div className="pulse-ws-composer">
+          {error && <div className='pulse-error'>{error}</div>}
+          <div className='pulse-ws-composer'>
             <Composer onSend={send} disabled={streaming} />
           </div>
         </main>

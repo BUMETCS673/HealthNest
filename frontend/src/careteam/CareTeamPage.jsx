@@ -30,7 +30,12 @@ function providerName(p) {
   return [p.title, p.first_name, p.last_name].filter(Boolean).join(" ");
 }
 
-export default function CareTeamPage({ user, onNavigate, onSignOut }) {
+export default function CareTeamPage({
+  user,
+  onNavigate,
+  onSignOut,
+  onAccountSettings,
+}) {
   const [providers, setProviders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProvider, setSelectedProvider] = useState(null);
@@ -50,12 +55,12 @@ export default function CareTeamPage({ user, onNavigate, onSignOut }) {
   }, []);
 
   return (
-    <div className="ct-page">
+    <div className='ct-page'>
       <TopNav
         links={NAV_LINKS.map((l) =>
           l === "Messages" ? { label: l, badge: unreadCount } : l,
         )}
-        activeKey="My Care Team"
+        activeKey='My Care Team'
         onLogoClick={() => onNavigate?.("dashboard")}
         onSelect={(label) => {
           if (label === "Dashboard") onNavigate?.("dashboard");
@@ -66,60 +71,58 @@ export default function CareTeamPage({ user, onNavigate, onSignOut }) {
           else if (label === "Pulse AI") onNavigate?.("pulse");
         }}
         userName={fullName}
-        userRole="Patient"
+        userRole='Patient'
+        onAccountSettings={onAccountSettings}
         onSignOut={onSignOut}
       />
 
-      <main className="ct-main">
-        <div className="ct-header">
-          <h1 className="ct-title">My Care Team</h1>
-          <p className="ct-sub">
+      <main className='ct-main'>
+        <div className='ct-header'>
+          <h1 className='ct-title'>My Care Team</h1>
+          <p className='ct-sub'>
             Providers currently associated with your account.
           </p>
         </div>
 
         {loading ? (
-          <div className="ct-loading">Loading your care team…</div>
+          <div className='ct-loading'>Loading your care team…</div>
         ) : providers.length === 0 ? (
-          <div className="ct-empty">
+          <div className='ct-empty'>
             <User size={40} />
             <p>You don&apos;t have any care team members yet.</p>
             <button
-              className="ct-empty-btn"
-              onClick={() => onNavigate?.("booking")}
-            >
+              className='ct-empty-btn'
+              onClick={() => onNavigate?.("booking")}>
               <Search size={16} /> Find a Doctor
             </button>
           </div>
         ) : (
-          <div className="ct-grid">
+          <div className='ct-grid'>
             {providers.map((p) => (
-              <div key={p.id} className="ct-card">
-                <div className="ct-card-avatar">
+              <div key={p.id} className='ct-card'>
+                <div className='ct-card-avatar'>
                   <User size={28} />
                 </div>
-                <p className="ct-card-name">{providerName(p)}</p>
+                <p className='ct-card-name'>{providerName(p)}</p>
                 {p.specialty && (
-                  <span className="ct-card-badge">{p.specialty}</span>
+                  <span className='ct-card-badge'>{p.specialty}</span>
                 )}
-                <div className="ct-card-actions">
+                <div className='ct-card-actions'>
                   <button
-                    className="ct-action ct-action--ghost"
+                    className='ct-action ct-action--ghost'
                     onClick={() =>
                       onNavigate?.(
                         "messages",
                         p.user_id ? { openContactId: p.user_id } : undefined,
                       )
-                    }
-                  >
+                    }>
                     <MessageSquare size={15} /> Message
                   </button>
                   <button
-                    className="ct-action ct-action--filled"
+                    className='ct-action ct-action--filled'
                     onClick={() =>
                       setSelectedProvider({ id: p.id, name: providerName(p) })
-                    }
-                  >
+                    }>
                     <CalendarPlus size={15} /> Book
                   </button>
                 </div>
@@ -142,7 +145,7 @@ export default function CareTeamPage({ user, onNavigate, onSignOut }) {
       )}
 
       <Footer
-        role="patient"
+        role='patient'
         onNavigate={(target) => {
           if (target === "records") onNavigate?.("labs");
           else onNavigate?.(target);
