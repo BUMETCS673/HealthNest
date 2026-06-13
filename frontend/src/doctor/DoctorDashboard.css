@@ -768,7 +768,9 @@
   transition:
     background 0.2s,
     transform 0.15s;
-  z-index: 200;
+  /* Above the shared drawer scrim (250) so it stays clickable while the
+     Messages drawer is open; below the drawers (260). */
+  z-index: 255;
 }
 
 .doc-pulse-fab:hover {

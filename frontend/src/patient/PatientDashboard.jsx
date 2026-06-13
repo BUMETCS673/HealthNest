@@ -390,6 +390,18 @@ export default function PatientDashboard({
     if (pageData?.intent === "labs") return "labs";
     return "home";
   });
+
+  // A labs navigation can arrive while the dashboard is already mounted (e.g.
+  // clicking a lab notification from the dashboard). Switch to the labs view
+  // when a new labs intent comes in. `_nav` is a nonce so repeat clicks re-fire.
+  const labsNonce =
+    pageData?.intent === "labs" ? (pageData._nav ?? "labs") : null;
+  const [appliedLabsNonce, setAppliedLabsNonce] = useState(labsNonce);
+  if (labsNonce && labsNonce !== appliedLabsNonce) {
+    setAppliedLabsNonce(labsNonce);
+    setView(pageData.labResultId ? "lab-detail" : "labs");
+  }
+
   const [activeLabId, setActiveLabId] = useState(
     () => pageData?.labResultId ?? null,
   );

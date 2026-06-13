@@ -8,7 +8,7 @@
 // Notes: AI was used to help quickly set up the main application component and to implement the core logic for handling
 // authentication state and routing.
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Login from "./loginsignup/Login";
 import Signup from "./loginsignup/Signup";
 import PatientDashboard from "./patient/PatientDashboard";
@@ -24,9 +24,42 @@ import MessagesPage from "./messages/MessagesPage";
 import MessagesProvider from "./messages/MessagesProvider";
 import MessagesDrawer from "./messages/MessagesDrawer";
 import { authApi } from "./lib/authApi";
-import DfaProvider from "./pulse/DfaProvider";
+import DfaProvider, { useDfa } from "./pulse/DfaProvider";
 import DfaDrawer from "./pulse/DfaDrawer";
 import DfaWorkspace from "./pulse/DfaWorkspace";
+import { usePulse } from "./pulse/PulseProvider";
+import { useMessages } from "./messages/MessagesProvider";
+import DrawerScrim from "./components/DrawerScrim";
+
+// Light-dismiss overlay shared by the two global side drawers. Rendered inside
+// the relevant providers so it can read both drawers' open state and close them.
+function PatientDrawerScrim() {
+  const pulse = usePulse();
+  const messages = useMessages();
+  return (
+    <DrawerScrim
+      open={Boolean(pulse.drawerOpen || messages.drawerOpen)}
+      onClose={() => {
+        pulse.closeDrawer?.();
+        messages.closeDrawer?.();
+      }}
+    />
+  );
+}
+
+function ProviderDrawerScrim() {
+  const dfa = useDfa();
+  const messages = useMessages();
+  return (
+    <DrawerScrim
+      open={Boolean(dfa.drawerOpen || messages.drawerOpen)}
+      onClose={() => {
+        dfa.closeDrawer?.();
+        messages.closeDrawer?.();
+      }}
+    />
+  );
+}
 
 const PATH_TO_PAGE = {
   "/appointments": "appointments",
@@ -139,6 +172,22 @@ export default function App() {
     window.history.pushState(null, "", PAGE_TO_PATH[newPage] ?? "/");
   };
 
+  // Global navigation event (used by the notification bell, which lives in the
+  // shared TopNav and has no direct handle to handleNavigate). A ref keeps the
+  // listener stable while always calling the latest handler.
+  const navigateRef = useRef(handleNavigate);
+  useEffect(() => {
+    navigateRef.current = handleNavigate;
+  });
+  useEffect(() => {
+    const onNav = (e) => {
+      const { page: p, data } = e.detail || {};
+      if (p) navigateRef.current?.(p, data);
+    };
+    window.addEventListener("hn:navigate", onNav);
+    return () => window.removeEventListener("hn:navigate", onNav);
+  }, []);
+
   if (session) {
     const role =
       activeRole ??
@@ -181,6 +230,7 @@ export default function App() {
         <MessagesProvider session={session}>
           <DfaProvider>
             {providerPage}
+            <ProviderDrawerScrim />
             <DfaDrawer onNavigate={handleNavigate} />
             <MessagesDrawer
               myId={session.user?.id}
@@ -220,6 +270,7 @@ export default function App() {
     const signedInTree = (
       <PulseProvider>
         {patientPage}
+        <PatientDrawerScrim />
         <PulseDrawer
           onOpenWorkspace={() => handleNavigate("pulse")}
           onNavigate={handleNavigate}
