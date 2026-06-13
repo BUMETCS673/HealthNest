@@ -25,7 +25,12 @@ const NAV_LINKS = [
   "Pulse AI",
 ];
 
-export default function DfaWorkspace({ user, onNavigate, onSignOut }) {
+export default function DfaWorkspace({
+  user,
+  onNavigate,
+  onSignOut,
+  onAccountSettings,
+}) {
   const {
     conversations,
     activeId,
@@ -79,6 +84,7 @@ export default function DfaWorkspace({ user, onNavigate, onSignOut }) {
         onSelect={handleNavClick}
         userName={fullName}
         userRole={specialty}
+        onAccountSettings={onAccountSettings}
         onSignOut={onSignOut}
       />
 

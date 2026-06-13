@@ -17,6 +17,7 @@ export default function MessagesPage({
   user,
   onNavigate,
   onSignOut,
+  onAccountSettings,
   initialContactId,
 }) {
   const { unreadCount } = useMessages();
@@ -53,6 +54,7 @@ export default function MessagesPage({
         }}
         userName={fullName}
         userRole='Patient'
+        onAccountSettings={onAccountSettings}
         onSignOut={onSignOut}
       />
 

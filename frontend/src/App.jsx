@@ -67,6 +67,7 @@ const PATH_TO_PAGE = {
   "/care-team": "care-team",
   "/pulse": "pulse",
   "/messages": "messages",
+  "/account-settings": "account-settings",
   // provider routes
   "/schedule": "schedule",
   "/patient-records": "patient-records",
@@ -81,6 +82,7 @@ const PAGE_TO_PATH = {
   "care-team": "/care-team",
   pulse: "/pulse",
   messages: "/messages",
+  "account-settings": "/account-settings",
   "dfa-pulse": "/pulse",
   // provider routes
   schedule: "/schedule",
@@ -198,6 +200,7 @@ export default function App() {
       user: session.user,
       onNavigate: handleNavigate,
       onSignOut: handleSignOut,
+      onAccountSettings: () => handleNavigate("account-settings"),
     };
 
     if (role === "provider") {
@@ -208,6 +211,7 @@ export default function App() {
               user={session.user}
               onNavigate={handleNavigate}
               onSignOut={handleSignOut}
+              onAccountSettings={() => handleNavigate("account-settings")}
             />
           );
         return (
@@ -216,8 +220,10 @@ export default function App() {
             onSignOut={handleSignOut}
             onNavigate={handleNavigate}
             initialView={
-              PROVIDER_PAGE_TO_VIEW[page] ?? pageData?.providerView ?? "home"
-            }
+              page === "account-settings"
+                ? "account-settings"
+                : PROVIDER_PAGE_TO_VIEW[page] ?? pageData?.providerView ?? "home"
+              }
           />
         );
       })();
@@ -263,6 +269,14 @@ export default function App() {
         );
       if (page === "booking") return <BookingPage {...sharedProps} />;
       if (page === "pulse") return <PulseWorkspace {...sharedProps} />;
+      if (page === "account-settings") {
+        return (
+          <PatientDashboard
+            {...sharedProps}
+            pageData={{ intent: "account-settings", ...(pageData || {}) }}
+          />
+        );
+      }
       return <PatientDashboard {...sharedProps} pageData={pageData} />;
     })();
 

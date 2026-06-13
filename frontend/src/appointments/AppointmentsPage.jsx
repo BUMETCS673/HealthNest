@@ -39,7 +39,12 @@ const STATUS_META = {
 
 const TABS = ["Upcoming", "Past", "All"];
 
-export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
+export default function AppointmentsPage({
+  user,
+  onNavigate,
+  onSignOut,
+  onAccountSettings,
+}) {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("Upcoming");
@@ -173,6 +178,7 @@ export default function AppointmentsPage({ user, onNavigate, onSignOut }) {
         }}
         userName={fullName}
         userRole='Patient'
+        onAccountSettings={onAccountSettings}
         onSignOut={onSignOut}
       />
 
