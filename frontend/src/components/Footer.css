@@ -73,3 +73,11 @@
   font-size: 13px;
   padding: 18px 24px 24px;
 }
+
+/* The footer logo is a button that returns to the dashboard. */
+button.dash-logo {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}

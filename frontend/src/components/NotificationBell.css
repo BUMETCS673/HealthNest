@@ -1,0 +1,141 @@
+/*
+AI-USAGE SUMMARY
+Tools: Claude Code (Opus 4.8)
+Overall AI Contribution: ~95%
+AI-Assisted Areas: Styles for the notification bell badge + dropdown panel
+  (#SCRUM-76) — right-aligned panel under the bell, per-type icon chips, and the
+  notification rows.
+Human Contributions: Verification.
+Notes: Validated visually and via `npm run build`.
+*/
+
+.nb-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.nb-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: #c2410c;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+}
+
+.nb-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 340px;
+  max-height: 420px;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #e5e5e3;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  z-index: 300;
+}
+
+.nb-panel-head {
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111110;
+  border-bottom: 1px solid #f2f2f1;
+  position: sticky;
+  top: 0;
+  background: #fff;
+}
+
+.nb-empty {
+  padding: 24px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: #9c9c9b;
+}
+
+.nb-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nb-item {
+  width: 100%;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 16px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  border-bottom: 1px solid #f7f7f6;
+}
+
+.nb-item:hover {
+  background: #faf9f8;
+}
+
+.nb-item-icon {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef0ef;
+  color: #71716e;
+}
+
+.nb-item-icon--message {
+  background: #e7eef9;
+  color: #1a56db;
+}
+
+.nb-item-icon--appointment {
+  background: #e7f2ec;
+  color: #1f7a4d;
+}
+
+.nb-item-icon--lab {
+  background: #fbeede;
+  color: #b45309;
+}
+
+.nb-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.nb-item-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #111110;
+}
+
+.nb-item-body {
+  font-size: 12px;
+  color: #71716e;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 268px;
+}
+
+.nb-item-time {
+  font-size: 11px;
+  color: #9c9c9b;
+}

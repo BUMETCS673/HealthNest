@@ -156,8 +156,58 @@ describe("Login", () => {
       expect(authApi.signIn).toHaveBeenCalledWith({
         email: "test@test.com",
         password: "password123",
+        role: "patient",
       });
     });
+  });
+
+  test("passes the selected provider role to authApi.signIn", async () => {
+    render(<Login {...defaultProps} />);
+
+    fireEvent.click(screen.getByText("Provider"));
+    fireEvent.change(screen.getByLabelText("Email address"), {
+      target: { value: "doc@test.com" },
+    });
+    fireEvent.change(screen.getByLabelText("Password"), {
+      target: { value: "password123" },
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: /sign in as provider/i }),
+    );
+
+    await waitFor(() => {
+      expect(authApi.signIn).toHaveBeenCalledWith({
+        email: "doc@test.com",
+        password: "password123",
+        role: "provider",
+      });
+    });
+  });
+
+  test("shows error when account does not have the selected role", async () => {
+    authApi.signIn.mockRejectedValue(
+      new Error("No provider account exists for this email."),
+    );
+
+    render(<Login {...defaultProps} />);
+
+    fireEvent.click(screen.getByText("Provider"));
+    fireEvent.change(screen.getByLabelText("Email address"), {
+      target: { value: "patient@test.com" },
+    });
+    fireEvent.change(screen.getByLabelText("Password"), {
+      target: { value: "password123" },
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: /sign in as provider/i }),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("No provider account exists for this email."),
+      ).toBeInTheDocument();
+    });
+    expect(mockOnSignedIn).not.toHaveBeenCalled();
   });
 
   test("calls onSignedIn with session after successful sign in", async () => {
@@ -278,11 +328,20 @@ describe("Login", () => {
     });
   });
 
-  test("calls onSwitchToSignup when create account button is clicked", () => {
+  test("calls onSwitchToSignup with patient role when create account button is clicked", () => {
     render(<Login {...defaultProps} />);
 
     fireEvent.click(screen.getByText("Create an account as Patient"));
 
-    expect(mockOnSwitchToSignup).toHaveBeenCalledTimes(1);
+    expect(mockOnSwitchToSignup).toHaveBeenCalledWith("patient");
+  });
+
+  test("calls onSwitchToSignup with provider role when provider is toggled", () => {
+    render(<Login {...defaultProps} />);
+
+    fireEvent.click(screen.getByText("Provider"));
+    fireEvent.click(screen.getByText("Create an account as Provider"));
+
+    expect(mockOnSwitchToSignup).toHaveBeenCalledWith("provider");
   });
 });

@@ -190,6 +190,19 @@
   gap: 5px;
 }
 
+.ap-card-info--clickable {
+  cursor: pointer;
+  text-align: left;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+}
+
+.ap-card-info--clickable:hover .ap-card-doctor {
+  text-decoration: underline;
+}
+
 .ap-card-top {
   display: flex;
   align-items: center;
@@ -323,3 +336,4 @@
   .ap-card { flex-wrap: wrap; }
   .ap-card-actions { flex-direction: row; }
 }
+

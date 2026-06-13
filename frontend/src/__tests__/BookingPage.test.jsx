@@ -6,13 +6,11 @@
 
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import BookingPage from "../booking/BookingPage";
-import { appointmentsApi, providersApi } from "../lib/appointmentsApi";
+import { providersApi } from "../lib/appointmentsApi";
 
 jest.mock("../lib/appointmentsApi", () => ({
-  appointmentsApi: {
-    getAppointments: jest.fn(),
-  },
   providersApi: {
+    getCareTeam: jest.fn(),
     getProviders: jest.fn(),
   },
 }));
@@ -31,20 +29,12 @@ const mockUser = {
   },
 };
 
-const previousAppointment = {
-  id: "1",
-  provider_id: "prov-emily",
-  status: "scheduled",
-  providers: {
-    title: "Dr.",
-    first_name: "Emily",
-    last_name: "Park",
-    specialty: "Cardiology",
-  },
-  provider_availability: {
-    available_date: "2026-06-20",
-    available_time: "09:30",
-  },
+const careTeamProvider = {
+  id: "prov-emily",
+  title: "Dr.",
+  first_name: "Emily",
+  last_name: "Park",
+  specialty: "Cardiology",
 };
 
 const newProvider = {
@@ -57,7 +47,7 @@ const newProvider = {
 
 describe("BookingPage", () => {
   beforeEach(() => {
-    appointmentsApi.getAppointments.mockResolvedValue([]);
+    providersApi.getCareTeam.mockResolvedValue([]);
     providersApi.getProviders.mockResolvedValue([]);
   });
 
@@ -81,8 +71,8 @@ describe("BookingPage", () => {
     });
   });
 
-  test("shows the Your Doctors section when the patient has appointment history", async () => {
-    appointmentsApi.getAppointments.mockResolvedValue([previousAppointment]);
+  test("shows the Your Doctors section when the patient has a care team", async () => {
+    providersApi.getCareTeam.mockResolvedValue([careTeamProvider]);
 
     render(
       <BookingPage
@@ -99,8 +89,8 @@ describe("BookingPage", () => {
     expect(screen.getByText("Dr. Emily Park")).toBeInTheDocument();
   });
 
-  test("shows the Find a New Doctor button when the patient has appointment history", async () => {
-    appointmentsApi.getAppointments.mockResolvedValue([previousAppointment]);
+  test("shows the Find a New Doctor button when the patient has a care team", async () => {
+    providersApi.getCareTeam.mockResolvedValue([careTeamProvider]);
 
     render(
       <BookingPage
@@ -116,7 +106,7 @@ describe("BookingPage", () => {
   });
 
   test("shows new providers after Find a New Doctor is clicked", async () => {
-    appointmentsApi.getAppointments.mockResolvedValue([previousAppointment]);
+    providersApi.getCareTeam.mockResolvedValue([careTeamProvider]);
     providersApi.getProviders.mockResolvedValue([newProvider]);
 
     render(

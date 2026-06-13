@@ -5,12 +5,15 @@
 // Human Contributions: Owned the data-source decisions (appointments + labs), the role-based gating, and the decision to wire ALL three Pulse entry points to the same drawer state so promotion to the full workspace is one click anywhere on the page.
 import { useEffect, useState } from "react";
 import "./PatientDashboard.css";
-import { appointmentsApi, apptToDisplayRow } from "../lib/appointmentsApi";
+import {
+  appointmentsApi,
+  apptToDisplayRow,
+  providersApi,
+} from "../lib/appointmentsApi";
 import {
   Calendar,
   Pill,
   Activity,
-  FileText,
   ChevronRight,
   Plus,
   MessageCircleQuestion,
@@ -21,6 +24,8 @@ import PatientLabResultsPage from "./PatientLabResultsPage";
 import LabResultDetail from "../labresults/LabResultDetail";
 import { usePulse } from "../pulse/PulseProvider";
 import { useMessages } from "../messages/MessagesProvider";
+import AppointmentDetailModal from "../appointments/AppointmentDetailModal";
+import AppointmentModal from "../appointments/AppointmentModal";
 import TopNav from "../components/TopNav";
 import Footer from "../components/Footer";
 import { authApi } from "../lib/authApi";
@@ -76,16 +81,31 @@ function summarizeForCard(rows) {
 }
 
 function SummaryCard({ icon, label, value, detail, onClick }) {
-  return (
-    <div
-      className={`summ-card${onClick ? " summ-card--clickable" : ""}`}
-      onClick={onClick}>
-      <div className='summ-icon'>{icon}</div>
-      <p className='summ-label'>{label}</p>
-      <p className='summ-value'>{value}</p>
-      {detail && <p className='summ-detail'>{detail}</p>}
-    </div>
+  const body = (
+    <>
+      <div className="summ-icon">{icon}</div>
+      <p className="summ-label">{label}</p>
+      <p className="summ-value">{value}</p>
+      {detail && <p className="summ-detail">{detail}</p>}
+    </>
   );
+
+  // Clickable cards are real buttons (keyboard + screen-reader friendly)
+  // with a corner chevron hinting they navigate somewhere.
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        className="summ-card summ-card--clickable"
+        onClick={onClick}
+      >
+        {body}
+        <ChevronRight size={15} className="summ-arrow" />
+      </button>
+    );
+  }
+
+  return <div className="summ-card">{body}</div>;
 }
 
 function AccountSettings({ user, currentUser, onBack }) {
@@ -325,8 +345,10 @@ export default function PatientDashboard({
   const currentUser = deriveCurrentUser(user);
   const pulse = usePulse();
   const [upcomingAppoint, setUpcomingAppoint] = useState([]);
+  const [providerUserMap, setProviderUserMap] = useState({});
+  const [rescheduleAppt, setRescheduleAppt] = useState(null);
 
-  useEffect(() => {
+  const loadUpcoming = () => {
     appointmentsApi
       .getAppointments()
       .then((data) => {
@@ -344,6 +366,22 @@ export default function PatientDashboard({
         setUpcomingAppoint(upcoming);
       })
       .catch(() => {});
+  };
+
+  useEffect(() => {
+    loadUpcoming();
+    // Map provider_id → the provider's auth user id, so messaging opens the
+    // right conversation regardless of the appointment payload.
+    providersApi
+      .getCareTeam()
+      .then((team) => {
+        const map = {};
+        for (const p of team || []) {
+          if (p.id && p.user_id) map[p.id] = p.user_id;
+        }
+        setProviderUserMap(map);
+      })
+      .catch(() => {});
   }, []);
 
   const [view, setView] = useState(() => {
@@ -353,6 +391,18 @@ export default function PatientDashboard({
     if (pageData?.intent === "labs") return "labs";
     return "home";
   });
+
+  // A labs navigation can arrive while the dashboard is already mounted (e.g.
+  // clicking a lab notification from the dashboard). Switch to the labs view
+  // when a new labs intent comes in. `_nav` is a nonce so repeat clicks re-fire.
+  const labsNonce =
+    pageData?.intent === "labs" ? (pageData._nav ?? "labs") : null;
+  const [appliedLabsNonce, setAppliedLabsNonce] = useState(labsNonce);
+  if (labsNonce && labsNonce !== appliedLabsNonce) {
+    setAppliedLabsNonce(labsNonce);
+    setView(pageData.labResultId ? "lab-detail" : "labs");
+  }
+
   const [activeLabId, setActiveLabId] = useState(
     () => pageData?.labResultId ?? null,
   );
@@ -379,7 +429,33 @@ export default function PatientDashboard({
   if (hour >= 6 && hour < 12) greetingMes = "Good morning";
   else if (hour >= 12 && hour < 18) greetingMes = "Good afternoon";
 
-  const { unreadCount: unreadMessages } = useMessages();
+  const { unreadCount: unreadMessages, openThread, openDrawer } = useMessages();
+  const [detailAppt, setDetailAppt] = useState(null);
+
+  // Open the appointment's provider conversation in the global messaging drawer.
+  const messageProvider = (appt) => {
+    setDetailAppt(null);
+    const uid = appt?.providerUserId || providerUserMap[appt?.raw?.provider_id];
+    if (uid) openThread(uid);
+    openDrawer();
+  };
+
+  const rescheduleProvider = (appt) => {
+    setDetailAppt(null);
+    setRescheduleAppt({
+      id: appt.id,
+      providerId: appt.raw?.provider_id,
+      providerName: appt.doctor,
+    });
+  };
+
+  const cancelProvider = (appt) => {
+    setDetailAppt(null);
+    appointmentsApi
+      .cancelAppointment(appt.id)
+      .then(loadUpcoming)
+      .catch(() => {});
+  };
 
   const navOption = [
     "Dashboard",
@@ -474,26 +550,33 @@ export default function PatientDashboard({
                     ? `${upcomingAppoint[0].doctor}${upcomingAppoint[0].specialty ? ` · ${upcomingAppoint[0].specialty}` : ""}`
                     : "No upcoming appointments"
                 }
-                onClick={() => onNavigate?.("appointments")}
+                onClick={() =>
+                  upcomingAppoint[0]
+                    ? onNavigate?.("appointment-detail", {
+                        appointmentId: upcomingAppoint[0].id,
+                        appointment: upcomingAppoint[0],
+                      })
+                    : onNavigate?.("appointments")
+                }
               />
+              {/* Medications are still demo data (no meds backend yet);
+                  the soonest refill in that list is Metformin's. */}
               <SummaryCard
                 icon={<Pill size={16} />}
-                label='Active Medications'
-                value='3'
-                detail='Refill due May 28'
+                label="Active Medications"
+                value={String(activeMed.length)}
+                detail={`Next refill ${activeMed[1].refillDue}`}
               />
               <SummaryCard
                 icon={<Activity size={16} />}
-                label='Recent Labs'
-                value='4'
-                detail='1 result flagged'
+                label="Recent Labs"
+                value={String(labRows.length)}
+                detail={
+                  labResult[0]
+                    ? `Latest: ${labResult[0].test} · ${labResult[0].result}`
+                    : "No results yet"
+                }
                 onClick={() => setView("labs")}
-              />
-              <SummaryCard
-                icon={<FileText size={16} />}
-                label='Balance Due'
-                value='$142'
-                detail='Due Jun 1 · BCBS on file'
               />
             </div>
 
@@ -514,7 +597,7 @@ export default function PatientDashboard({
                   <button
                     key={appt.id}
                     className='dash-appt-row'
-                    onClick={() => onNavigate?.("appointments")}>
+                    onClick={() => setDetailAppt(appt)}>
                     <div className='dash-appt-date'>
                       <span className='dash-appt-month'>{appt.month}</span>
                       <span className='dash-appt-day'>{appt.day}</span>
@@ -609,17 +692,31 @@ export default function PatientDashboard({
         )}
       </main>
 
-      {!pulse.drawerOpen && (
-        <button
-          className='dash-pulse-fab'
-          onClick={() => pulse.openDrawer()}
-          aria-label='Open Pulse AI'>
-          <MessageCircleQuestion size={25} />
-        </button>
+      {detailAppt && (
+        <AppointmentDetailModal
+          appt={detailAppt}
+          onClose={() => setDetailAppt(null)}
+          onMessage={messageProvider}
+          onReschedule={rescheduleProvider}
+          onCancel={cancelProvider}
+        />
+      )}
+
+      {rescheduleAppt && (
+        <AppointmentModal
+          rescheduleId={rescheduleAppt.id}
+          providerId={rescheduleAppt.providerId}
+          providerName={rescheduleAppt.providerName}
+          onClose={() => setRescheduleAppt(null)}
+          onBooked={() => {
+            setRescheduleAppt(null);
+            loadUpcoming();
+          }}
+        />
       )}
 
       <Footer
-        role='patient'
+        role="patient"
         onNavigate={(target) => {
           if (target === "dashboard") setView("home");
           else if (target === "records") setView("labs");

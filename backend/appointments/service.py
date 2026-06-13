@@ -112,6 +112,7 @@ def get_appointments(patient_id: str) -> list[dict[str, Any]]:
         .select("""
             *,
             providers (
+                user_id,
                 title,
                 first_name,
                 last_name,
@@ -334,12 +335,16 @@ def reschedule_appointment(
 # Confidence: High. All of the code has been reviewed and tested. 
 def cancel_appointment(appointment_id: str, patient_id: str) -> None:
     appointment = _get_modifiable_appointment(appointment_id, patient_id)
-    
-    # Mark appointment as cancelled
+
+    # Hard-delete the appointment (it FKs the slot, so remove it first), then
+    # free the slot for booking again. Hard-deleting — rather than leaving a
+    # 'cancelled' row that still references the slot — keeps the data model
+    # consistent with the provider cancel and avoids fk_appointments_availability
+    # violations when that slot is later cleaned up.
     (
         get_supabase_admin()
         .table("appointments")
-        .update({"status": "cancelled"})
+        .delete()
         .eq("id", appointment_id)
         .execute()
     )
@@ -382,7 +387,8 @@ def get_availability() -> list[dict[str, Any]]:
             providers ( title, first_name, last_name, specialty )
         """)
         .eq("is_booked", False)
-        .gte("available_date", today_iso)  
+        .eq("blocked", False)
+        .gte("available_date", today_iso)
         .order("available_date", desc=False)
         .order("available_time", desc=False)
         .execute()

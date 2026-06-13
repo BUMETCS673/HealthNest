@@ -101,14 +101,12 @@ class VisitOverviewSkill(AISkill):
 
         resp = (
             admin.table("appointments")
-            .select("id, appointment_date, appointment_time, status, notes, patient_id")
-            .eq("appointment_date", today_str)
+            .select("id, status, notes, patient_id, provider_availability(available_date, available_time)")
             .eq("status", "scheduled")
-            .order("appointment_time")
             .limit(_MAX_LISTED)
             .execute()
         )
-        rows = resp.data or []
+        rows = [r for r in (resp.data or []) if (r.get("provider_availability") or {}).get("available_date") == today_str]
 
         appointments = []
         for r in rows:
@@ -130,12 +128,13 @@ class VisitOverviewSkill(AISkill):
                         mrn = pat.get("mrn")
                 except Exception:
                     pass
+            avail = r.get("provider_availability") or {}
             appointments.append({
                 "id": r.get("id"),
                 "patientName": name,
                 "mrn": mrn,
-                "time": r.get("appointment_time"),
-                "date": r.get("appointment_date"),
+                "time": avail.get("available_time") or r.get("appointment_time"),
+                "date": avail.get("available_date"),
                 "notes": r.get("notes"),
             })
 
@@ -156,7 +155,7 @@ class VisitOverviewSkill(AISkill):
         appt_resp = (
             admin.table("appointments")
             .select(
-                "id, appointment_date, appointment_time, status, notes, patient_id"
+                "id, status, notes, patient_id, provider_availability(available_date, available_time)"
             )
             .eq("id", appointment_id)
             .limit(1)
@@ -208,14 +207,12 @@ class VisitOverviewSkill(AISkill):
         #     )
 
         # Pull the data sections. Each section degrades gracefully if empty.
-        recent_history = _fetch_recent_history(admin, patient_id)
-        active_problems = _fetch_active_problems(admin, patient_id)
-        medications = _fetch_medications(admin, patient_id)
-        labs = _fetch_recent_labs(admin, patient_id)
-        open_issues = _fetch_open_issues(admin, patient_id)
-        missing_sections = _find_missing_sections(
-            recent_history, active_problems, medications, labs, open_issues
-        )
+        sections = build_patient_sections(admin, patient_id)
+        recent_history = sections["recentHistory"]
+        active_problems = sections["activeProblems"]
+        medications = sections["medications"]
+        labs = sections["labs"]
+        missing_sections = sections["missingSections"]
 
         patient_name = " ".join(
             p for p in (
@@ -224,6 +221,7 @@ class VisitOverviewSkill(AISkill):
             ) if p
         )
 
+        appt_avail = appt.get("provider_availability") or {}
         visit = {
             "patient": {
                 "id": patient_id,
@@ -234,15 +232,15 @@ class VisitOverviewSkill(AISkill):
             },
             "appointment": {
                 "id": appt["id"],
-                "time": appt.get("appointment_time"),
-                "date": appt.get("appointment_date"),
+                "time": appt_avail.get("available_time") or appt.get("appointment_time"),
+                "date": appt_avail.get("available_date"),
                 "visitType": appt.get("notes") or "Visit",
             },
             "recentHistory": recent_history,
             "activeProblems": active_problems,
             "medications": medications,
             "labs": labs,
-            "openIssues": open_issues,
+            "openIssues": sections["openIssues"],
             "missingSections": missing_sections,
         }
 
@@ -260,6 +258,28 @@ class VisitOverviewSkill(AISkill):
         )
 
 
+def build_patient_sections(admin: Any, patient_id: str) -> dict[str, Any]:
+    """Chart sections for one patient, shaped for the frontend full-chart view.
+
+    Shared by the DFA visit-overview detail op and the providers
+    patient-overview endpoint (Quick Patient Lookup)."""
+    recent_history = _fetch_recent_history(admin, patient_id)
+    active_problems = _fetch_active_problems(admin, patient_id)
+    medications = _fetch_medications(admin, patient_id)
+    labs = _fetch_recent_labs(admin, patient_id)
+    open_issues = _fetch_open_issues(admin, patient_id)
+    return {
+        "recentHistory": recent_history,
+        "activeProblems": active_problems,
+        "medications": medications,
+        "labs": labs,
+        "openIssues": open_issues,
+        "missingSections": _find_missing_sections(
+            recent_history, active_problems, medications, labs, open_issues
+        ),
+    }
+
+
 # ── Data fetchers ───
 # Each returns an empty list on failure so the summary degrades gracefully.
 
@@ -267,8 +287,9 @@ def _fetch_recent_history(admin: Any, patient_id: str) -> list[dict[str, Any]]:
     try:
         resp = (
             admin.table("encounters")
-            .select("id, encounter_date, encounter_type, summary, provider_id")
+            .select("id, encounter_date, encounter_type, summary, provider_id, signed_at")
             .eq("patient_id", patient_id)
+            .filter("signed_at", "not.is", "null")
             .order("encounter_date", desc=True)
             .limit(5)
             .execute()

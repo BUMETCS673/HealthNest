@@ -25,6 +25,7 @@ class SignUpRequest(BaseModel):
 class SignInRequest(BaseModel):
     email: EmailStr
     password: str
+    role: str | None = Field(default=None, pattern="^(patient|provider)$")
 
 
 class RefreshRequest(BaseModel):

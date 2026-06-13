@@ -278,7 +278,7 @@ describe("Signup", () => {
     );
 
     await waitFor(() => {
-      expect(mockOnSignedUp).toHaveBeenCalledWith(fakeSession);
+      expect(mockOnSignedUp).toHaveBeenCalledWith(fakeSession, "patient");
     });
   });
 

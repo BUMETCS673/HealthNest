@@ -1,0 +1,148 @@
+/*
+AI-USAGE SUMMARY
+Tools: Claude Code (Opus 4.8)
+Overall AI Contribution: ~90%
+AI-Assisted Areas: Styles for the shared AppointmentPanel (#SCRUM-77) — avatar +
+  name/subtitle/status on the left, date/time stacked top-right, details in the
+  middle, full-width actions at the bottom. Extracted from ProviderSchedule.css
+  and made self-contained (status-pill colors, optional fill height) so the panel
+  is reusable in the patient appointment-details modal.
+Human Contributions: Reuse direction and verification.
+Notes: Validated visually and via `npm run build`.
+*/
+
+.apanel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Fills the provider day-view right column; omitted in the (shorter) modal. */
+.apanel--fill {
+  min-height: 528px;
+}
+
+.apanel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.apanel-head-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.apanel-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #f2f2f1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #71716e;
+}
+
+.apanel-name {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111110;
+}
+
+.apanel-subtitle {
+  font-size: 14px;
+  color: #71716e;
+}
+
+.apanel-status {
+  font-size: 12px;
+  text-transform: capitalize;
+  padding: 3px 10px;
+  border-radius: 10px;
+  background: #eef0ef;
+  color: #71716e;
+}
+
+.apanel-status--scheduled,
+.apanel-status--pending {
+  background: #e7f2ec;
+  color: #1f7a4d;
+}
+
+.apanel-status--completed {
+  background: #eef0ef;
+  color: #71716e;
+}
+
+.apanel-status--cancelled,
+.apanel-status--no_show {
+  background: #f7e7e7;
+  color: #b3261e;
+}
+
+.apanel-when {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  text-align: right;
+}
+
+.apanel-when-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #111110;
+}
+
+.apanel-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 16px;
+  border-top: 1px solid #f2f2f1;
+}
+
+.apanel-detail {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  color: #111110;
+}
+
+.apanel-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.apanel-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 14px;
+  border: 1px solid #e5e5e3;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+  font-family: inherit;
+  color: #111110;
+  cursor: pointer;
+}
+
+.apanel-btn:hover {
+  border-color: #111110;
+}
+
+.apanel-btn--danger:hover {
+  border-color: #c2410c;
+  color: #c2410c;
+}

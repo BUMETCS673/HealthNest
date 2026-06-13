@@ -27,7 +27,8 @@
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 8px 24px rgba(15, 118, 110, 0.32);
-  z-index: 240;
+  /* Above the shared drawer scrim (250), below the drawers (260). */
+  z-index: 255;
   transition:
     background 120ms ease,
     transform 80ms ease;
@@ -55,16 +56,6 @@
   align-items: center;
   justify-content: center;
   border: 2px solid #f9f9f7;
-}
-
-/* ── Scrim ─────────────────────────────────────────────────── */
-.msg-scrim {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.28);
-  backdrop-filter: blur(2px);
-  z-index: 250;
-  animation: msg-fade-in 160ms ease-out;
 }
 
 /* ── Drawer shell (LEFT) ───────────────────────────────────── */
@@ -347,11 +338,3 @@
   cursor: not-allowed;
 }
 
-@keyframes msg-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}

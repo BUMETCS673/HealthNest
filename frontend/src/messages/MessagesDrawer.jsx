@@ -94,7 +94,8 @@ export default function MessagesDrawer({
         </button>
       )}
 
-      {drawerOpen && <div className="msg-scrim" onClick={closeDrawer} />}
+      {/* No scrim: the page (and the Pulse drawer on the other side)
+          stays interactive while messages are open. */}
 
       <aside
         className={`msg-drawer ${drawerOpen ? "is-open" : ""}`}

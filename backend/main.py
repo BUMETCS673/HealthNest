@@ -19,6 +19,8 @@ from lab_results import router as lab_results_router
 from patients import router as patients_router
 from ai import router as ai_router, dfa_router
 from messages import router as messages_router
+from scheduling import router as scheduling_router
+from notifications import router as notifications_router
 
 app = FastAPI()
 
@@ -45,6 +47,8 @@ app.include_router(patients_router)
 app.include_router(ai_router)
 app.include_router(dfa_router)
 app.include_router(messages_router)
+app.include_router(scheduling_router)
+app.include_router(notifications_router)
 
 
 

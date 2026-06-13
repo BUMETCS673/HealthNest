@@ -1,26 +1,22 @@
 // AI-USAGE SUMMARY
 // Tools: Claude Code (Opus 4.8)
 // Overall AI Contribution: ~60%
-// AI-Assisted Areas: Provider-selection refactor to provider_id + nested
-//   providers (history vs directory dedupe) and the unread-messages nav badge.
-// Human Contributions: Business rules for "Your Doctors" vs new providers;
-//   applied/verified the changes and updated tests.
+// AI-Assisted Areas: Provider-selection page — "Your Doctors" from the patient's
+//   active care team, "Find a new doctor" from the provider directory minus the
+//   care team, and the unread-messages nav badge.
+// Human Contributions: Business rules for "Your Doctors" (care team) vs new
+//   providers; applied/verified the changes and updated tests.
 // Notes: Validated via `npm run build`, jest, and manual testing.
 import { useState, useEffect } from "react";
 import { ChevronLeft, Search, User } from "lucide-react";
-import { appointmentsApi, providersApi } from "../lib/appointmentsApi";
+import { providersApi } from "../lib/appointmentsApi";
 import AppointmentModal from "../appointments/AppointmentModal";
 import { useMessages } from "../messages/MessagesProvider";
 import TopNav from "../components/TopNav";
 import "./BookingPage.css";
 import Footer from "../components/Footer";
 
-export default function BookingPage({
-  user,
-  onNavigate,
-  onSignOut,
-  appointments: passedAppointments = null,
-}) {
+export default function BookingPage({ user, onNavigate, onSignOut }) {
   const [myProviders, setMyProviders] = useState([]);
   const [newProviders, setNewProviders] = useState([]);
   const [showFindDoctor, setShowFindDoctor] = useState(false);
@@ -34,45 +30,27 @@ export default function BookingPage({
 
   useEffect(() => {
     Promise.all([
-      passedAppointments
-        ? Promise.resolve(passedAppointments.map((a) => a.raw ?? a))
-        : appointmentsApi.getAppointments().catch(() => []),
+      providersApi.getCareTeam().catch(() => []),
       providersApi.getProviders().catch(() => []),
     ])
-      .then(([appointments, providers]) => {
-        // Distinct providers from appointment history (keyed by provider_id)
-        const seenIds = new Set();
-        const mine = [];
-        for (const appt of [...appointments].reverse()) {
-          if (appt.provider_id && !seenIds.has(appt.provider_id)) {
-            seenIds.add(appt.provider_id);
-            mine.push({
-              id: appt.provider_id,
-              name: appt.providers
-                ? [
-                    appt.providers.title,
-                    appt.providers.first_name,
-                    appt.providers.last_name,
-                  ]
-                    .filter(Boolean)
-                    .join(" ")
-                : "Your provider",
-              specialty: appt.providers?.specialty || null,
-            });
-          }
-        }
+      .then(([careTeam, providers]) => {
+        const toCard = (p) => ({
+          id: p.id,
+          name:
+            [p.title, p.first_name, p.last_name].filter(Boolean).join(" ") ||
+            "Your provider",
+          specialty: p.specialty || null,
+        });
+
+        // "Your Doctors" = the patient's active care team.
+        const mine = careTeam.map(toCard);
         setMyProviders(mine);
 
-        // Providers the patient hasn't seen yet
+        // "Find a new doctor" = directory providers not already on the care team.
+        const careTeamIds = new Set(careTeam.map((p) => p.id));
         const available = providers
-          .filter((p) => !seenIds.has(p.id))
-          .map((p) => ({
-            id: p.id,
-            name: [p.title, p.first_name, p.last_name]
-              .filter(Boolean)
-              .join(" "),
-            specialty: p.specialty || null,
-          }));
+          .filter((p) => !careTeamIds.has(p.id))
+          .map(toCard);
         setNewProviders(available);
 
         if (mine.length === 0) setShowFindDoctor(true);

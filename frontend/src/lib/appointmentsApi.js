@@ -133,6 +133,8 @@ export function apptToDisplayRow(appt) {
       : "",
     time: formatApptTime(appt.provider_availability?.available_time),
     status: appt.status,
+    notes: appt.notes || "",
+    providerUserId: appt.providers?.user_id || null,
     raw: appt,
   };
 }
