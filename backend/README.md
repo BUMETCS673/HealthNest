@@ -8,7 +8,7 @@ The backend communicates with a shared Supabase instance for authentication and 
 
 ## Technology Stack
 
-- Python
+- Python 3.12 or 3.13
 - FastAPI
 - PostgreSQL
 - Supabase
@@ -55,21 +55,55 @@ The backend communicates with a shared Supabase instance for authentication and 
 ### Prerequisites
 
 - Docker Desktop
+- Python 3.12 or 3.13 for local development outside Docker
 - Access to the team's shared Supabase project
+
+### Supported Python Versions
+
+The backend supports Python `>=3.12,<3.14`. Production containers currently
+use Python 3.12, while Python 3.13 is also supported for local development.
+Python versions earlier than 3.12 are not supported.
 
 ### Start the Application
 
-From the project root:
+Copy the environment template once and fill in the local development values:
 
 ```bash
-docker compose up --build
+cp .env.example .env
 ```
+
+The local `.env` file is ignored by Git. Do not commit Supabase service keys,
+encryption keys, API keys, or database passwords.
+
+From the project root, start the development environment:
+
+```bash
+docker compose up --build -d
+```
+
+Docker Compose automatically combines `docker-compose.yml` with
+`docker-compose.override.yml`. The override enables source bind mounts and
+Uvicorn `--reload` for development only.
 
 The backend API will be available at:
 
 ```text
 http://localhost:8000
 ```
+
+### Test Production Configuration Locally
+
+Production uses only the base Compose file. Supply production secrets through
+the deployment environment or secret manager:
+
+```bash
+APP_ENV=production UVICORN_WORKERS=2 \
+  docker compose -f docker-compose.yml up --build -d
+```
+
+The production configuration does not use Uvicorn `--reload`, does not mount
+the source tree into the backend container, disables FastAPI debug output and
+interactive API documentation, and does not publish the database port.
 
 ### Stop the Application
 
@@ -79,10 +113,19 @@ docker compose down
 
 ## Configuration
 
-Application configuration is currently managed through the project's `docker-compose.yml` file.
+Application behavior is selected with `APP_ENV`:
+
+- `development`: debug behavior and API documentation are enabled.
+- `test`: debug behavior is disabled, but API documentation remains available.
+- `production`: debug behavior and API documentation are disabled.
+
+Environment values are read from the shell or the root `.env` file during
+local development. Production values should come from the deployment
+platform's environment or secret manager.
 
 Key configuration values include:
 
+- Application environment and Uvicorn worker count
 - Supabase URL
 - Supabase API keys
 - PostgreSQL connection settings
@@ -91,7 +134,8 @@ Key configuration values include:
 
 ## API Documentation
 
-FastAPI automatically generates interactive API documentation.
+FastAPI generates interactive API documentation in development and test
+environments. These routes are disabled when `APP_ENV=production`.
 
 Swagger UI:
 

@@ -5,8 +5,9 @@
  * ProviderSchedule behavior)
  */
 
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent, act } from "@testing-library/react";
 import ProviderSchedule from "../doctor/ProviderSchedule";
+import AvailabilityModal from "../doctor/AvailabilityModal";
 import { schedulingApi } from "../lib/schedulingApi";
 
 jest.mock("../lib/schedulingApi", () => ({
@@ -136,6 +137,53 @@ describe("ProviderSchedule", () => {
     expect(
       screen.getByRole("button", { name: /Save office hours/i }),
     ).toBeInTheDocument();
+  });
+
+  test("Office Hours saves by deleting old rules sequentially", async () => {
+    let resolveFirstDelete;
+    schedulingApi.deleteRule
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveFirstDelete = resolve;
+          }),
+      )
+      .mockResolvedValueOnce(null);
+
+    render(
+      <AvailabilityModal
+        rules={[
+          {
+            id: "rule-1",
+            weekday: 0,
+            start_time: "09:00:00",
+            end_time: "09:30:00",
+          },
+          {
+            id: "rule-2",
+            weekday: 1,
+            start_time: "09:00:00",
+            end_time: "09:30:00",
+          },
+        ]}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Save office hours/i }));
+
+    await waitFor(() => expect(schedulingApi.addRule).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(schedulingApi.deleteRule).toHaveBeenCalledWith("rule-1"),
+    );
+    expect(schedulingApi.deleteRule).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      resolveFirstDelete();
+    });
+
+    await waitFor(() =>
+      expect(schedulingApi.deleteRule).toHaveBeenCalledWith("rule-2"),
+    );
   });
 
   test("toolbar Add Appointment books via the modal", async () => {

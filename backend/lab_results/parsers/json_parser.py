@@ -21,7 +21,7 @@ from .base import (
 )
 
 
-LOINC_SYSTEM = "http://loinc.org"
+LOINC_SYSTEM = "https://loinc.org"
 
 
 def parse(content: bytes) -> ParsedLabResult:

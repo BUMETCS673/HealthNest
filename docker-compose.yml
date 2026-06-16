@@ -3,13 +3,8 @@ services:
     build: ./frontend
     ports:
       - "5173:5173"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
     environment:
-      VITE_API_URL: http://localhost:8000
-      VITE_SUPABASE_URL: https://tuujofmwfricjqdhqnsd.supabase.co
-      VITE_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR1dWpvZm13ZnJpY2pxZGhxbnNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMDA1ODgsImV4cCI6MjA5NDc3NjU4OH0.gyB9-WCPWvmKsOekEujdhFmciAOocBL7HDilzQGPMzU
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
     depends_on:
       - backend
 
@@ -17,30 +12,28 @@ services:
     build: ./backend
     ports:
       - "8000:8000"
-    volumes:
-      - ./backend:/app
     depends_on:
       - db
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/medapp
-      SUPABASE_URL: https://tuujofmwfricjqdhqnsd.supabase.co
-      SUPABASE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR1dWpvZm13ZnJpY2pxZGhxbnNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMDA1ODgsImV4cCI6MjA5NDc3NjU4OH0.gyB9-WCPWvmKsOekEujdhFmciAOocBL7HDilzQGPMzU
-      SUPABASE_SERVICE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR1dWpvZm13ZnJpY2pxZGhxbnNkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTIwMDU4OCwiZXhwIjoyMDk0Nzc2NTg4fQ.NuJ-FeYbpRpwOmKTpXOthA1-Xh3IegNy9FzSYqhmPUc
-      LAB_RESULTS_KEK: hQ7p2k3Z6vJtY9bN8mF4rL5gH1xA0sQwEcD7uI8oP9k=
-      CORS_ALLOWED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
-      OPENAI_API_KEY: ENTER-API-KEY-HERE
-      PULSE_MODEL: gpt-5.2
-      PULSE_EMBED_MODEL: text-embedding-3-small
-      PULSE_DEIDENTIFY: "false"
+      APP_ENV: ${APP_ENV:-production}
+      UVICORN_WORKERS: ${UVICORN_WORKERS:-2}
+      DATABASE_URL: ${DATABASE_URL}
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_KEY: ${SUPABASE_KEY}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY}
+      LAB_RESULTS_KEK: ${LAB_RESULTS_KEK}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      PULSE_MODEL: ${PULSE_MODEL:-gpt-5.2}
+      PULSE_EMBED_MODEL: ${PULSE_EMBED_MODEL:-text-embedding-3-small}
+      PULSE_DEIDENTIFY: ${PULSE_DEIDENTIFY:-true}
   db:
     image: postgres:16
     restart: always
     environment:
-      POSTGRES_DB: medapp
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
+      POSTGRES_DB: ${POSTGRES_DB:-medapp}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

@@ -12,4 +12,11 @@ module.exports = {
   moduleNameMapper: {
     "\\.(css|less|scss|sass)$": "<rootDir>/__mocks__/fileMock.js",
   },
+  collectCoverageFrom: [
+    "src/**/*.{js,jsx}",
+    "!src/**/*.test.{js,jsx}",
+    "!src/__tests__/**",
+    "!src/setupTests.js",
+  ],
+  coverageDirectory: "coverage",
 };

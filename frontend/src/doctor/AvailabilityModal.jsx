@@ -86,6 +86,28 @@ function fmtLabel(t) {
   return `${h12} ${ampm}`;
 }
 
+async function deleteRuleWithRetry(id) {
+  try {
+    await schedulingApi.deleteRule(id);
+  } catch (err) {
+    if (err.status === 404 || /not found/i.test(err.message || "")) return;
+    // Supabase/http2 occasionally drops one request when many rule deletes happen
+    // during an office-hours rewrite. A single retry keeps the save idempotent
+    // without hiding persistent backend errors.
+    try {
+      await schedulingApi.deleteRule(id);
+    } catch (retryErr) {
+      if (
+        retryErr.status === 404 ||
+        /not found/i.test(retryErr.message || "")
+      ) {
+        return;
+      }
+      throw retryErr;
+    }
+  }
+}
+
 export default function AvailabilityModal({ rules, onClose, onSaved }) {
   const [cells, setCells] = useState(() => cellsFromRules(rules));
   const [error, setError] = useState("");
@@ -168,13 +190,11 @@ export default function AvailabilityModal({ rules, onClose, onSaved }) {
         }
       }
       // A rule may already be gone (stale list) — treat "not found" as removed.
-      await Promise.all(
-        rules.map((r) =>
-          schedulingApi.deleteRule(r.id).catch((err) => {
-            if (!/not found/i.test(err.message || "")) throw err;
-          }),
-        ),
-      );
+      // Delete sequentially so the backend/Supabase client does not receive a
+      // burst of parallel rule-cleanup requests.
+      for (const rule of rules) {
+        await deleteRuleWithRetry(rule.id);
+      }
       onSaved?.();
       onClose?.();
     } catch {

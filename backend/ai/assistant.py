@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import abc
 import json
+import logging
 import time
 from dataclasses import dataclass, field
 from typing import Any, Generator, Iterable
@@ -25,6 +26,7 @@ from .safety import RiskCategory
 from .skills import SkillContext, SkillScope, registry as skill_registry
 
 MAX_TOOL_ROUNDS = 4
+logger = logging.getLogger(__name__)
 
 
 def _load_patient_profile(patient_id: str) -> dict[str, Any] | None:
@@ -250,14 +252,15 @@ class PatientFacingAssistant(AIAssistant):
                                 "args_keys": list(args.keys()),
                             },
                         )
-                    except Exception as exc:
-                        tool_result = {"error": str(exc)}
+                    except Exception:
+                        logger.exception("AI skill execution failed: %s", fn.name)
+                        tool_result = {"error": "The requested action could not be completed."}
                         audit_log(
                             AuditKind.SKILL_FAILED,
                             patient_id=ctx.patient_id,
                             actor_user_id=ctx.user_id,
                             conversation_id=ctx.conversation_id,
-                            payload={"skill": fn.name, "error": str(exc)},
+                            payload={"skill": fn.name},
                         )
 
                 messages.append(
@@ -494,14 +497,15 @@ class DoctorFacingAssistant(AIAssistant):
                                 "args_keys": list(args.keys()),
                             },
                         )
-                    except Exception as exc:
-                        tool_result = {"error": str(exc)}
+                    except Exception:
+                        logger.exception("AI skill execution failed: %s", fn.name)
+                        tool_result = {"error": "The requested action could not be completed."}
                         audit_log(
                             AuditKind.SKILL_FAILED,
                             patient_id=ctx.patient_id,
                             actor_user_id=ctx.user_id,
                             conversation_id=ctx.conversation_id,
-                            payload={"skill": fn.name, "error": str(exc)},
+                            payload={"skill": fn.name},
                         )
 
                 messages.append(

@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Any, Callable, TypeVar
+from typing import Any, Callable
 
 from supabase import Client, create_client
 
@@ -8,8 +8,6 @@ from supabase import Client, create_client
 _log = logging.getLogger(__name__)
 _client: Client | None = None
 _admin_client: Client | None = None
-
-T = TypeVar("T")
 
 
 def get_supabase() -> Client:
@@ -56,7 +54,11 @@ def _is_disconnect_error(exc: BaseException) -> bool:
     )
 
 
-def with_admin_retry(fn: Callable[..., T], *args: Any, **kwargs: Any) -> T:
+def with_admin_retry[T](
+    fn: Callable[..., T],
+    *args: Any,
+    **kwargs: Any,
+) -> T:
     try:
         return fn(*args, **kwargs)
     except Exception as exc:  # noqa: BLE001

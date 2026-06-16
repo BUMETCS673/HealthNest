@@ -17,6 +17,7 @@ from datetime import date
 from typing import Any
 
 from auth.client import get_supabase_admin
+from auth.deps import provider_has_active_relationship
 
 from .base import AISkill, Reply, SkillContext, SkillScope, SkillSpec
 
@@ -102,6 +103,7 @@ class VisitOverviewSkill(AISkill):
         resp = (
             admin.table("appointments")
             .select("id, status, notes, patient_id, provider_availability(available_date, available_time)")
+            .eq("provider_id", provider_id)
             .eq("status", "scheduled")
             .limit(_MAX_LISTED)
             .execute()
@@ -113,7 +115,7 @@ class VisitOverviewSkill(AISkill):
             patient_id = r.get("patient_id")
             name = "Unknown Patient"
             mrn = None
-            if patient_id:
+            if patient_id and provider_has_active_relationship(provider_id, patient_id):
                 try:
                     p = (
                         admin.table("patients")
@@ -128,6 +130,8 @@ class VisitOverviewSkill(AISkill):
                         mrn = pat.get("mrn")
                 except Exception:
                     pass
+            else:
+                continue
             avail = r.get("provider_availability") or {}
             appointments.append({
                 "id": r.get("id"),
@@ -158,6 +162,7 @@ class VisitOverviewSkill(AISkill):
                 "id, status, notes, patient_id, provider_availability(available_date, available_time)"
             )
             .eq("id", appointment_id)
+            .eq("provider_id", provider_id)
             .limit(1)
             .execute()
         )
@@ -174,6 +179,12 @@ class VisitOverviewSkill(AISkill):
         if not patient_id:
             return Reply(
                 summary="Appointment is missing a patient.",
+                payload={"visit": None},
+            )
+
+        if not provider_has_active_relationship(provider_id, patient_id):
+            return Reply(
+                summary="Appointment not found or not assigned to this provider.",
                 payload={"visit": None},
             )
 
@@ -194,17 +205,6 @@ class VisitOverviewSkill(AISkill):
             )
 
         patient_raw = patient_rows[0]
-
-        # NOTE: relationship check skipped for now — appointments table uses
-        # provider_name (text) not provider_id (FK), so we can't verify
-        # ownership without a schema change. 
-        # TODO: restore when schema is updated.
-
-        # if not provider_has_active_relationship(provider_id, patient_id):
-        #     return Reply(
-        #         summary="No active care-team relationship with this patient.",
-        #         payload={"visit": None},
-        #     )
 
         # Pull the data sections. Each section degrades gracefully if empty.
         sections = build_patient_sections(admin, patient_id)

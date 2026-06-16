@@ -95,8 +95,13 @@ export default function AppointmentDetailPage({
     try {
       await appointmentsApi.cancelAppointment(appointmentId);
       setConfirmCancel(false);
-      await refresh();
-    } catch {
+      onNavigate?.("dashboard");
+    } catch (error) {
+      if (error.status === 404) {
+        setConfirmCancel(false);
+        onNavigate?.("dashboard");
+        return;
+      }
       setActionError("Could not cancel. Please try again.");
     } finally {
       setCancelling(false);
