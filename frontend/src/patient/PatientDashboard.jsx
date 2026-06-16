@@ -449,12 +449,14 @@ export default function PatientDashboard({
     });
   };
 
-  const cancelProvider = (appt) => {
+  const cancelProvider = async (appt) => {
+    try {
+      await appointmentsApi.cancelAppointment(appt.id);
+    } catch (error) {
+      if (error.status !== 404) throw error;
+    }
     setDetailAppt(null);
-    appointmentsApi
-      .cancelAppointment(appt.id)
-      .then(loadUpcoming)
-      .catch(() => {});
+    loadUpcoming();
   };
 
   const navOption = [

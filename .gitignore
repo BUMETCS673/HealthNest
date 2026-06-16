@@ -18,3 +18,12 @@ backend/.env
 
 # Editor settings
 .vscode/
+
+# Test coverage reports
+backend/coverage.xml
+frontend/coverage/
+.coverage
+
+# Scanner output
+.scannerwork/
+security-reports/

@@ -123,8 +123,13 @@ export default function AppointmentsPage({
     try {
       await appointmentsApi.cancelAppointment(id);
       fetchAppointments();
-    } catch {
+    } catch (error) {
+      if (error.status === 404) {
+        fetchAppointments();
+        return;
+      }
       setCancelError(id);
+      throw error;
     } finally {
       setCancelling(null);
     }
@@ -351,8 +356,7 @@ export default function AppointmentsPage({
           onCancel={
             ["scheduled", "pending"].includes(detailAppt.status)
               ? (a) => {
-                  setDetailAppt(null);
-                  handleCancel(a.id);
+                  return handleCancel(a.id).then(() => setDetailAppt(null));
                 }
               : undefined
           }

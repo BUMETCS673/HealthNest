@@ -26,7 +26,7 @@ export function usePulse() {
 
 function makeOptimisticMessage(role, extra = {}) {
   return {
-    id: `local-${Math.random().toString(36).slice(2)}`,
+    id: `local-${crypto.randomUUID()}`,
     role,
     content: "",
     skill_outputs: null,
@@ -108,8 +108,8 @@ export default function PulseProvider({ children }) {
             prev.map((m) =>
               m.id === assistantMsg.id
                 ? { ...m, content: (m.content || "") + text }
-                : m
-            )
+                : m,
+            ),
           );
         },
         onSkillOutput: (sk) => {
@@ -120,8 +120,8 @@ export default function PulseProvider({ children }) {
                     ...m,
                     skill_outputs: [...(m.skill_outputs || []), sk],
                   }
-                : m
-            )
+                : m,
+            ),
           );
         },
         onCitation: (cite) => {
@@ -129,8 +129,8 @@ export default function PulseProvider({ children }) {
             prev.map((m) =>
               m.id === assistantMsg.id
                 ? { ...m, citations: [...(m.citations || []), cite] }
-                : m
-            )
+                : m,
+            ),
           );
         },
         onDone: () => {
@@ -147,7 +147,7 @@ export default function PulseProvider({ children }) {
         },
       });
     },
-    [ensureConversation, refreshConversations, streaming]
+    [ensureConversation, refreshConversations, streaming],
   );
 
   useEffect(() => {
@@ -195,7 +195,7 @@ export default function PulseProvider({ children }) {
       loadConversation,
       newConversation,
       refreshConversations,
-    ]
+    ],
   );
 
   return (

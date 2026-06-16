@@ -5,6 +5,7 @@ AI-Assisted Areas: Implemented WebAuthn scaffolding: challenge generation and st
 Human Contributions: Verified Supabase client usage and conservative error handling; left verification and session creation as explicit TODOs for secure deployment.
 """
 
+import logging
 from typing import Any
 
 from fastapi import HTTPException, status
@@ -15,6 +16,9 @@ from .schemas import SignInRequest, SignUpRequest
 import secrets
 import base64
 from datetime import datetime, timedelta
+
+
+logger = logging.getLogger(__name__)
 
 
 # --- Biometric / WebAuthn helpers and flows ---
@@ -245,8 +249,10 @@ def sign_up(payload: SignUpRequest) -> dict[str, Any]:
             }
         )
     except AuthApiError as exc:
+        logger.exception("Supabase sign-up failed")
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Unable to create account.",
         ) from exc
 
     session = _serialize_session(result.session)
@@ -279,8 +285,10 @@ def sign_in(payload: SignInRequest) -> dict[str, Any]:
             {"email": payload.email, "password": payload.password}
         )
     except AuthApiError as exc:
+        logger.exception("Supabase sign-in failed")
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials.",
         ) from exc
 
     session = _serialize_session(result.session)
@@ -326,8 +334,10 @@ def get_user(access_token: str) -> dict[str, Any]:
     try:
         result = get_supabase().auth.get_user(access_token)
     except AuthApiError as exc:
+        logger.exception("Supabase user lookup failed")
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token.",
         ) from exc
 
     user = _serialize_user(result.user)
@@ -342,8 +352,10 @@ def refresh(refresh_token: str) -> dict[str, Any]:
     try:
         result = get_supabase().auth.refresh_session(refresh_token)
     except AuthApiError as exc:
+        logger.exception("Supabase session refresh failed")
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Unable to refresh session.",
         ) from exc
 
     session = _serialize_session(result.session)
@@ -360,7 +372,11 @@ def update_profile(access_token: str, first_name: str, last_name: str, specialty
         user_id = user_result.user.id
         existing_metadata = user_result.user.user_metadata or {}
     except AuthApiError as exc:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc))
+        logger.exception("Supabase user lookup failed during profile update")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token.",
+        ) from exc
 
     metadata: dict[str, Any] = {
         **existing_metadata,
@@ -376,7 +392,11 @@ def update_profile(access_token: str, first_name: str, last_name: str, specialty
             {"user_metadata": metadata},
         )
     except AuthApiError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+        logger.exception("Supabase profile update failed")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Unable to update profile.",
+        ) from exc
 
     return {"message": "Profile updated."}
 
@@ -387,7 +407,11 @@ def update_password(access_token: str, current_password: str, new_password: str)
         email = user_result.user.email
         user_id = user_result.user.id
     except AuthApiError as exc:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc))
+        logger.exception("Supabase user lookup failed during password update")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token.",
+        ) from exc
 
     try:
         get_supabase().auth.sign_in_with_password(
@@ -405,6 +429,10 @@ def update_password(access_token: str, current_password: str, new_password: str)
             {"password": new_password},
         )
     except AuthApiError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+        logger.exception("Supabase password update failed")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Unable to update password.",
+        ) from exc
 
     return {"message": "Password updated."}

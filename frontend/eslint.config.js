@@ -52,16 +52,13 @@ export default [
       globals: globals.node,
     },
   },
+  // Jest test files — allow Jest globals
   {
     files: [
-      "src/__test__/**/*.{js,jsx}",
+      "src/__tests__/**/*.{js,jsx}",
       "**/*.test.{js,jsx}",
       "src/setupTests.js",
     ],
-  },
-  // Jest test files — allow Jest globals
-  {
-    files: ["src/__tests__/**/*.{js,jsx}", "**/*.test.{js,jsx}"],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",

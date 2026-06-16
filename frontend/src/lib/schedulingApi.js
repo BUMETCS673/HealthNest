@@ -35,7 +35,9 @@ async function request(path, options = {}, retry = true) {
       typeof data.detail === "string"
         ? data.detail
         : data.detail?.[0]?.msg || res.statusText;
-    throw new Error(detail);
+    const error = new Error(detail);
+    error.status = res.status;
+    throw error;
   }
   return res.status === 204 ? null : res.json();
 }

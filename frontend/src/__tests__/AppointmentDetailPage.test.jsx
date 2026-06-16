@@ -93,10 +93,17 @@ describe("AppointmentDetailPage", () => {
   });
 
   test("cancel flow confirms then cancels the appointment", async () => {
+    const onNavigate = jest.fn();
     appointmentsApi.getAppointments.mockResolvedValue([rawAppt]);
     appointmentsApi.cancelAppointment.mockResolvedValue({});
 
-    render(<AppointmentDetailPage user={mockUser} appointmentId="appt-1" />);
+    render(
+      <AppointmentDetailPage
+        user={mockUser}
+        appointmentId="appt-1"
+        onNavigate={onNavigate}
+      />,
+    );
 
     const user = userEvent.setup();
     await user.click(await screen.findByRole("button", { name: /Cancel/ }));
@@ -104,6 +111,31 @@ describe("AppointmentDetailPage", () => {
 
     await waitFor(() => {
       expect(appointmentsApi.cancelAppointment).toHaveBeenCalledWith("appt-1");
+    });
+    expect(onNavigate).toHaveBeenCalledWith("dashboard");
+  });
+
+  test("cancel flow returns to dashboard when appointment is already gone", async () => {
+    const onNavigate = jest.fn();
+    const notFound = new Error("Appointment not found.");
+    notFound.status = 404;
+    appointmentsApi.getAppointments.mockResolvedValue([rawAppt]);
+    appointmentsApi.cancelAppointment.mockRejectedValue(notFound);
+
+    render(
+      <AppointmentDetailPage
+        user={mockUser}
+        appointmentId="appt-1"
+        onNavigate={onNavigate}
+      />,
+    );
+
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: /Cancel/ }));
+    await user.click(screen.getByRole("button", { name: /Yes, cancel/ }));
+
+    await waitFor(() => {
+      expect(onNavigate).toHaveBeenCalledWith("dashboard");
     });
   });
 

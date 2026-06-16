@@ -8,6 +8,7 @@ Human Contributions: Business logic, validation, error handling, security checks
 
 from __future__ import annotations
 
+import logging
 import uuid
 from datetime import datetime, timezone
 from typing import Any
@@ -23,6 +24,8 @@ from .parsers import ParsedLabResult, ParserError, parse as parse_content
 from .schemas import LabResultPatch
 
 
+logger = logging.getLogger(__name__)
+
 LR_TABLE = "lab_results"
 ENTRY_TABLE = "lab_result_entries"
 
@@ -34,17 +37,20 @@ def _translate_pg_error(exc: APIError) -> HTTPException:
         if exc.args and isinstance(exc.args[0], dict)
         else None
     )
-    message = getattr(exc, "message", None) or (
-        getattr(exc, "args", [None])[0].get("message")
-        if exc.args and isinstance(exc.args[0], dict)
-        else str(exc)
-    )
+    logger.exception("Postgres rejected a lab result operation")
     if code == "23514":  # check_violation — most often our state-machine trigger
-        return HTTPException(status_code=status.HTTP_409_CONFLICT, detail=message)
+        return HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="The requested lab result state change is not allowed.",
+        )
     if code == "23502":  # not_null_violation — e.g. released_by required
-        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=message)
+        return HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Required lab result data is missing.",
+        )
     return HTTPException(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=message
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail="Unable to complete the lab result request.",
     )
 
 
@@ -64,9 +70,10 @@ def upload(
     try:
         parsed = parse_content(source_format, content)
     except ParserError as exc:
+        logger.exception("Unable to parse uploaded lab result")
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"parse error: {exc}",
+            detail="Unable to parse the uploaded lab result.",
         ) from exc
 
     lab_result_id = str(uuid.uuid4())

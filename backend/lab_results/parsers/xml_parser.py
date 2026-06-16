@@ -22,8 +22,8 @@ from .base import (
 )
 
 
-FHIR_NS = "http://hl7.org/fhir"
-LOINC_SYSTEM = "http://loinc.org"
+FHIR_NS = "https://hl7.org/fhir"
+LOINC_SYSTEM = "https://loinc.org"
 _NS = f"{{{FHIR_NS}}}"
 
 

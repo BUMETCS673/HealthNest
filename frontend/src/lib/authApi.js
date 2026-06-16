@@ -207,10 +207,12 @@ export const authApi = {
     let binary = "";
     for (let i = 0; i < bytes.byteLength; i++)
       binary += String.fromCharCode(bytes[i]);
-    const b64 = btoa(binary)
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_")
-      .replace(/=+$/, "");
+    let b64 = btoa(binary).replaceAll("+", "-").replaceAll("/", "_");
+
+    while (b64.endsWith("=")) {
+      b64 = b64.slice(0, -1);
+    }
+
     return b64;
   },
 

@@ -229,6 +229,47 @@ def test_add_recurrence_rule_endpoint_creates_rule_and_materializes():
         app.dependency_overrides.clear()
 
 
+def test_delete_recurrence_rule_endpoint_calls_service():
+    app.dependency_overrides[current_provider_id] = lambda: FAKE_PROVIDER_ID
+    rule_id = "33e5aa46-0a35-4d1c-8cf3-490e16a78b02"
+
+    try:
+        with patch("scheduling.router.service.delete_recurrence_rule") as delete_rule:
+            with TestClient(app) as c:
+                resp = c.delete(f"/schedule/rules/{rule_id}")
+
+        assert resp.status_code == 204
+        delete_rule.assert_called_once_with(FAKE_PROVIDER_ID, rule_id)
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_scheduling_internal_error_does_not_disclose_details():
+    app.dependency_overrides[current_provider_id] = lambda: FAKE_PROVIDER_ID
+
+    try:
+        with patch(
+            "scheduling.router.service.get_recurrence_rules",
+            side_effect=RuntimeError(
+                "Supabase postgres failure at /internal/database/path"
+            ),
+        ):
+            with TestClient(app, raise_server_exceptions=False) as c:
+                resp = c.get("/schedule/rules")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert resp.status_code == 500
+    assert resp.json() == {"detail": "The request could not be completed."}
+
+    body = resp.text.lower()
+    assert "traceback" not in body
+    assert "runtimeerror" not in body
+    assert "postgres" not in body
+    assert "supabase" not in body
+    assert "/internal/database/path" not in body
+
+
 def test_create_appointment_rejects_non_care_team_patient():
     app.dependency_overrides[current_provider_id] = lambda: FAKE_PROVIDER_ID
 

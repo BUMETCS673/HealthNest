@@ -10,6 +10,7 @@
 from typing import Any
 
 from fastapi import HTTPException, status
+from postgrest.exceptions import APIError
 
 from auth.client import get_supabase_admin
 from .schemas import AppointmentCreate, AppointmentNotesUpdate, AppointmentReschedule
@@ -77,15 +78,28 @@ def _verify_appointment(appointment: dict[str, Any]) -> None:
         )
 
 def _get_appointment(appointment_id: str, patient_id: str) -> dict[str, Any]:
-    appointment = (
-        get_supabase_admin()
-        .table("appointments")
-        .select("*")
-        .eq("id", appointment_id)
-        .eq("patient_id", patient_id)
-        .single()
-        .execute()
-    )
+    try:
+        appointment = (
+            get_supabase_admin()
+            .table("appointments")
+            .select("*")
+            .eq("id", appointment_id)
+            .eq("patient_id", patient_id)
+            .single()
+            .execute()
+        )
+    except APIError as exc:
+        code = getattr(exc, "code", None) or (
+            exc.args[0].get("code")
+            if exc.args and isinstance(exc.args[0], dict)
+            else None
+        )
+        if code == "PGRST116":
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Appointment not found.",
+            ) from exc
+        raise
 
     if not appointment.data:
         raise HTTPException(

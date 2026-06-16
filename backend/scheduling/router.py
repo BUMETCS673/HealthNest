@@ -7,6 +7,7 @@
 # Human Contributions: Reviewed the auth wiring and response models.
 # Notes: Validated via pytest.
 from fastapi import APIRouter, Depends, status
+from uuid import UUID
 
 from auth.deps import current_provider_id
 from .schemas import (
@@ -76,10 +77,12 @@ def add_rule(
 ):
     return service.add_recurrence_rule(provider_id, payload)
 
-
 @router.delete("/rules/{rule_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_rule(rule_id: str, provider_id: str = Depends(current_provider_id)):
-    service.delete_recurrence_rule(provider_id, rule_id)
+def delete_rule(
+    rule_id: UUID,
+    provider_id: str = Depends(current_provider_id),
+):
+    service.delete_recurrence_rule(provider_id, str(rule_id))
 
 
 @router.get("/patients", response_model=list[SchedulePatientOut])

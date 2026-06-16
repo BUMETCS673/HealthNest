@@ -33,9 +33,25 @@ export default function AppointmentDetailModal({
   onCancel,
 }) {
   const [confirming, setConfirming] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState("");
   if (!appt) return null;
 
   const hasActions = onMessage || onReschedule || onCancel;
+
+  const handleCancel = async () => {
+    if (!onCancel || cancelling) return;
+    setCancelling(true);
+    setCancelError("");
+    try {
+      await onCancel(appt);
+      setConfirming(false);
+    } catch (error) {
+      setCancelError(error.message || "Could not cancel. Please try again.");
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   return (
     <div
@@ -64,16 +80,19 @@ export default function AppointmentDetailModal({
                 <button
                   className="apanel-btn"
                   onClick={() => setConfirming(false)}
+                  disabled={cancelling}
                 >
                   Keep
                 </button>
                 <button
                   className="apanel-btn apanel-btn--danger"
-                  onClick={() => onCancel(appt)}
+                  onClick={handleCancel}
+                  disabled={cancelling}
                 >
-                  <X size={15} /> Yes, cancel
+                  <X size={15} /> {cancelling ? "Cancelling..." : "Yes, cancel"}
                 </button>
               </div>
+              {cancelError && <p className="ap-cancel-error">{cancelError}</p>}
             </div>
           ) : (
             <div className="apanel-actions adm-actions">
@@ -93,7 +112,10 @@ export default function AppointmentDetailModal({
               {onCancel && (
                 <button
                   className="apanel-btn apanel-btn--danger"
-                  onClick={() => setConfirming(true)}
+                  onClick={() => {
+                    setCancelError("");
+                    setConfirming(true);
+                  }}
                 >
                   <X size={15} /> Cancel
                 </button>

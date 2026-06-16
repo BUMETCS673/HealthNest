@@ -8,12 +8,15 @@
 
 
 import os
+import logging
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from auth import router as auth_router
 from appointments import router as appointments_router
+from settings import settings
 from providers import router as providers_router
 from lab_results import router as lab_results_router
 from patients import router as patients_router
@@ -21,19 +24,44 @@ from ai import router as ai_router, dfa_router
 from messages import router as messages_router
 from scheduling import router as scheduling_router
 from notifications import router as notifications_router
+from starlette.middleware.base import BaseHTTPMiddleware
 
-app = FastAPI()
+logger = logging.getLogger(__name__)
 
-_default_origins = "http://localhost:5173,http://127.0.0.1:5173"
-_allowed_origins = [
-    origin.strip()
-    for origin in os.environ.get("CORS_ALLOWED_ORIGINS", _default_origins).split(",")
-    if origin.strip()
-]
+app = FastAPI(
+    title="HealthNest API",
+    debug=settings.debug,
+    docs_url="/docs" if settings.docs_enabled else None,
+    redoc_url="/redoc" if settings.docs_enabled else None,
+    openapi_url="/openapi.json" if settings.docs_enabled else None,
+)
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'none'; "
+            "frame-ancestors 'none'; "
+            "base-uri 'none'; "
+            "form-action 'none'"
+        )
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        response.headers["Permissions-Policy"] = (
+            "camera=(), microphone=(), geolocation=()"
+        )
+
+        return response
+
+
+app.add_middleware(SecurityHeadersMiddleware)
+
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_allowed_origins,
+    allow_origins=settings.cors_allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -65,3 +93,20 @@ def public_config():
         "supabase_url": os.environ.get("SUPABASE_URL"),
         "supabase_anon_key": os.environ.get("SUPABASE_KEY"),
     }
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(
+    request: Request,
+    _exc: Exception,
+) -> JSONResponse:
+    logger.exception(
+        "Unhandled error while processing %s %s",
+        request.method,
+        request.url.path,
+    )
+
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "The request could not be completed."},
+    )

@@ -32,7 +32,7 @@ export function useDfa() {
 
 function makeOptimisticMessage(role, extra = {}) {
   return {
-    id: `local-${Math.random().toString(36).slice(2)}`,
+    id: `local-${crypto.randomUUID()}`,
     role,
     content: "",
     skill_outputs: [],
