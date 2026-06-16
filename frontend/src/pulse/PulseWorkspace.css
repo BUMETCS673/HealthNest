@@ -1,0 +1,182 @@
+/* AI-USAGE SUMMARY
+ * Tools: Opus 4.7
+ * Notes: Workspace body sits below the shared <TopNav> component. The
+ *  bespoke .pulse-ws-top header was removed — Pulse is just another
+ *  HealthNest surface, not its own sub-app. The grid is sized to fill the
+ *  rest of the viewport beneath the 56px nav so the composer band always
+ *  pins to the bottom edge. */
+
+.pulse-ws-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 0;
+  min-height: 0;
+  /* 56px nav height comes from the shared TopNav. */
+  height: calc(100vh - 56px);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Sidebar
+ * ───────────────────────────────────────────────────────────────────────── */
+
+.pulse-sidebar {
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 10px;
+  gap: 8px;
+  overflow: auto;
+}
+
+.pulse-sidebar-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #0f172a;
+  padding: 8px 12px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 500;
+  font-family: inherit;
+  justify-content: center;
+  transition: background 110ms ease, border-color 110ms ease, color 110ms ease;
+}
+
+.pulse-sidebar-new:hover {
+  background: #0f766e;
+  border-color: #0f766e;
+  color: #ffffff;
+}
+
+.pulse-sidebar-section {
+  padding: 6px 8px 2px;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #94a3b8;
+}
+
+.pulse-sidebar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.pulse-sidebar-empty {
+  margin: 8px 8px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.pulse-sidebar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #334155;
+  min-height: 36px;
+  font-family: inherit;
+  transition: background 110ms ease, color 110ms ease;
+}
+
+.pulse-sidebar-row:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.pulse-sidebar-row--active {
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
+.pulse-sidebar-row--active:hover {
+  background: #ccfbf1;
+}
+
+.pulse-sidebar-row-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.pulse-sidebar-row-title {
+  font-size: 12.5px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+  max-width: 180px;
+  letter-spacing: -0.005em;
+}
+
+.pulse-sidebar-row-when {
+  font-size: 10.5px;
+  color: #94a3b8;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Main + composer band
+ * ───────────────────────────────────────────────────────────────────────── */
+
+.pulse-ws-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  background: #f9f9f7;
+}
+
+.pulse-ws-thread {
+  flex: 1;
+  overflow: auto;
+  padding: 28px 48px 16px;
+}
+
+/* Wider reading column for the chat — the rest of the HealthNest nav-bar
+   pages cap at similar widths, so 1040px keeps the conversation feeling
+   like a real surface and not a narrow centered island. */
+.pulse-ws-thread > .pulse-thread,
+.pulse-ws-thread > .pulse-thread--empty {
+  max-width: 1040px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.pulse-ws-composer {
+  border-top: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 16px 48px 22px;
+}
+
+.pulse-ws-composer > .pulse-composer {
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+@media (max-width: 720px) {
+  .pulse-ws-grid {
+    grid-template-columns: 1fr;
+  }
+  .pulse-sidebar {
+    display: none;
+  }
+  .pulse-ws-thread,
+  .pulse-ws-composer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
