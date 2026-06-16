@@ -8,6 +8,22 @@ provide customized home dashboards, AI-assisted support, appointment scheduling,
 major services from the dashboard. The main users of the system are patients, doctors, and other care team members. 
 The planned technology stack currently includes a React frontend, a FastAPI backend, along with database support, authentication, AI integration, testing/security tools, and CI/CD support.
 
+## Iteration 3 Release Package
+
+This release package is organized for submission as follows:
+
+- `code/` contains the HealthNest application source code, Docker configuration, Supabase configuration, frontend, and backend.
+- `docs/` contains the updated project documentation for the iteration.
+- `demo/` identifies the presentation and demo videos, which are attached to the GitHub Release because the video files are too large to commit directly to the repository.
+- `README.md` and `team.md` are provided at the release root.
+
+To run the application from this release package, enter the code directory first:
+
+```bash
+cd code
+docker compose up --build
+```
+
 ## CI/CD / Commit Procedure
 
 Our team will use a simplified GitFlow workflow to organize development, track Jira work items, manage code reviews, reduce merge conflicts, and support CI/CD deployment practices throughout the project lifecycle.

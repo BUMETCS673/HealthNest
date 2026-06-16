@@ -1,20 +1,27 @@
 # Node
 node_modules/
+code/**/node_modules/
 
 # Python virtual environments
 venv/
 .venv/
 backend/venv/
+code/**/venv/
+code/**/.venv/
 
 # Python cache
 __pycache__/
 *.pyc
+code/**/__pycache__/
 
 # Environment files
 .env
 backend/.env
 .env.*
 !.env.example
+code/**/.env
+code/**/.env.*
+!code/**/.env.example
 
 # Editor settings
 .vscode/
@@ -23,7 +30,31 @@ backend/.env
 backend/coverage.xml
 frontend/coverage/
 .coverage
+coverage/
+coverage.xml
+code/**/coverage/
+code/**/coverage.xml
 
 # Scanner output
 .scannerwork/
 security-reports/
+code/**/.scannerwork/
+code/**/security-reports/
+
+# Build output
+dist/
+build/
+code/**/dist/
+code/**/build/
+
+# Large release media should be uploaded as GitHub Release assets.
+demo/*.mov
+demo/*.mp4
+*.zip
+
+# Tool/cache output
+.pytest_cache/
+code/**/.pytest_cache/
+
+# macOS
+.DS_Store
