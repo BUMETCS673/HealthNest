@@ -1,0 +1,140 @@
+/*
+AI-USAGE SUMMARY
+Tools: Claude Code (Opus 4.8)
+Overall AI Contribution: ~90%
+AI-Assisted Areas: Styles for the shared AppointmentDetails card (#SCRUM-77) —
+  avatar, name/subtitle, status pill, info rows, and the Message / Reschedule /
+  Cancel actions. Extracted from ProviderSchedule.css and made self-contained
+  (incl. the status-pill colors) so the card is reusable on the patient side.
+Human Contributions: Reuse direction and verification.
+Notes: Validated visually and via `npm run build`.
+*/
+
+.ad-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ad-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.ad-info-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.ad-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #f2f2f1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #71716e;
+  flex-shrink: 0;
+}
+
+.ad-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111110;
+}
+
+.ad-subtitle {
+  font-size: 13px;
+  color: #71716e;
+}
+
+.ad-status {
+  font-size: 11px;
+  text-transform: capitalize;
+  padding: 3px 8px;
+  border-radius: 10px;
+  background: #eef0ef;
+  color: #71716e;
+}
+
+.ad-status--scheduled,
+.ad-status--pending {
+  background: #e7f2ec;
+  color: #1f7a4d;
+}
+
+.ad-status--completed {
+  background: #eef0ef;
+  color: #71716e;
+}
+
+.ad-status--cancelled,
+.ad-status--no_show {
+  background: #f7e7e7;
+  color: #b3261e;
+}
+
+.ad-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ad-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #111110;
+}
+
+.ad-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Wide layout (provider day-view panel): horizontal, actions pushed to the right */
+.ad-card--wide {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ad-card--wide .ad-info {
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+}
+
+.ad-card--wide .ad-actions {
+  flex-shrink: 0;
+}
+
+.ad-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid #e5e5e3;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+  font-family: inherit;
+  color: #111110;
+  cursor: pointer;
+}
+
+.ad-btn:hover {
+  border-color: #111110;
+}
+
+.ad-btn--danger:hover {
+  border-color: #c2410c;
+  color: #c2410c;
+}

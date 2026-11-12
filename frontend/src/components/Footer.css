@@ -1,0 +1,83 @@
+/* ── Shared Footer: matches original HealthNest dashboard footer ── */
+
+.hn-footer {
+  background: #fbfbfa;
+  padding: 64px 76px 56px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-top: 1px solid rgba(17, 17, 16, 0.08);
+}
+
+.hn-footer-left {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.hn-footer-logo {
+  font-family: "Instrument Serif", serif;
+  font-size: 32px;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1;
+  color: #111110;
+  text-decoration: underline;
+  text-underline-offset: 8px;
+}
+
+.hn-footer-tag {
+  color: #9c9c9b;
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.hn-footer-links {
+  display: flex;
+  gap: 96px;
+  padding-right: 32px;
+}
+
+.hn-footer-heading {
+  color: #111110;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin: 0 0 18px;
+}
+
+.hn-footer-link {
+  background: none;
+  border: none;
+  padding: 0;
+  display: block;
+  text-align: left;
+  font: inherit;
+  font-size: 15px;
+  color: #9c9c9b;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+.hn-footer-link:hover {
+  color: #111110;
+}
+
+.hn-footer-copy {
+  background: #fbfbfa;
+  border-top: 1px solid rgba(17, 17, 16, 0.08);
+  color: #9c9c9b;
+  text-align: center;
+  font-size: 13px;
+  padding: 18px 24px 24px;
+}
+
+/* The footer logo is a button that returns to the dashboard. */
+button.dash-logo {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}

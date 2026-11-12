@@ -1,0 +1,18 @@
+/*
+AI-USAGE SUMMARY
+Tools: Claude Code (Opus 4.8)
+Overall AI Contribution: ~95%
+AI-Assisted Areas: The shared drawer light-dismiss overlay. Faint dim so the page
+  still reads as "behind" without looking modal. z-index sits above the page but
+  below the drawer launchers (255) and the drawers themselves (260), so the
+  opposite-side launcher stays clickable while a drawer is open.
+Human Contributions: Verification.
+Notes: Validated visually and via `npm run build`.
+*/
+
+.drawer-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.04);
+  z-index: 250;
+}

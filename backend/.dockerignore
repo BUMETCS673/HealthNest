@@ -1,0 +1,31 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Virtual environments
+venv/
+.venv/
+
+# Tests and coverage
+tests/
+ai/tests/
+coverage.xml
+.coverage
+htmlcov/
+security-reports/
+
+# Python caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Development files
+.git/
+.gitignore
+.DS_Store
+README.md
